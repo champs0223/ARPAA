@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPAA - Proteção Animal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/config.css">
+    <script src="assets/js/tailwindconfig.js"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-900 antialiased overflow-x-hidden">
+    <!-- NAVBAR (mesmo da index) -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300 bg-white shadow-md" id="navbar">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20 max-w-7xl mx-auto">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-paw text-white text-xl"></i>
+                    </div>
+                    <span
+                        class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">ARPAA</span>
+                </a>
+
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Início</a>
+                    <a href="adote.html" class="text-teal-600 font-semibold">Adote</a>
+                    <a href="doe.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Doe</a>
+                    <a href="sobre.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Sobre</a>
+                    <a href="contato.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Contato</a>
+                </nav>
+
+                <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu"
+                class="md:hidden hidden bg-white rounded-b-xl overflow-hidden transition-all duration-300">
+                <div class="px-4 pt-2 pb-4 space-y-2">
+                    <a href="index.html"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Início</a>
+                    <a href="adote.html" class="block px-4 py-2 text-teal-600 font-semibold hover:bg-gray-100 rounded-lg">Adote</a>
+                    <a href="doe.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Doe</a>
+                    <a href="sobre.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Sobre</a>
+                    <a href="contato.html"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Contato</a>
+                </div>
+            </div>
+        </div>
+    </header>
+<!-- BANNER / HERO ADOTE -->
+<section class="flex items-center justify-center bg-teal-600 relative overflow-hidden" 
+         style="height: 400px; min-height: 400px;">
+    <div class="relative z-10 w-full flex flex-col items-center justify-center text-center">
+        
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 mt-9 drop-shadow-lg">
+            Adote um novo amigo<br>
+            <span class="text-yellow-300">Mude duas vidas</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-white/80 mb-5 max-w-xl mx-auto">
+            Encontre cães e gatos esperando por um lar cheio de amor. Filtre por porte, espécie e perfil para encontrar o companheiro ideal.
+        </p>
+
+    </div>
+</section>
+
+
+<!-- ======================= FILTROS ======================= -->
+<section id="filtros" class="py-10 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Filtrar animais para adoção</h2>
+                <p class="text-gray-600 text-sm md:text-base">
+                    Use os filtros para encontrar o pet ideal.
+                </p>
+            </div>
+
+            <button id="limparFiltros"
+                class="filtro px-4 py-2 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition">
+                Limpar filtros
+            </button>
+        </div>
+
+        <!-- Menu horizontal (AGORA CORRETO) -->
+        <div class="flex gap-6 text-sm border-b pb-4 font-medium">
+
+            <div class="categoria relative">
+                <button class="menu-categoria" data-menu="especie">Espécie ▼</button>
+                <div id="menu-especie" class="dropdown hidden absolute left-0 mt-2 bg-white p-3 rounded-xl shadow-md">
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Gato</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Cachorro</button>
+                </div>
+            </div>
+
+            <div class="categoria relative">
+                <button class="menu-categoria" data-menu="idade">Idade ▼</button>
+                <div id="menu-idade" class="dropdown hidden absolute left-0 mt-2 bg-white p-3 rounded-xl shadow-md">
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Filhote</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Adulto</button>
+                </div>
+            </div>
+
+            <div class="categoria relative">
+                <button class="menu-categoria" data-menu="porte">Porte ▼</button>
+                <div id="menu-porte" class="dropdown hidden absolute left-0 mt-2 bg-white p-3 rounded-xl shadow-md">
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Porte Pequeno</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Porte Médio</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Porte Grande</button>
+                </div>
+            </div>
+
+            <div class="categoria relative">
+                <button class="menu-categoria" data-menu="sexo">Sexo ▼</button>
+                <div id="menu-sexo" class="dropdown hidden absolute left-0 mt-2 bg-white p-3 rounded-xl shadow-md">
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Macho</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Fêmea</button>
+                </div>
+            </div>
+
+            <div class="categoria relative">
+                <button class="menu-categoria" data-menu="saude">Saúde ▼</button>
+                <div id="menu-saude" class="dropdown hidden absolute left-0 mt-2 bg-white p-3 rounded-xl shadow-md">
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Vacinado</button>
+                    <button class="filtro px-4 py-2 rounded-full border border-gray-300">Castrado</button>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Filtros Selecionados -->
+        <div id="filtrosSelecionados" class="mt-4 hidden">
+            <p class="text-sm text-gray-600 mb-2">Filtros aplicados:</p>
+            <div id="listFiltrosSelecionados" class="flex flex-wrap gap-2"></div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- LISTA DE ANIMAIS (cards no estilo da index) -->
+    <section id="lista-animais" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span
+                    class="inline-block px-4 py-1 bg-teal-100 text-teal-800 text-sm font-semibold rounded-full mb-4">Animais
+                    disponíveis</span>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Nossos amigos esperando por um lar</h2>
+                <div class="w-24 h-1.5 bg-teal-600 mx-auto rounded-full mb-6"></div>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Veja alguns dos animais prontos para adoção. Entre em
+                    contato para saber mais detalhes sobre cada um.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 - adaptado de Luna -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-40">
+                        <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d" alt="Luna"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-2 right-2">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-3 flex flex-col min-h-[300px]">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Luna</h3>
+                            <span class="text-sm text-gray-500">Fêmea • 2 anos</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Pequeno</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
+                            <span
+                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>
+                        </div>
+                        <p class="text-gray-600 mb-4 flex-grow">Luna é muito carinhosa e se adapta bem a apartamentos. Adora passeios
+                            curtos e colo.</p>
+                        <div class="flex justify-between items-center mt-auto">
+                            <a href="#" onclick="abrirModal(
+   'Luna',
+    'Fêmea • 2 anos • Porte pequeno • Vacinado • Castrado',
+    'Luna é muito carinhosa e se adapta bem a apartamentos. Adora passeios curtos e colo.',
+    [
+        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
+        'https://images.unsplash.com/photo-1552053831-71594a27632d',
+        'https://images.unsplash.com/photo-1537151625747-768eb6cf92b6'
+    ]
+)" 
+class="btn-primary text-sm px-6 py-2">
+    <i class="fas fa-paw mr-2"></i> Ver detalhes
+</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 - adaptado de Thor -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-40">
+                        <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1" alt="Thor"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-2 right-2">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-3 flex flex-col min-h-[300px]">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Thor</h3>
+                            <span class="text-sm text-gray-500">Macho • 3 anos</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Médio</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
+                            <span
+                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>
+                        </div>
+                        <p class="text-gray-600 mb-4 flex-grow">Thor é enérgico e brincalhão, ideal para famílias ativas que gostam de
+                            passear e brincar ao ar livre.</p>
+                        <div class="flex justify-between items-center mt-auto">
+                            <a href="#" onclick="abrirModal(
+     'Thor',
+    'Macho • 3 anos • Porte médio • Vacinado • Castrado',
+    'Thor é enérgico, brincalhão e perfeito para famílias ativas.',
+    [
+        'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
+        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a'
+    ]
+)" 
+class="btn-primary text-sm px-6 py-2">
+    <i class="fas fa-paw mr-2"></i> Ver detalhes
+</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 - adaptado de Amora -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-40">
+                        <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a" alt="Amora"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-2 right-2">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-3 flex flex-col min-h-[300px]">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Amora</h3>
+                            <span class="text-sm text-gray-500">Fêmea • Filhote</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Pequeno</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
+                        </div>
+                        <p class="text-gray-600 mb-4 flex-grow">Amora é uma filhote muito curiosa e carinhosa, perfeita para quem quer
+                            acompanhar todas as fases da vida de um pet.</p>
+                        <div class="flex justify-between items-center mt-auto">
+                            <a href="#" onclick="abrirModal(
+    'Amora',
+    'Fêmea • Filhote • Porte pequeno • Vacinado',
+    'Amora é curiosa, amorosa e perfeita para quem quer acompanhar todas as fases de um pet.',
+    [
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a',
+        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
+        'https://images.unsplash.com/photo-1543466835-00a7907e9de1'
+    ]
+)"  
+class="btn-primary text-sm px-6 py-2">
+    <i class="fas fa-paw mr-2"></i> Ver detalhes
+</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER simples, mantendo conteúdo -->
+    <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                <!-- Coluna 1: Sobre -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-paw text-white text-xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-white">ARPAA</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">Associação de Resgate, Proteção e Amparo Animal. Transformando vidas, uma pata de cada vez.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                <!-- Coluna 2: Links Rápidos -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Início</a></li>
+                        <li><a href="sobre.html" class="text-gray-400 hover:text-white transition-colors">Sobre Nós</a></li>
+                        <li><a href="animais.html" class="text-gray-400 hover:text-white transition-colors">Adoção</a></li>
+                        <li><a href="doe.html" class="text-gray-400 hover:text-white transition-colors">Doações</a></li>
+                        <li><a href="contato.html" class="text-gray-400 hover:text-white transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                <!-- Coluna 3: Horário de Funcionamento -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Horário de Atendimento</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Segunda a Sexta</span>
+                            <span class="text-white">09:00 - 18:00</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Sábado</span>
+                            <span class="text-white">09:00 - 14:00</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Domingo</span>
+                            <span class="text-white">Fechado</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Coluna 4: Contato -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Contato</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-teal-400"></i>
+                            <span>Rua dos Animais, 123<br>Bairro Feliz<br>Cidade - Estado, CEP 12345-678</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-3 text-teal-400"></i>
+                            <a href="tel:+5500000000000" class="hover:text-white transition-colors">(00) 00000-0000</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-3 text-teal-400"></i>
+                            <a href="mailto:contato@arpaa.org" class="hover:text-white transition-colors">contato@arpaa.org</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-sm text-gray-500">
+                    <p class="text-center md:text-left">&copy; 2025 ARPAA - Associação de Resgate, Proteção e Amparo Animal. Todos os direitos reservados.</p>
+                    <div class="flex justify-center space-x-4 text-lg">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+<script>
+
+function fecharModal() {
+    document.getElementById("modalPet").classList.add("hidden");
+    document.getElementById("modalPet").classList.remove("flex");
+}
+</script>
+<!-- MODAL DE DETALHES DO ANIMAL -->
+<div id="modalPet" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden justify-center items-center px-4 z-[999]">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 pt-12 relative">
+
+        <!-- Botão fechar -->
+        <button onclick="fecharModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+
+        <!-- GALERIA -->
+        <div class="relative mb-4">
+            <img id="modalImgPrincipal" src="" class="w-full h-56 object-cover rounded-xl">
+
+            <!-- Botões de navegação -->
+            <button onclick="fotoAnterior()" 
+                class="absolute top-1/2 left-3 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <button onclick="proximaFoto()" 
+                class="absolute top-1/2 right-3 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Miniaturas -->
+        <div id="modalMiniaturas" class="flex gap-2 mb-4"></div>
+
+        <!-- Nome e info -->
+        <h2 id="modalNome" class="text-3xl font-bold text-gray-900"></h2>
+        <p id="modalInfo" class="text-gray-600 mb-3"></p>
+
+        <!-- Descrição -->
+        <p id="modalDescricao" class="text-gray-700 mb-6"></p>
+
+        <button onclick="abrirFormAdocao()" 
+            class="w-full bg-teal-600 text-white py-2 rounded-xl text-lg font-semibold hover:bg-teal-700 transition">
+            Quero adotar 
+        </button>
+    </div>
+</div>
+<!-- MODAL FORMULÁRIO ADOÇÃO -->
+<div id="modalAdocao" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden justify-center items-center px-4 z-[999]">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+
+        <button onclick="fecharFormAdocao()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+
+        <h2 class="text-2xl font-bold mb-4">Solicitar adoção</h2>
+
+        <p id="petSelecionado" class="text-teal-600 font-semibold mb-4"></p>
+
+        <label class="block mb-2 font-medium">Seu nome</label>
+        <input type="text" id="nomeAdocao" class="w-full border rounded-lg px-3 py-2 mb-3">
+
+        <label class="block mb-2 font-medium">Telefone</label>
+        <input type="text" id="telefoneAdocao" class="w-full border rounded-lg px-3 py-2 mb-3">
+
+        <label class="block mb-2 font-medium">Mensagem</label>
+        <textarea id="msgAdocao" class="w-full border rounded-lg px-3 py-2 mb-4"></textarea>
+
+        <button onclick="enviarAdocao()" 
+            class="w-full bg-teal-600 text-white py-2 rounded-xl text-lg font-semibold hover:bg-teal-700 transition">
+            Enviar solicitação
+        </button>
+    </div>
+</div>
+<script>
+/* ======================================================
+   SISTEMA DE MODAL DE PET
+====================================================== */
+let fotos = [];
+let fotoAtual = 0;
+let nomePetAtual = "";
+
+// Abre modal principal
+function abrirModal(nome, info, descricao, imagens) {
+    nomePetAtual = nome;
+
+    document.getElementById("modalNome").textContent = nome;
+    document.getElementById("modalInfo").textContent = info;
+    document.getElementById("modalDescricao").textContent = descricao;
+
+    fotos = imagens;
+    fotoAtual = 0;
+
+    atualizarFoto();
+
+    // Miniaturas
+    let miniaturas = "";
+    imagens.forEach((img, i) => {
+        miniaturas += `
+            <img src="${img}" onclick="irParaFoto(${i})"
+            class="w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${i==0?"border-teal-600":"border-transparent"}">
+        `;
+    });
+    document.getElementById("modalMiniaturas").innerHTML = miniaturas;
+
+    document.getElementById("modalPet").classList.remove("hidden");
+    document.getElementById("modalPet").classList.add("flex");
+}
+
+function atualizarFoto() {
+    document.getElementById("modalImgPrincipal").src = fotos[fotoAtual];
+    atualizarMiniaturas();
+}
+
+function proximaFoto() {
+    fotoAtual = (fotoAtual + 1) % fotos.length;
+    atualizarFoto();
+}
+
+function fotoAnterior() {
+    fotoAtual = (fotoAtual - 1 + fotos.length) % fotos.length;
+    atualizarFoto();
+}
+
+function irParaFoto(i) {
+    fotoAtual = i;
+    atualizarFoto();
+}
+
+function atualizarMiniaturas() {
+    const miniaturas = document.querySelectorAll('#modalMiniaturas img');
+    miniaturas.forEach((img, i) => {
+        if (i === fotoAtual) {
+            img.classList.remove('border-transparent');
+            img.classList.add('border-teal-600');
+        } else {
+            img.classList.remove('border-teal-600');qu
+            img.classList.add('border-transparent');
+        }
+    });
+}
+
+function fecharModal() {
+    document.getElementById("modalPet").classList.add("hidden");
+    document.getElementById("modalPet").classList.remove("flex");
+}
+
+/* ======================================================
+   FORMULÁRIO DE ADOÇÃO
+====================================================== */
+function abrirFormAdocao() {
+    fecharModal();
+    document.getElementById("petSelecionado").innerText = "Pet selecionado: " + nomePetAtual;
+    document.getElementById("modalAdocao").classList.remove("hidden");
+    document.getElementById("modalAdocao").classList.add("flex");
+}
+
+function fecharFormAdocao() {
+    document.getElementById("modalAdocao").classList.add("hidden");
+    document.getElementById("modalAdocao").classList.remove("flex");
+}
+
+function enviarAdocao() {
+    let nome = document.getElementById("nomeAdocao").value.trim();
+    let tel = document.getElementById("telefoneAdocao").value.trim();
+    let msg = document.getElementById("msgAdocao").value.trim();
+
+    if (!nome || !tel) {
+        alert("Preencha nome e telefone.");
+        return;
+    }
+
+    let numero = "5512997144004";
+
+    let mensagem =
+`⭐ *Solicitação de Adoção*
+
+🐶 *Pet:* ${nomePetAtual}
+
+👤 *Nome:* ${nome}
+📞 *Telefone:* ${tel}
+
+📝 *Mensagem:* ${msg}`;
+
+    let texto = mensagem.replace(/ /g, "%20").replace(/\n/g, "%0A");
+    let link = `https://api.whatsapp.com/send?phone=${numero}&text=${texto}`;
+
+    window.open(link, "_blank");
+    fecharFormAdocao();
+}
+
+
+/* ======================================================
+   SISTEMA DE FILTROS
+====================================================== */
+
+// Filtros selecionados
+let filtrosSelecionados = {
+    especie: [],
+    idade: [],
+    porte: [],
+    sexo: [],
+    saude: [],
+};
+
+// -------------- ABRIR/FECHAR DROPDOWNS -----------------
+document.querySelectorAll(".menu-categoria").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const menu = btn.dataset.menu;
+        const dropdown = document.getElementById("menu-" + menu);
+
+        // Fecha todos os outros
+        document.querySelectorAll(".dropdown").forEach(d => {
+            if (d !== dropdown) d.classList.add("hidden");
+        });
+
+        dropdown.classList.toggle("hidden");
+    });
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".menu-categoria") && !e.target.closest(".dropdown")) {
+        document.querySelectorAll(".dropdown").forEach(d => d.classList.add("hidden"));
+    }
+});
+
+// -------------- AÇÃO DOS FILTROS --------------------
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll(".filtro").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const categoria = btn.parentElement.id.replace("menu-", "");  
+            const filtro = btn.textContent.trim();
+
+            if (filtrosSelecionados[categoria].includes(filtro)) {
+                filtrosSelecionados[categoria] =
+                    filtrosSelecionados[categoria].filter(f => f !== filtro);
+                btn.classList.remove("filtro-ativo");
+            } else {
+                filtrosSelecionados[categoria].push(filtro);
+                btn.classList.add("filtro-ativo");
+            }
+
+            aplicarFiltros();
+        });
+    });
+});
+
+// -------------- APLICAR FILTROS --------------------
+function aplicarFiltros() {
+    const cards = document.querySelectorAll("#lista-animais .group");
+
+    cards.forEach(card => {
+        const texto = card.innerText.toLowerCase();
+        let mostrar = true;
+
+        for (const categoria in filtrosSelecionados) {
+            const selecionados = filtrosSelecionados[categoria];
+
+            if (selecionados.length > 0) {
+                const ok = selecionados.some(f =>
+                    texto.includes(f.toLowerCase())
+                );
+                if (!ok) {
+                    mostrar = false;
+                    break;
+                }
+            }
+        }
+
+        card.style.display = mostrar ? "block" : "none";
+    });
+    
+    atualizarFiltrosSelecionados();
+}
+
+// -------------- LIMPAR FILTROS --------------------
+document.getElementById("limparFiltros").addEventListener("click", () => {
+    filtrosSelecionados = {
+        especie: [],
+        idade: [],
+        porte: [],
+        sexo: [],
+        saude: [],
+    };
+
+    document.querySelectorAll(".filtro-ativo")
+        .forEach(btn => btn.classList.remove("filtro-ativo"));
+
+    document.querySelectorAll(".dropdown").forEach(d => d.classList.add("hidden"));
+
+    aplicarFiltros();
+});
+
+// -------------- ATUALIZAR FILTROS SELECIONADOS --------------------
+function atualizarFiltrosSelecionados() {
+    const container = document.getElementById('listFiltrosSelecionados');
+    const secaoFiltros = document.getElementById('filtrosSelecionados');
+    
+    let filtrosAtivos = [];
+    
+    for (const categoria in filtrosSelecionados) {
+        filtrosSelecionados[categoria].forEach(filtro => {
+            filtrosAtivos.push(filtro);
+        });
+    }
+    
+    if (filtrosAtivos.length > 0) {
+        secaoFiltros.classList.remove('hidden');
+        container.innerHTML = filtrosAtivos.map(filtro => 
+            `<span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">${filtro}</span>`
+        ).join('');
+    } else {
+        secaoFiltros.classList.add('hidden');
+        container.innerHTML = '';
+    }
+}
+</script>
+<script>
+document.querySelectorAll(".menu-categoria").forEach(botao => {
+    botao.addEventListener("click", () => {
+        const menu = botao.dataset.menu;  
+        const alvo = document.getElementById(`menu-${menu}`);
+
+        // Fecha todos os dropdowns
+        document.querySelectorAll(".dropdown").forEach(d => d.classList.add("hidden"));
+
+        // Abre somente o clicado
+        alvo.classList.toggle("hidden");
+    });
+});
+</script>
+
+
+</body>
+
+</html>

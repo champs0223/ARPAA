@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPAA - Proteção Animal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/config.css">
+    <script src="assets/js/tailwindconfig.js"></script>
+    
+</head>
+
+<body class="bg-gray-400 text-gray-900 antialiased overflow-x-hidden">
+    <!-- NAVBAR -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300 bg-white shadow-md" id="navbar">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20 max-w-7xl mx-auto">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-paw text-white text-xl"></i>
+                    </div>
+                    <span
+                        class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">ARPAA</span>
+                </a>
+
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-teal-600 font-semibold">Início</a>
+                    <a href="adote.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Adote</a>
+                    <a href="doe.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Doe</a>
+                    <a href="sobre.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Sobre</a>
+                    <a href="contato.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Contato</a>
+                </nav>
+
+                <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu"
+                class="md:hidden hidden bg-white rounded-b-xl overflow-hidden transition-all duration-300">
+                <div class="px-4 pt-2 pb-4 space-y-2">
+                    <a href="index.html"
+                        class="block px-4 py-2 text-teal-600 font-semibold hover:bg-gray-100 rounded-lg">Início</a>
+                    <a href="adote.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Adote</a>
+                    <a href="doe.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Doe</a>
+
+                    <a href="sobre.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Sobre</a>
+                    <a href="contato.html"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Contato</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="pt-40 pb-16 bg-gradient-to-r from-teal-600 to-teal-500 text-white relative overflow-hidden" style="padding-top:120px;">
+        <!-- Decorative elements -->
+        <div class="absolute inset-0 opacity-10">
+            <div
+                class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full transform translate-x-32 -translate-y-32">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full transform -translate-x-48 translate-y-48">
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+                        Ajudando a transformar vidas, <span class="text-yellow-300">uma pata de cada vez</span>
+                    </h1>
+                    <p class="text-xl text-gray-100 mb-8 max-w-xl mx-auto md:mx-0">
+                        A ARPAA resgata, cuida e encontra novos lares para animais abandonados, promovendo o amor e
+                        respeito por todos os seres vivos.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <a href="adote.html"
+                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-300 text-gray-700 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <i class="fas fa-heart mr-2"></i> Quero Adotar
+                        </a>
+                        <a href="doe.html"
+                            class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-300 text-gray-700 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <i class="fas fa-hand-holding-heart mr-2"></i> Quero Doar
+                        </a>
+                    </div>
+                </div>
+                <div class="relative hidden md:block">
+                    <div class="relative z-10 transform hover:scale-105 transition-transform duration-500">
+                        <img src="https://images.unsplash.com/photo-1544568100-847a948585b9" alt="Cachorros felizes"
+                            class="rounded-2xl shadow-2xl border-4 border-white/20">
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-yellow-400 rounded-2xl -z-10"></div>
+                    <div class="absolute -top-6 -left-6 w-24 h-24 bg-teal-400 rounded-2xl -z-10"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ESTATÍSTICAS -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="p-6 bg-blue-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="text-4xl font-bold text-teal-600 mb-2" id="resgates">500+</div>
+                    <p class="text-gray-600">Animais Resgatados</p>
+                </div>
+                <div class="p-6 bg-blue-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="text-4xl font-bold text-teal-600 mb-2" id="adocoes">300+</div>
+                    <p class="text-gray-600">Adoções Realizadas</p>
+                </div>
+                <div class="p-6 bg-blue-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="text-4xl font-bold text-teal-600 mb-2" id="castracoes">200+</div>
+                    <p class="text-gray-600">Castrações</p>
+                </div>
+                <div class="p-6 bg-blue-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="text-4xl font-bold text-teal-600 mb-2" id="voluntarios">50+</div>
+                    <p class="text-gray-600">Voluntários</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOBRE -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block px-4 py-1 bg-teal-100 text-teal-800 text-sm font-semibold rounded-full mb-4">Sobre
+                    Nós</span>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Quem é a <span class="text-teal-600">ARPAA</span>?
+                </h2>
+                <div class="w-24 h-1.5 bg-teal-500 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="relative max-w-md">
+                    <div class="relative z-10 rounded-2xl overflow-hidden shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1558788353-f76d92427f16" alt="Animais Resgatados"
+                            class="w-full h-96 object-cover transition-transform duration-500 hover:scale-105">
+                    </div>
+
+                </div>
+
+                <div>
+                    <div class="space-y-6">
+                        <p class="text-lg text-gray-700 leading-relaxed">
+                            A <span class="font-semibold text-teal-600">Associação de Resgate, Proteção e Amparo Animal
+                                (ARPAA)</span> é uma organização sem fins lucrativos que atua há mais de 10 anos no
+                            resgate e proteção de animais em situação de vulnerabilidade.
+                        </p>
+                        <p class="text-lg text-gray-700 leading-relaxed">
+                            Nossa missão é resgatar, reabilitar e encontrar lares amorosos para animais abandonados,
+                            além de promover a conscientização sobre posse responsável e bem-estar animal.
+                        </p>
+                        <div class="grid grid-cols-2 gap-4 mt-8">
+                            <div class="flex items-start space-x-3">
+                                <div
+                                    class="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Missão</h4>
+                                    <p class="text-sm text-gray-600">Promover o bem-estar animal através de resgates e
+                                        adoções responsáveis.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div
+                                    class="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Visão</h4>
+                                    <p class="text-sm text-gray-600">Um mundo onde todos os animais vivam com dignidade
+                                        e amor.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMO POSSO AJUDAR -->
+    <section class="py-20 bg-gradient-to-br from-yellow-300 to-yellow-400 relative overflow-hidden">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block px-4 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded-full mb-4">Como
+                    Ajudar</span>
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Faça a Diferença</h2>
+                <div class="w-24 h-1.5 bg-white mx-auto rounded-full mb-6"></div>
+                <p class="text-lg text-gray-700 max-w-2xl mx-auto">Sua ajuda é essencial para continuarmos nosso
+                    trabalho. Conheça as formas de contribuir:</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Card Doação -->
+                <div
+                    class="group bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20">
+                    <div
+                        class="w-20 h-20 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-200 transition-colors">
+                        <i class="fas fa-hand-holding-heart text-3xl text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Doe</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Sua contribuição ajuda a fornecer ração, medicamentos
+                        e cuidados veterinários para nossos animais resgatados.</p>
+                    <a href="doe.html"
+                        class="inline-flex items-center text-yellow-700 font-semibold group-hover:text-yellow-800 transition-colors">
+                        Saiba como doar
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+
+                <!-- Card Adoção -->
+                <div
+                    class="group bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20">
+                    <div
+                        class="w-20 h-20 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-200 transition-colors">
+                        <i class="fas fa-paw text-3xl text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Adote</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Dê um lar cheio de amor para um de nossos animais.
+                        Eles estão esperando por uma segunda chance de ser feliz.</p>
+                    <a href="adote.html"
+                        class="inline-flex items-center text-yellow-700 font-semibold group-hover:text-yellow-800 transition-colors">
+                        Ver animais
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+
+                <!-- Card Voluntariado -->
+                <div
+                    class="group bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20">
+                    <div
+                        class="w-20 h-20 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-200 transition-colors">
+                        <i class="fas fa-hands-helping text-3xl text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Seja Voluntário</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Junte-se à nossa equipe e participe ativamente dos
+                        resgates, cuidados diários e eventos especiais.</p>
+                    <a href="voluntarios.html"
+                        class="inline-flex items-center text-yellow-700 font-semibold group-hover:text-yellow-800 transition-colors">
+                        Como participar
+                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ANIMAIS EM DESTAQUE -->
+    <section id="adotar" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block px-4 py-1 bg-teal-100 text-teal-800 text-sm font-semibold rounded-full mb-4">Nossos
+                    Amigos</span>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Animais para Adoção</h2>
+                <div class="w-24 h-1.5 bg-teal-500 mx-auto rounded-full mb-6"></div>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Conheça alguns dos nossos peludinhos que estão à
+                    procura de um lar cheio de amor e carinho.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d" alt="Luna"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-4 right-4">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-3 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Lua</h3>
+                            <span class="text-sm text-gray-500">Fêmea • 3 anos</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Médio</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinada</span>
+                            <span
+                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrada</span>
+                        </div>
+                        <p class="text-gray-600 mb-6">Lua é uma cadela dócil e brincalhona. Adora passeios e se dá bem
+                            com crianças e outros animais.</p>
+                        <div class="flex justify-between items-center">
+                            <a href="adote-lua.html" class="btn-primary text-sm px-6 py-2">
+                                <i class="fas fa-paw mr-2"></i> Conhecer Lua
+                            </a>
+                            <div class="flex space-x-2">
+                                <button
+                                    class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-teal-600 transition-colors">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1" alt="Tito"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-4 right-4">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-3 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Tito</h3>
+                            <span class="text-sm text-gray-500">Macho • 1 ano</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Pequeno</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
+                            <span
+                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>
+                        </div>
+                        <p class="text-gray-600 mb-6">Tito é um gatinho brincalhão e carinhoso. Adora um colo e brincar
+                            com bolinhas de papel.</p>
+                        <div class="flex justify-between items-center">
+                            <a href="adote-tito.html" class="btn-primary text-sm px-6 py-2">
+                                <i class="fas fa-paw mr-2"></i> Conhecer Tito
+                            </a>
+                            <div class="flex space-x-2">
+                                <button
+                                    class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-teal-600 transition-colors">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <div class="relative overflow-hidden h-64">
+                        <img src="https://images.unsplash.com/photo-1558788353-f76d92427f16" alt="Mari"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute top-4 right-4">
+                            <span
+                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-3 py-1 rounded-full">Disponível</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">Mari</h3>
+                            <span class="text-sm text-gray-500">Fêmea • 2 anos</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
+                                Pequeno</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinada</span>
+                            <span
+                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrada</span>
+                        </div>
+                        <p class="text-gray-600 mb-6">Mari é uma cachorrinha tranquila e carinhosa. Adora um carinho na
+                            barriga e dormir no colo.</p>
+                        <div class="flex justify-between items-center">
+                            <a href="adote-mari.html" class="btn-primary text-sm px-6 py-2">
+                                <i class="fas fa-paw mr-2"></i> Conhecer Mari
+                            </a>
+                            <div class="flex space-x-2">
+                                <button
+                                    class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-teal-600 transition-colors">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="adote.html"
+                    class="inline-flex items-center px-8 py-3 border border-teal-600 text-teal-600 font-semibold rounded-lg hover:bg-teal-600 hover:text-white transition-colors">
+                    Ver todos os animais
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRÓXIMOS EVENTOS -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-block px-4 py-1 bg-teal-100 text-teal-800 text-sm font-semibold rounded-full mb-4">Próximos eventos</span>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Participe da nossa programação</h2>
+                <div class="w-24 h-1.5 bg-teal-500 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Evento 1 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">Feira de Adoção</h3>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">Presencial</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Sábado, 15 de março • 10h às 16h</p>
+                    <p class="text-gray-600 mb-4 flex-1">Venha conhecer nossos cães e gatos disponíveis para adoção responsável, tirar dúvidas e apoiar a causa.</p>
+                    <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-2 text-teal-500"></i>Praça Central, Aparecida</p>
+                </div>
+
+                <!-- Evento 2 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">Mutirão de Castração</h3>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Vagas limitadas</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Domingo, 30 de março • a partir das 8h</p>
+                    <p class="text-gray-600 mb-4 flex-1">Atendimento a animais de famílias de baixa renda, com agendamento prévio.</p>
+                    <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-2 text-teal-500"></i>Clínica parceira ARPAA</p>
+                </div>
+
+                <!-- Evento 3 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">Palestra Educação Animal</h3>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Online</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">Quinta, 10 de abril • 19h30</p>
+                    <p class="text-gray-600 mb-4 flex-1">Conversamos sobre guarda responsável, bem-estar animal e como você pode ajudar o trabalho da ARPAA.</p>
+                    <p class="text-sm text-gray-500"><i class="fas fa-video mr-2 text-teal-500"></i>Transmissão ao vivo • link enviado por e-mail</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 bg-teal-600 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl text-white font-bold mb-6">Pronto para fazer a diferença na vida de um
+                animal?</h2>
+            <p class="text-xl text-teal-100 mb-8">Junte-se a nós nessa causa e ajude a transformar vidas.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="doe.html" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-300 text-gray-700 font-semibold rounded-lg shadow-lg hover:shadow-xl ">
+                    <i class="fas fa-donate mr-2"></i> Fazer Doação
+                </a>
+                <a href="contato.html"
+                    class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center justify-center border border-white/20">
+                    <i class="fas fa-envelope mr-2"></i> Entrar em Contato
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+
+                <!-- Coluna 1: Sobre -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-paw text-white text-xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-white">ARPAA</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">Associação de Resgate, Proteção e Amparo Animal. Transformando
+                        vidas, uma pata de cada vez.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Coluna 2: Links Rápidos -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Início</a>
+                        </li>
+                        <li><a href="sobre.html" class="text-gray-400 hover:text-white transition-colors">Sobre Nós</a>
+                        </li>
+                        <li><a href="animais.html" class="text-gray-400 hover:text-white transition-colors">Adoção</a>
+                        </li>
+                        <li><a href="doe.html" class="text-gray-400 hover:text-white transition-colors">Doações</a></li>
+                        <li><a href="contato.html" class="text-gray-400 hover:text-white transition-colors">Contato</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 3: Horário de Funcionamento -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Horário de Atendimento</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Segunda a Sexta</span>
+                            <span class="text-white">09:00 - 18:00</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Sábado</span>
+                            <span class="text-white">09:00 - 14:00</span>
+                        </li>
+                        <li class="flex justify-between">
+                            <span class="text-gray-400">Domingo</span>
+                            <span class="text-white">Fechado</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Coluna 4: Contato -->
+                <div>
+                    <h4 class="text-white font-semibold text-lg mb-4">Contato</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-teal-400"></i>
+                            <span>Rua dos Animais, 123<br>Bairro Feliz<br>Cidade - Estado, CEP 12345-678</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-3 text-teal-400"></i>
+                            <a href="tel:+5500000000000" class="hover:text-white transition-colors">(00) 00000-0000</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-3 text-teal-400"></i>
+                            <a href="mailto:contato@arpaa.org"
+                                class="hover:text-white transition-colors">contato@arpaa.org</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-sm text-gray-500">
+                    <p class="text-center md:text-left">&copy; 2025 ARPAA - Associação de Resgate, Proteção e Amparo Animal. Todos os direitos reservados.</p>
+                    <div class="flex justify-center space-x-4 text-lg">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botão Voltar ao Topo -->
+    <button id="back-to-top"
+        class="fixed bottom-8 right-8 bg-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-teal-700 transition-all duration-300 opacity-0 invisible">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>

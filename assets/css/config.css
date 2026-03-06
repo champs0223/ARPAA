@@ -1,0 +1,103 @@
+/* Arquivo de estilos principal do projeto ARPAA */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+}
+.btn-primary {
+    background-color: #14b8a6;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(20,184,166,0.15);
+    transition: all 0.3s;
+}
+.btn-primary:hover {
+    background-color: #0d9488;
+    transform: translateY(-4px);
+}
+.btn-secondary {
+    background-color: #fbbf24;
+    color: #222;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(251,191,36,0.15);
+    transition: all 0.3s;
+}
+.btn-secondary:hover {
+    background-color: #fde68a;
+    transform: translateY(-4px);
+}
+.nav-link {
+    position: relative;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #2dd4bf;
+    transition: width 0.3s;
+}
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.filtro {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid #d1d5db; /* cinza */
+    background: #f3f4f6;        /* cinza claro */
+    color: #4b5563;             /* cinza escuro */
+    transition: 0.2s;
+}
+
+.filtro:hover {
+    background: #e5e7eb;
+}
+
+.filtro.ativo {
+    border-color: #0d9488;  /* teal-600 */
+    background: #ccfbf1;    /* teal-100 */
+    color: #0f766e;
+}
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    z-index: 20;
+}
+
+.filtro {
+    padding: 8px 16px;
+    border-radius: 9999px;
+    border: 1px solid #d1d5db;
+    background: white;
+    transition: 0.2s;
+}
+
+.filtro:hover {
+    background: #0d9488;
+    color: white;
+}
+
+.filtro-ativo {
+    background: #0d9488 !important;
+    color: white !important;
+    border-color: #0d9488 !important;
+}
+
