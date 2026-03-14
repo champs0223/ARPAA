@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gerenciar Animais - ARPAA</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+
+<body class="bg-gray-100">
+
+<!-- PROTEÇÃO DE LOGIN -->
+<script>
+if(localStorage.getItem("adminLogado") !== "true"){
+window.location.href = "index.html"
+}
+</script>
+
+
+<div class="flex min-h-screen">
+
+<!-- MENU LATERAL -->
+<aside class="w-64 bg-teal-700 text-white flex flex-col">
+
+<div class="p-6 border-b border-teal-600">
+
+<h1 class="text-2xl font-bold flex items-center gap-2">
+<i class="fas fa-paw"></i>
+ARPAA
+</h1>
+
+<p class="text-sm text-teal-200">
+Painel Administrativo
+</p>
+
+</div>
+
+
+<nav class="flex-1 p-6">
+
+<ul class="space-y-4">
+
+<li>
+<a href="dashboard.html" class="flex items-center gap-3 hover:text-yellow-300">
+<i class="fas fa-chart-line"></i>
+Dashboard
+</a>
+</li>
+
+<li>
+<a href="animais.html" class="flex items-center gap-3 text-yellow-300">
+<i class="fas fa-dog"></i>
+Animais
+</a>
+</li>
+
+<li>
+<a href="adocoes.html" class="flex items-center gap-3 hover:text-yellow-300">
+<i class="fas fa-heart"></i>
+Adoções
+</a>
+</li>
+
+<li>
+<a href="doacoes.html" class="flex items-center gap-3 hover:text-yellow-300">
+<i class="fas fa-hand-holding-heart"></i>
+Doações
+</a>
+</li>
+
+<li>
+<a href="eventos.html" class="flex items-center gap-3 hover:text-yellow-300">
+<i class="fas fa-calendar"></i>
+Eventos
+</a>
+</li>
+
+</ul>
+
+</nav>
+
+
+<div class="p-6 border-t border-teal-600">
+
+<button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+<i class="fas fa-sign-out-alt"></i>
+Sair
+</button>
+
+</div>
+
+</aside>
+
+
+
+<!-- CONTEÚDO -->
+<main class="flex-1 p-10">
+
+
+<h1 class="text-3xl font-bold mb-6">
+Cadastrar Animal
+</h1>
+
+
+<!-- FORMULÁRIO -->
+<div class="bg-white p-6 rounded-xl shadow mb-10">
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<input id="nome" placeholder="Nome do animal"
+class="border p-3 rounded">
+
+<input id="idade" placeholder="Idade"
+class="border p-3 rounded">
+
+<select id="porte" class="border p-3 rounded">
+
+<option value="">Porte</option>
+<option>Pequeno</option>
+<option>Médio</option>
+<option>Grande</option>
+
+</select>
+
+<select id="sexo" class="border p-3 rounded">
+
+<option value="">Sexo</option>
+<option>Macho</option>
+<option>Fêmea</option>
+
+</select>
+
+<input id="foto" placeholder="URL da foto"
+class="border p-3 rounded md:col-span-2">
+
+<textarea id="descricao"
+placeholder="Descrição do animal"
+class="border p-3 rounded md:col-span-2"></textarea>
+
+</div>
+
+<button onclick="cadastrarAnimal()"
+class="mt-4 bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
+
+Salvar animal
+
+</button>
+
+</div>
+
+
+
+<h2 class="text-2xl font-semibold mb-4">
+Animais cadastrados
+</h2>
+
+
+<div id="listaAnimais" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+</div>
+
+
+</main>
+
+</div>
+
+
+
+<script>
+
+function logout(){
+
+localStorage.removeItem("adminLogado")
+window.location.href="index.html"
+
+}
+
+
+
+function cadastrarAnimal(){
+
+let nome = document.getElementById("nome").value
+let idade = document.getElementById("idade").value
+let porte = document.getElementById("porte").value
+let sexo = document.getElementById("sexo").value
+let foto = document.getElementById("foto").value
+let descricao = document.getElementById("descricao").value
+
+
+let animal = {
+nome,
+idade,
+porte,
+sexo,
+foto,
+descricao,
+status:"Disponível"
+}
+
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+animais.push(animal)
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+mostrarAnimais()
+
+limparFormulario()
+
+}
+
+
+
+function mostrarAnimais(){
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+let lista = document.getElementById("listaAnimais")
+
+lista.innerHTML = ""
+
+
+animais.forEach((animal,index)=>{
+
+lista.innerHTML += `
+
+<div class="bg-white rounded-xl shadow p-4">
+
+<img src="${animal.foto}"
+class="w-full h-40 object-cover rounded mb-3">
+
+<h3 class="text-lg font-bold">${animal.nome}</h3>
+
+<p class="text-sm text-gray-600">
+${animal.idade} • Porte ${animal.porte}
+</p>
+
+<p class="text-sm text-gray-600 mb-2">
+${animal.descricao}
+</p>
+
+<button onclick="excluirAnimal(${index})"
+class="bg-red-500 text-white px-3 py-1 rounded">
+
+Excluir
+
+</button>
+
+</div>
+
+`
+
+})
+
+}
+
+
+
+function excluirAnimal(index){
+
+let animais = JSON.parse(localStorage.getItem("animais"))
+
+animais.splice(index,1)
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+mostrarAnimais()
+
+}
+
+
+
+function limparFormulario(){
+
+document.getElementById("nome").value=""
+document.getElementById("idade").value=""
+document.getElementById("porte").value=""
+document.getElementById("sexo").value=""
+document.getElementById("foto").value=""
+document.getElementById("descricao").value=""
+
+}
+
+
+
+mostrarAnimais()
+
+</script>
+
+</body>
+</html>
