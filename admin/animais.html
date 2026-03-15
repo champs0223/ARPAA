@@ -107,65 +107,317 @@ Sair
 
 
 <h1 class="text-3xl font-bold mb-6">
-Cadastrar Animal
+Gerenciar Animais
 </h1>
 
 
 <!-- FORMULÁRIO -->
-<div class="bg-white p-6 rounded-xl shadow mb-10">
+<form onsubmit="cadastrarAnimal(); return false;"
+class="space-y-8 bg-white p-6 rounded-xl shadow mb-10">
+
+<!-- DADOS DO ANIMAL -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-paw text-teal-600"></i>
+Dados do Animal
+</h2>
 
 <div class="grid md:grid-cols-2 gap-4">
 
-<input id="nome" placeholder="Nome do animal"
-class="border p-3 rounded">
+<input id="nome" placeholder="Nome do animal" class="border p-3 rounded">
 
-<input id="idade" placeholder="Idade"
-class="border p-3 rounded">
+<select id="especie" class="border p-3 rounded">
+<option value="">Espécie</option>
+<option>Cachorro</option>
+<option>Gato</option>
+<option>Outro</option>
+</select>
+
+<input id="raca" placeholder="Raça" class="border p-3 rounded">
+
+<input id="idade" placeholder="Idade" class="border p-3 rounded">
+
+<select id="sexo" class="border p-3 rounded">
+<option value="">Sexo</option>
+<option>Macho</option>
+<option>Fêmea</option>
+</select>
 
 <select id="porte" class="border p-3 rounded">
-
 <option value="">Porte</option>
 <option>Pequeno</option>
 <option>Médio</option>
 <option>Grande</option>
-
 </select>
 
-<select id="sexo" class="border p-3 rounded">
-
-<option value="">Sexo</option>
-<option>Macho</option>
-<option>Fêmea</option>
-
+<select id="status" class="border p-3 rounded">
+<option value="">Status</option>
+<option>Disponível</option>
+<option>Adotado</option>
+<option>Em tratamento</option>
 </select>
 
-<input id="foto" placeholder="URL da foto"
-class="border p-3 rounded md:col-span-2">
+</div>
+
+</div>
+
+
+<!-- SAÚDE -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-heartbeat text-red-500"></i>
+Saúde
+</h2>
+
+<div class="grid md:grid-cols-3 gap-4">
+
+<select id="vacinado" class="border p-3 rounded">
+<option value="">Vacinado?</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="castrado" class="border p-3 rounded">
+<option value="">Castrado?</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="vermifugado" class="border p-3 rounded">
+<option value="">Vermifugado?</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+</div>
+
+</div>
+
+
+<!-- RESGATE -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-map-marker-alt text-yellow-500"></i>
+Informações do Resgate
+</h2>
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<input type="date" id="dataResgate" class="border p-3 rounded">
+
+<input id="localResgate" placeholder="Local do resgate" class="border p-3 rounded">
+
+</div>
+
+</div>
+
+
+<!-- COMPORTAMENTO -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-brain text-purple-500"></i>
+Comportamento
+</h2>
+
+<div class="grid md:grid-cols-3 gap-4">
+
+<select id="temperamento" class="border p-3 rounded">
+<option value="">Temperamento</option>
+<option>Dócil</option>
+<option>Brincalhão</option>
+<option>Tímido</option>
+<option>Agitado</option>
+</select>
+
+<select id="criancas" class="border p-3 rounded">
+<option value="">Convive com crianças?</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="animais" class="border p-3 rounded">
+<option value="">Convive com outros animais?</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+</div>
+
+</div>
+
+
+<!-- OBSERVAÇÕES -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-file-alt text-gray-500"></i>
+Observações
+</h2>
 
 <textarea id="descricao"
 placeholder="Descrição do animal"
-class="border p-3 rounded md:col-span-2"></textarea>
+class="border p-3 rounded w-full h-32"></textarea>
 
 </div>
 
-<button onclick="cadastrarAnimal()"
-class="mt-4 bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
 
+<!-- FOTO -->
+<div>
+
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-camera text-teal-600"></i>
+Foto do Animal
+</h2>
+
+<input type="file"
+id="foto"
+accept="image/*"
+onchange="previewFoto(event)"
+class="border p-3 rounded w-full">
+
+<img id="preview"
+class="mt-4 w-40 rounded hidden border">
+
+</div>
+
+<button type="submit"
+class="bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
 Salvar animal
-
 </button>
 
-</div>
-
+</form>
 
 
 <h2 class="text-2xl font-semibold mb-4">
 Animais cadastrados
 </h2>
 
+<div class="grid md:grid-cols-4 gap-4 mb-6">
+
+<div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+
+<i class="fas fa-paw text-gray-500 text-xl"></i>
+
+<div>
+<p class="text-gray-500 text-sm">Total de animais</p>
+<p id="totalAnimais" class="text-2xl font-bold text-gray-800">0</p>
+</div>
+
+</div>
+
+
+<div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+
+<i class="fas fa-heart text-green-500 text-xl"></i>
+
+<div>
+<p class="text-gray-500 text-sm">Disponíveis</p>
+<p id="totalDisponiveis" class="text-2xl font-bold text-green-600">0</p>
+</div>
+
+</div>
+
+
+<div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+
+<i class="fas fa-heart text-red-500 text-xl"></i>
+
+<div>
+<p class="text-gray-500 text-sm">Adotados</p>
+<p id="totalAdotados" class="text-2xl font-bold text-red-600">0</p>
+</div>
+
+</div>
+
+
+<div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+
+<i class="fas fa-stethoscope text-yellow-500 text-xl"></i>
+
+<div>
+<p class="text-gray-500 text-sm">Em tratamento</p>
+<p id="totalTratamento" class="text-2xl font-bold text-yellow-600">0</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow mb-6 grid md:grid-cols-5 gap-4">
+
+<div class="relative">
+
+<i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+
+<input
+id="filtroNome"
+placeholder="Buscar animal"
+class="border p-2 pl-10 rounded w-full"
+oninput="filtrarAnimais()">
+
+</div>
+
+<select
+id="filtroEspecie"
+class="border p-2 rounded"
+onchange="filtrarAnimais()">
+
+<option value="">Todas espécies</option>
+<option>Cachorro</option>
+<option>Gato</option>
+<option>Outro</option>
+
+</select>
+
+<select
+id="filtroPorte"
+class="border p-2 rounded"
+onchange="filtrarAnimais()">
+
+<option value="">Todos portes</option>
+<option>Pequeno</option>
+<option>Médio</option>
+<option>Grande</option>
+
+</select>
+
+<select
+id="filtroStatus"
+class="border p-2 rounded"
+onchange="filtrarAnimais()">
+
+<option value="">Todos status</option>
+<option>Disponível</option>
+<option>Adotado</option>
+</select>
+
+<select
+id="ordenacao"
+class="border p-2 rounded"
+onchange="filtrarAnimais()">
+
+<option value="az">Nome A-Z</option>
+<option value="za">Nome Z-A</option>
+<option value="recentes">Mais recentes</option>
+<option value="antigos">Mais antigos</option>
+
+</select>
+
+<button
+onclick="limparFiltros()"
+class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">
+Limpar filtros
+</button>
+
+</div>
+
+<p id="contadorAnimais" class="text-gray-600 mb-4 font-medium"></p>
 
 <div id="listaAnimais" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
 </div>
 
 
@@ -173,9 +425,178 @@ Animais cadastrados
 
 </div>
 
+<!-- MODAL EDITAR ANIMAL -->
+<div id="modalEditar"
+class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
 
+<div class="bg-white p-6 rounded-xl shadow w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+<h2 class="text-2xl font-bold mb-6">
+Editar Animal
+</h2>
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<input id="editNome" placeholder="Nome" class="border p-3 rounded">
+
+<select id="editEspecie" class="border p-3 rounded">
+<option value="">Espécie</option>
+<option>Cachorro</option>
+<option>Gato</option>
+<option>Outro</option>
+</select>
+
+<input id="editRaca" placeholder="Raça" class="border p-3 rounded">
+
+<input id="editIdade" placeholder="Idade" class="border p-3 rounded">
+
+<select id="editSexo" class="border p-3 rounded">
+<option value="">Sexo</option>
+<option>Macho</option>
+<option>Fêmea</option>
+</select>
+
+<select id="editPorte" class="border p-3 rounded">
+<option value="">Porte</option>
+<option>Pequeno</option>
+<option>Médio</option>
+<option>Grande</option>
+</select>
+
+</div>
+
+<h3 class="font-semibold mt-6 mb-3">Saúde</h3>
+
+<div class="grid md:grid-cols-3 gap-4">
+
+<select id="editVacinado" class="border p-3 rounded">
+<option value="">Vacinado</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="editCastrado" class="border p-3 rounded">
+<option value="">Castrado</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="editVermifugado" class="border p-3 rounded">
+<option value="">Vermifugado</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+</div>
+
+<h3 class="font-semibold mt-6 mb-3">Resgate</h3>
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<input type="date" id="editDataResgate" class="border p-3 rounded">
+
+<input id="editLocalResgate" placeholder="Local do resgate" class="border p-3 rounded">
+
+</div>
+
+<h3 class="font-semibold mt-6 mb-3">Comportamento</h3>
+
+<div class="grid md:grid-cols-3 gap-4">
+
+<select id="editTemperamento" class="border p-3 rounded">
+<option value="">Temperamento</option>
+<option>Dócil</option>
+<option>Brincalhão</option>
+<option>Tímido</option>
+<option>Agitado</option>
+</select>
+
+<select id="editCriancas" class="border p-3 rounded">
+<option value="">Convive com crianças</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+<select id="editAnimais" class="border p-3 rounded">
+<option value="">Convive com animais</option>
+<option>Sim</option>
+<option>Não</option>
+</select>
+
+</div>
+
+<h3 class="font-semibold mt-6 mb-3">Descrição</h3>
+
+<textarea id="editDescricao"
+class="border p-3 rounded w-full h-24"
+placeholder="Descrição do animal"></textarea>
+
+
+<h3 class="font-semibold mt-6 mb-3">Foto do Animal</h3>
+
+<img id="editPreview"
+class="w-40 h-40 object-cover rounded mb-3 hidden">
+
+<input type="file"
+id="editFoto"
+accept="image/*"
+onchange="previewFotoEditar(event)"
+class="border p-3 rounded w-full">
+
+
+<div class="flex justify-end gap-3 mt-6">
+
+<button onclick="fecharEditar()"
+class="bg-gray-400 text-white px-5 py-2 rounded">
+Cancelar
+</button>
+
+<button onclick="salvarEdicao()"
+class="bg-teal-600 text-white px-5 py-2 rounded">
+Salvar Alterações
+</button>
+
+</div>
+
+</div>
+</div>
+
+<!-- MODAL DETALHES DO ANIMAL -->
+<div id="modalDetalhes"
+class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+
+<div class="bg-white p-6 rounded-xl shadow w-full max-w-lg max-h-[90vh] overflow-y-auto">
+
+<img id="detFoto"
+class="w-full h-56 object-cover rounded mb-4">
+
+<h2 id="detNome" class="text-2xl font-bold mb-2"></h2>
+
+<p id="detInfo" class="text-gray-600 mb-2"></p>
+
+<p id="detSaude" class="text-gray-600 mb-2"></p>
+
+<p id="detResgate" class="text-gray-600 mb-2"></p>
+
+<p id="detComportamento" class="text-gray-600 mb-2"></p>
+
+<p id="detDescricao" class="text-gray-700"></p>
+
+<div class="flex justify-end mt-4">
+
+<button onclick="fecharDetalhes()"
+class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
+Fechar
+</button>
+
+</div>
+
+</div>
+</div>
 
 <script>
+
+let animalEditando = null
 
 function logout(){
 
@@ -184,32 +605,102 @@ window.location.href="index.html"
 
 }
 
+function previewFoto(event){
+
+let arquivo = event.target.files[0]
+
+if(!arquivo) return
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let preview = document.getElementById("preview")
+
+preview.src = e.target.result
+preview.classList.remove("hidden")
+
+}
+
+reader.readAsDataURL(arquivo)
+
+}
 
 
 function cadastrarAnimal(){
 
 let nome = document.getElementById("nome").value
+let especie = document.getElementById("especie").value
+let raca = document.getElementById("raca").value
 let idade = document.getElementById("idade").value
-let porte = document.getElementById("porte").value
 let sexo = document.getElementById("sexo").value
-let foto = document.getElementById("foto").value
+let porte = document.getElementById("porte").value
+let status = document.getElementById("status").value
+
+let vacinado = document.getElementById("vacinado").value
+let castrado = document.getElementById("castrado").value
+let vermifugado = document.getElementById("vermifugado").value
+
+let dataResgate = document.getElementById("dataResgate").value
+let localResgate = document.getElementById("localResgate").value
+
+let temperamento = document.getElementById("temperamento").value
+let criancas = document.getElementById("criancas").value
+let conviveAnimais = document.getElementById("animais").value
+
 let descricao = document.getElementById("descricao").value
 
+let arquivo = document.getElementById("foto").files[0]
+
+if(!arquivo){
+alert("Selecione uma foto do animal")
+return
+}
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let fotoBase64 = e.target.result
 
 let animal = {
 nome,
+especie,
+raca,
 idade,
-porte,
 sexo,
-foto,
-descricao,
-status:"Disponível"
-}
+porte,
+status,
 
+dataCadastro: Date.now(),
+
+vacinado,
+castrado,
+vermifugado,
+
+dataResgate,
+localResgate,
+
+temperamento,
+criancas,
+animais: conviveAnimais,
+
+foto: fotoBase64,
+descricao
+}
 
 let animais = JSON.parse(localStorage.getItem("animais")) || []
 
+if(animalEditando !== null){
+
+animais[animalEditando] = animal
+animalEditando = null
+
+}else{
+
 animais.push(animal)
+
+}
 
 localStorage.setItem("animais", JSON.stringify(animais))
 
@@ -217,13 +708,47 @@ mostrarAnimais()
 
 limparFormulario()
 
+console.log("Animal salvo com sucesso")
+
 }
 
+reader.readAsDataURL(arquivo)
 
+}
+
+function badgeStatus(status){
+
+if(status === "Disponível"){
+return '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Disponível</span>'
+}
+
+if(status === "Adotado"){
+return '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-semibold">Adotado</span>'
+}
+
+if(status === "Em tratamento"){
+return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Em tratamento</span>'
+}
+
+return ""
+
+}
 
 function mostrarAnimais(){
 
 let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+atualizarEstatisticas()
+
+animais.sort((a, b) => a.nome.localeCompare(b.nome))
+
+let contador = document.getElementById("contadorAnimais")
+
+if(animais.length === 1){
+contador.innerText = "1 animal cadastrado"
+}else{
+contador.innerText = animais.length + " animais cadastrados"
+}
 
 let lista = document.getElementById("listaAnimais")
 
@@ -234,27 +759,145 @@ animais.forEach((animal,index)=>{
 
 lista.innerHTML += `
 
-<div class="bg-white rounded-xl shadow p-4">
+<div onclick='verAnimal(${JSON.stringify(animal)})'
+class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
 <img src="${animal.foto}"
-class="w-full h-40 object-cover rounded mb-3">
+class="w-full h-44 object-cover">
 
+<div class="p-4">
+
+<div class="flex justify-between items-center mb-1">
 <h3 class="text-lg font-bold">${animal.nome}</h3>
+${badgeStatus(animal.status)}
+</div>
 
-<p class="text-sm text-gray-600">
-${animal.idade} • Porte ${animal.porte}
+<p class="text-sm text-gray-500 mb-2">
+${animal.especie || ""} • ${animal.idade} • Porte ${animal.porte}
 </p>
 
-<p class="text-sm text-gray-600 mb-2">
-${animal.descricao}
+<p class="text-sm text-gray-600 mb-3">
+${animal.descricao || ""}
 </p>
 
-<button onclick="excluirAnimal(${index})"
-class="bg-red-500 text-white px-3 py-1 rounded">
+<div class="flex gap-2">
 
-Excluir
-
+<button onclick="event.stopPropagation(); abrirEditar(${index})"
+class="bg-yellow-500 text-white px-3 py-1 rounded">
+Editar
 </button>
+
+<button onclick="event.stopPropagation(); excluirAnimal(${index})"
+class="bg-red-500 text-white px-3 py-1 rounded">
+Excluir
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`
+})
+
+}
+
+function filtrarAnimais(){
+
+let nomeFiltro = document.getElementById("filtroNome").value.toLowerCase()
+let especieFiltro = document.getElementById("filtroEspecie").value
+let porteFiltro = document.getElementById("filtroPorte").value
+let statusFiltro = document.getElementById("filtroStatus").value
+let ordenacao = document.getElementById("ordenacao").value
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+animais.sort((a, b) => a.nome.localeCompare(b.nome))
+
+let animaisFiltrados = animais.filter(animal => {
+
+return (
+animal.nome.toLowerCase().includes(nomeFiltro) &&
+(especieFiltro === "" || animal.especie === especieFiltro) &&
+(porteFiltro === "" || animal.porte === porteFiltro) &&
+(statusFiltro === "" || animal.status === statusFiltro)
+)
+
+})
+if(ordenacao === "az"){
+animaisFiltrados.sort((a,b)=>a.nome.localeCompare(b.nome))
+}
+
+if(ordenacao === "za"){
+animaisFiltrados.sort((a,b)=>b.nome.localeCompare(a.nome))
+}
+
+if(ordenacao === "recentes"){
+animaisFiltrados.sort((a,b)=>b.dataCadastro - a.dataCadastro)
+}
+
+if(ordenacao === "antigos"){
+animaisFiltrados.sort((a,b)=>a.dataCadastro - b.dataCadastro)
+}
+
+let contador = document.getElementById("contadorAnimais")
+
+if(animaisFiltrados.length === 1){
+contador.innerText = "1 animal encontrado"
+}else{
+contador.innerText = animaisFiltrados.length + " animais encontrados"
+}
+
+mostrarAnimaisFiltrados(animaisFiltrados)
+
+}
+
+function mostrarAnimaisFiltrados(animaisFiltrados){
+
+let lista = document.getElementById("listaAnimais")
+lista.innerHTML = ""
+
+animaisFiltrados.forEach((animal,index)=>{
+
+lista.innerHTML += `
+
+<div onclick="verAnimal(${index})"
+class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
+
+<img src="${animal.foto}"
+class="w-full h-44 object-cover">
+
+<div class="p-4">
+
+<div class="flex justify-between items-center mb-1">
+<h3 class="text-lg font-bold">${animal.nome}</h3>
+${badgeStatus(animal.status)}
+</div>
+
+<p class="text-sm text-gray-500 mb-2">
+${animal.especie || ""} • ${animal.idade} • Porte ${animal.porte}
+</p>
+
+<p class="text-sm text-gray-600 mb-3">
+${animal.descricao || ""}
+</p>
+
+<div class="flex gap-2">
+
+<button onclick="event.stopPropagation(); abrirEditar(${index})"
+class="bg-yellow-500 text-white px-3 py-1 rounded">
+Editar
+</button>
+
+<button onclick="event.stopPropagation(); excluirAnimal(${index})"
+class="bg-red-500 text-white px-3 py-1 rounded">
+Excluir
+</button>
+
+</div>
+
+</div>
 
 </div>
 
@@ -264,7 +907,55 @@ Excluir
 
 }
 
+function limparFiltros(){
 
+document.getElementById("filtroNome").value = ""
+document.getElementById("filtroEspecie").value = ""
+document.getElementById("filtroPorte").value = ""
+document.getElementById("filtroStatus").value = ""
+
+mostrarAnimais()
+
+}
+
+function abrirEditar(index){
+
+let animais = JSON.parse(localStorage.getItem("animais"))
+
+let animal = animais[index]
+
+animalEditando = index
+
+document.getElementById("editNome").value = animal.nome || ""
+document.getElementById("editEspecie").value = animal.especie || ""
+document.getElementById("editRaca").value = animal.raca || ""
+document.getElementById("editIdade").value = animal.idade || ""
+document.getElementById("editSexo").value = animal.sexo || ""
+document.getElementById("editPorte").value = animal.porte || ""
+
+document.getElementById("editVacinado").value = animal.vacinado || ""
+document.getElementById("editCastrado").value = animal.castrado || ""
+document.getElementById("editVermifugado").value = animal.vermifugado || ""
+
+document.getElementById("editDataResgate").value = animal.dataResgate || ""
+document.getElementById("editLocalResgate").value = animal.localResgate || ""
+
+document.getElementById("editTemperamento").value = animal.temperamento || ""
+document.getElementById("editCriancas").value = animal.criancas || ""
+document.getElementById("editAnimais").value = animal.animais || ""
+
+document.getElementById("editDescricao").value = animal.descricao || ""
+
+let preview = document.getElementById("editPreview")
+
+if(animal.foto){
+preview.src = animal.foto
+preview.classList.remove("hidden")
+}
+
+document.getElementById("modalEditar").classList.remove("hidden")
+
+}
 
 function excluirAnimal(index){
 
@@ -278,22 +969,182 @@ mostrarAnimais()
 
 }
 
-
-
 function limparFormulario(){
 
 document.getElementById("nome").value=""
+document.getElementById("especie").value=""
+document.getElementById("raca").value=""
 document.getElementById("idade").value=""
-document.getElementById("porte").value=""
 document.getElementById("sexo").value=""
-document.getElementById("foto").value=""
+document.getElementById("porte").value=""
+
+document.getElementById("vacinado").value=""
+document.getElementById("castrado").value=""
+document.getElementById("vermifugado").value=""
+
+document.getElementById("dataResgate").value=""
+document.getElementById("localResgate").value=""
+
+document.getElementById("temperamento").value=""
+document.getElementById("criancas").value=""
+document.getElementById("animais").value=""
+
 document.getElementById("descricao").value=""
+
+document.getElementById("foto").value=""
+
+let preview = document.getElementById("preview")
+preview.src = ""
+preview.classList.add("hidden")
 
 }
 
 
-
 mostrarAnimais()
+
+function salvarEdicao(){
+
+let animais = JSON.parse(localStorage.getItem("animais"))
+
+let animal = animais[animalEditando]
+
+animal.nome = document.getElementById("editNome").value
+animal.especie = document.getElementById("editEspecie").value
+animal.raca = document.getElementById("editRaca").value
+animal.idade = document.getElementById("editIdade").value
+animal.sexo = document.getElementById("editSexo").value
+animal.porte = document.getElementById("editPorte").value
+
+animal.vacinado = document.getElementById("editVacinado").value
+animal.castrado = document.getElementById("editCastrado").value
+animal.vermifugado = document.getElementById("editVermifugado").value
+
+animal.dataResgate = document.getElementById("editDataResgate").value
+animal.localResgate = document.getElementById("editLocalResgate").value
+
+animal.temperamento = document.getElementById("editTemperamento").value
+animal.criancas = document.getElementById("editCriancas").value
+animal.animais = document.getElementById("editAnimais").value
+
+animal.descricao = document.getElementById("editDescricao").value
+
+let novaFoto = document.getElementById("editFoto").files[0]
+
+if(novaFoto){
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+animal.foto = e.target.result
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+fecharEditar()
+mostrarAnimais()
+
+}
+
+reader.readAsDataURL(novaFoto)
+
+}else{
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+fecharEditar()
+mostrarAnimais()
+
+}
+
+}
+
+function fecharEditar(){
+document.getElementById("modalEditar").classList.add("hidden")
+}
+
+function previewFotoEditar(event){
+
+let arquivo = event.target.files[0]
+
+if(!arquivo) return
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let preview = document.getElementById("editPreview")
+
+preview.src = e.target.result
+preview.classList.remove("hidden")
+
+}
+
+reader.readAsDataURL(arquivo)
+
+}
+
+function verAnimal(animal){
+
+document.getElementById("detFoto").src = animal.foto
+
+document.getElementById("detNome").innerText = animal.nome
+
+document.getElementById("detInfo").innerText =
+`${animal.especie || ""} • ${animal.raca || ""} • ${animal.idade} • Porte ${animal.porte}`
+
+document.getElementById("detSaude").innerText =
+`Saúde: Vacinado ${animal.vacinado || "?"} | Castrado ${animal.castrado || "?"} | Vermifugado ${animal.vermifugado || "?"}`
+
+document.getElementById("detResgate").innerText =
+`Resgate: ${animal.dataResgate || ""} - ${animal.localResgate || ""}`
+
+document.getElementById("detComportamento").innerText =
+`Temperamento: ${animal.temperamento || ""} | Crianças: ${animal.criancas || ""} | Animais: ${animal.animais || ""}`
+
+document.getElementById("detDescricao").innerText =
+animal.descricao || ""
+
+document.getElementById("modalDetalhes").classList.remove("hidden")
+
+}
+
+function fecharDetalhes(){
+
+document.getElementById("modalDetalhes").classList.add("hidden")
+
+}
+
+function atualizarEstatisticas(){
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+let total = animais.length
+let disponiveis = 0
+let adotados = 0
+let tratamento = 0
+
+animais.forEach(animal => {
+
+if(animal.status === "Disponível"){
+disponiveis++
+}
+
+if(animal.status === "Adotado"){
+adotados++
+}
+
+if(animal.status === "Em tratamento"){
+tratamento++
+}
+
+})
+
+document.getElementById("totalAnimais").innerText = total
+document.getElementById("totalDisponiveis").innerText = disponiveis
+document.getElementById("totalAdotados").innerText = adotados
+document.getElementById("totalTratamento").innerText = tratamento
+
+}
 
 </script>
 
