@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adoções - ARPAA</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+<script>
+if(localStorage.getItem("adminLogado") !== "true"){
+  window.location.href = "index.html"
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<!-- MENU LATERAL -->
+<aside class="w-64 bg-teal-700 text-white flex flex-col">
+
+<div class="p-6 border-b border-teal-600">
+
+<h1 class="text-2xl font-bold flex items-center gap-2">
+<i class="fas fa-paw"></i>
+ARPAA
+</h1>
+
+<p class="text-sm text-teal-200">
+Painel Administrativo
+</p>
+
+</div>
+
+
+<nav class="flex-1 p-6">
+
+<ul class="space-y-4">
+
+<li>
+<a href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-chart-line"></i>
+Dashboard
+</a>
+</li>
+
+<li>
+<a href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-dog"></i>
+Animais
+</a>
+</li>
+
+<li>
+<a href="adocoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-heart"></i>
+Adoções
+</a>
+</li>
+
+<li>
+<a href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-hand-holding-heart"></i>
+Doações
+</a>
+</li>
+
+<li>
+<a href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-calendar"></i>
+Eventos
+</a>
+</li>
+
+</ul>
+
+</nav>
+
+<div class="p-6 border-t border-teal-600">
+
+<button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+<i class="fas fa-sign-out-alt"></i>
+Sair
+</button>
+
+</div>
+
+</aside>
+
+
+<!-- CONTEÚDO -->
+<main class="flex-1 p-10">
+
+<h1 class="text-3xl font-bold text-gray-800 mb-8">Adoções</h1>
+
+<!-- CARDS -->
+<div class="grid md:grid-cols-3 gap-6 mb-10">
+  <div class="bg-white p-6 rounded-xl shadow">
+    <p class="text-gray-500">Pendentes</p>
+    <p id="pendentes" class="text-2xl font-bold text-yellow-500">0</p>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow">
+    <p class="text-gray-500">Aprovadas</p>
+    <p id="aprovadas" class="text-2xl font-bold text-green-600">0</p>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow">
+    <p class="text-gray-500">Recusadas</p>
+    <p id="recusadas" class="text-2xl font-bold text-red-600">0</p>
+  </div>
+</div>
+
+<!-- FILTRO -->
+<div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+
+  <!-- LADO ESQUERDO -->
+  <div class="flex items-center gap-3">
+
+    <!-- BUSCA -->
+    <div class="relative">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      <input 
+        id="busca" 
+        placeholder="Buscar adotante..." 
+        class="border pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+      />
+    </div>
+
+    <!-- FILTRO -->
+    <select id="filtro" class="border p-2 rounded-lg">
+      <option value="todos">Todos</option>
+      <option value="pendente">Pendentes</option>
+      <option value="aprovado">Aprovadas</option>
+      <option value="recusado">Recusadas</option>
+    </select>
+
+<button 
+  onclick="limparFiltro()" 
+  class="flex items-center gap-2 border border-teal-600 text-teal-600 px-3 py-2 rounded-lg text-sm hover:bg-teal-50 transition"
+>
+  <i class="fas fa-rotate-right"></i>
+  Limpar filtro
+</button>
+
+  </div>
+
+  <!-- BOTÃO -->
+  <button onclick="abrirModal()" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
+    Nova Adoção
+  </button>
+
+</div>
+
+
+<!-- TABELA -->
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="w-full text-left border-collapse">
+    <thead class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider font-medium">
+  <tr>
+    <th class="px-4 py-3 text-left">Adotante</th>
+    <th class="px-4 py-3 text-left">Animal</th>
+    <th class="px-4 py-3 text-left">Telefone</th>
+    <th class="px-4 py-3 text-left">Data</th>
+    <th class="px-4 py-3 text-center">Status</th>
+    <th class="px-4 py-3 text-center">Ações</th>
+  </tr>
+</thead>
+    <tbody id="listaAdocoes"></tbody>
+  </table>
+</div>
+
+</main>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">Nova Adoção</h2>
+
+    <input id="nome" placeholder="Nome do adotante" class="w-full border p-2 rounded mb-3">
+    <input id="animal" placeholder="Animal" class="w-full border p-2 rounded mb-3">
+    <input id="telefone" placeholder="(xx) xxxxx-xxxx" class="w-full border p-2 rounded mb-3"/>
+
+    <div class="flex justify-end gap-2">
+      <button onclick="fecharModal()" class="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
+      <button onclick="salvarAdocao()" class="px-4 py-2 bg-teal-600 text-white rounded">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
+
+function salvar(){
+  localStorage.setItem("adocoes", JSON.stringify(adocoes))
+}
+
+function abrirModal(){
+  document.getElementById("modal").classList.remove("hidden")
+  document.getElementById("modal").classList.add("flex")
+}
+
+function fecharModal(){
+  document.getElementById("modal").classList.add("hidden")
+}
+
+function salvarAdocao(){
+  let nome = document.getElementById("nome").value
+  let animal = document.getElementById("animal").value
+  let telefone = document.getElementById("telefone").value.replace(/\D/g, "")
+
+  if(!nome || !animal || !telefone){
+    alert("Preencha todos os campos")
+    return
+  }
+
+  if(indexEditando !== null){
+    // edição
+    adocoes[indexEditando] = {
+      ...adocoes[indexEditando],
+      nome,
+      animal,
+      telefone
+    }
+    indexEditando = null
+  } else {
+    // novo
+    adocoes.push({
+      nome,
+      animal,
+      telefone,
+      data: new Date().toLocaleDateString(),
+      status: "pendente",
+      contato: false,
+    })
+  }
+
+  salvar()
+  fecharModal()
+  render()
+}
+
+function alterarStatus(index, status){
+  adocoes[index].status = status
+  salvar()
+  render()
+}
+
+function excluir(index){
+  if(confirm("Tem certeza que deseja excluir essa adoção?")){
+    adocoes.splice(index, 1)
+    salvar()
+    render()
+  }
+}
+
+function render(){
+  adocoes.forEach(a => {
+  if(a.contato === undefined){
+    a.contato = false
+  }
+})
+    let lista = document.getElementById("listaAdocoes")
+  let filtro = document.getElementById("filtro").value
+
+  lista.innerHTML = ""
+
+  let p=0,a=0,r=0
+
+  adocoes.sort((a,b)=> new Date(b.data) - new Date(a.data))
+  adocoes.forEach((adocao, i)=>{
+    if(adocao.status === "pendente") p++
+    if(adocao.status === "aprovado") a++
+    if(adocao.status === "recusado") r++
+
+    if(filtro !== "todos" && adocao.status !== filtro) return
+    if(!adocao.nome.toLowerCase().includes(termoBusca)) return
+
+    let cor = adocao.status === "pendente" ? "yellow" : adocao.status === "aprovado" ? "green" : "red"
+
+    lista.innerHTML += `
+<tr class="border-t hover:bg-gray-50">
+  <td class="px-4 py-4 text-left">
+    ${adocao.nome}
+    <div class="text-xs mt-1">
+      ${
+        adocao.contato 
+        ? '<span class="text-green-600">✔ Contatado</span>' 
+        : '<span class="text-gray-400">Não contatado</span>'
+      }
+    </div>
+  </td>
+
+ <td class="px-4 py-4">${adocao.animal}</td>
+  <td class="px-4 py-4">${formatarTelefone(adocao.telefone)}</td>
+  <td class="px-4 py-4">${adocao.data}</td>
+
+  <td class="px-4 py-4 text-center">
+    <span class="bg-${cor}-100 text-${cor}-700 px-3 py-1 rounded-full text-sm inline-flex items-center gap-1">
+      ${
+        adocao.status === "pendente"
+          ? '<i class="fas fa-clock"></i>'
+          : adocao.status === "aprovado"
+          ? '<i class="fas fa-check"></i>'
+          : '<i class="fas fa-times"></i>'
+      }
+      ${adocao.status.charAt(0).toUpperCase() + adocao.status.slice(1)}
+    </span>
+  </td>
+
+  <td class="px-4 py-4 text-center space-x-2">
+    <button onclick="alterarStatus(${i}, 'aprovado')" class="text-green-600"><i class="fas fa-check"></i></button>
+    <button onclick="alterarStatus(${i}, 'recusado')" class="text-red-600"><i class="fas fa-times"></i></button>
+    <button onclick="editar(${i})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-pen"></i></button>
+    <button onclick="excluir(${i})" class="text-gray-500 hover:text-black"><i class="fas fa-trash"></i></button>
+    <button onclick="marcarContato(${i})" class="${adocao.contato ? 'text-green-600' : 'text-gray-400'} hover:text-purple-800">
+      <i class="fas fa-phone"></i>
+    </button>
+  </td>
+</tr>`
+  })
+
+  document.getElementById("pendentes").innerText = p
+  document.getElementById("aprovadas").innerText = a
+  document.getElementById("recusadas").innerText = r
+}
+
+document.getElementById("filtro").addEventListener("change", render)
+
+const paginaAtual = window.location.pathname.split("/").pop()
+const links = document.querySelectorAll(".menu-link")
+
+links.forEach(link => {
+  if (link.getAttribute("href") === paginaAtual) {
+    link.classList.add("text-yellow-300")
+  }
+})
+
+let indexEditando = null
+
+function editar(index){
+  const adocao = adocoes[index]
+
+  document.getElementById("nome").value = adocao.nome
+  document.getElementById("animal").value = adocao.animal
+  document.getElementById("telefone").value = adocao.telefone
+
+  indexEditando = index
+  abrirModal()
+}
+
+let termoBusca = ""
+
+document.getElementById("busca").addEventListener("input", (e)=>{
+  termoBusca = e.target.value.toLowerCase()
+  render()
+})
+
+document.getElementById("telefone").addEventListener("input", function(e){
+  let valor = e.target.value.replace(/\D/g, "") // remove tudo que não é número
+
+  if(valor.length > 11) valor = valor.slice(0,11)
+
+  if(valor.length > 10){
+    valor = valor.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+  } else if(valor.length > 6){
+    valor = valor.replace(/(\d{2})(\d{4})(\d+)/, "($1) $2-$3")
+  } else if(valor.length > 2){
+    valor = valor.replace(/(\d{2})(\d+)/, "($1) $2")
+  } else {
+    valor = valor.replace(/(\d*)/, "($1")
+  }
+
+  e.target.value = valor
+})
+
+function formatarTelefone(tel){
+  let valor = tel.replace(/\D/g, "")
+
+  if(valor.length === 11){
+    return valor.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+  } else if(valor.length === 10){
+    return valor.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
+  }
+
+  return tel
+}
+
+function marcarContato(index){
+  adocoes[index].contato = !adocoes[index].contato
+  salvar()
+  render()
+}
+
+function limparFiltro(){
+  document.getElementById("filtro").value = "todos"
+  document.getElementById("busca").value = ""
+  termoBusca = ""
+  render()
+}
+
+render()
+
+</script>
+
+</html>
