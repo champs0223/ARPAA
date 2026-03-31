@@ -3,9 +3,10 @@
 // ==========================================
 
 // URL base da API
-// Desenvolvimento: localhost:3000
-// Produção: hopper.proxy.rlwy.net:3000
-const API_BASE_URL = 'http://localhost:3000';
+// Desenvolvimento local:
+// const API_BASE_URL = 'http://localhost:3000';
+// Produção no Railway:
+const API_BASE_URL = 'https://arpaa-production.up.railway.app';
 
 // ==========================================
 // FUNÇÕES AUXILIARES

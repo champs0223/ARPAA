@@ -129,8 +129,8 @@ async function login(){
   }
 
   try {
-    // Fazer login via API
-    const response = await fetch('http://localhost:3000/login', {
+    // Fazer login via API (Railway prod)
+    const response = await fetch('https://arpaa-production.up.railway.app/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
