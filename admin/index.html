@@ -117,23 +117,48 @@ Usuário ou senha incorretos
 
 <script>
 
-function login(){
+async function login(){
+  let usuario = document.getElementById("usuario").value
+  let senha = document.getElementById("senha").value
+  let erro = document.getElementById("erroLogin")
 
-let usuario = document.getElementById("usuario").value
-let senha = document.getElementById("senha").value
-let erro = document.getElementById("erroLogin")
+  if(!usuario || !senha){
+    erro.textContent = "Preencha usuário e senha"
+    erro.classList.remove("hidden")
+    return
+  }
 
-if(usuario === "admin" && senha === "1234"){
+  try {
+    // Fazer login via API
+    const response = await fetch('http://localhost:3000/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ usuario, senha })
+    })
 
-localStorage.setItem("adminLogado","true")
-window.location.href="dashboard.html"
+    const dados = await response.json()
 
-}else{
+    if(!response.ok){
+      erro.textContent = dados.error || "Erro ao fazer login"
+      erro.classList.remove("hidden")
+      return
+    }
 
-erro.classList.remove("hidden")
+    // Login bem-sucedido
+    localStorage.setItem("adminLogado", "true")
+    localStorage.setItem("usuarioId", dados.id)
+    localStorage.setItem("usuarioNome", dados.nome)
+    localStorage.setItem("usuarioAdmin", dados.is_admin)
+    
+    window.location.href="dashboard.html"
 
-}
-
+  } catch (error) {
+    console.error('Erro:', error)
+    erro.textContent = "Erro de conexão com o servidor"
+    erro.classList.remove("hidden")
+  }
 }
 
 
