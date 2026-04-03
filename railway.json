@@ -1,6 +1,5 @@
 {
   "build": {
-    "builder": "nixpacks",
     "cmd": "cd admin/backend && npm install"
   },
   "deploy": {
