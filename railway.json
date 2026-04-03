@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "cmd": "cd admin/backend && npm install"
+  },
+  "deploy": {
+    "startCommand": "cd admin/backend && npm start",
+    "restartPolicyType": "on_failure",
+    "restartPolicyMaxRetries": 5
+  }
+}
