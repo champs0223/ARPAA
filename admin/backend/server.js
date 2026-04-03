@@ -62,12 +62,16 @@ app.use((err, req, res, next) => {
 // Iniciar servidor
 const startServer = async () => {
   try {
-    // Testar conexão com banco de dados
-    const connected = await testConnection();
-    
-    if (!connected) {
-      console.error('Não foi possível conectar ao banco de dados. Encerrando...');
-      process.exit(1);
+    // Testar conexão com banco de dados (não é crítica para iniciar)
+    try {
+      const connected = await testConnection();
+      if (connected) {
+        console.log('✓ Banco de dados conectado com sucesso');
+      } else {
+        console.warn('⚠ Aviso: Não foi possível conectar ao banco de dados (reconectará automaticamente)');
+      }
+    } catch (dbError) {
+      console.warn('⚠ Aviso de DB:', dbError.message);
     }
 
     app.listen(PORT, () => {
@@ -77,7 +81,7 @@ const startServer = async () => {
       console.log(`✓ Banco de dados: ${process.env.DB_NAME} @ ${process.env.DB_HOST}\n`);
     });
   } catch (error) {
-    console.error('Erro ao iniciar servidor:', error.message);
+    console.error('Erro CRÍTICO ao iniciar servidor:', error.message);
     process.exit(1);
   }
 };
