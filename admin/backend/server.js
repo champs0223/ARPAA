@@ -1,0 +1,97 @@
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const { pool, testConnection } = require('./db/connection');
+
+// Importar rotas
+const authRoutes = require('./routes/auth');
+const usuariosRoutes = require('./routes/usuarios');
+const animaisRoutes = require('./routes/animais');
+const adotantesRoutes = require('./routes/adotantes');
+const adocoesRoutes = require('./routes/adocoes');
+const resgatesesRoutes = require('./routes/resgates');
+const tratamentosRoutes = require('./routes/tratamentos');
+const vacinasRoutes = require('./routes/vacinas');
+const historicoRoutes = require('./routes/historico');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rota de teste
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    server: 'ARPAA Backend'
+  });
+});
+
+// Rotas da API
+app.use('/', authRoutes);
+app.use('/', usuariosRoutes);
+app.use('/', animaisRoutes);
+app.use('/', adotantesRoutes);
+app.use('/', adocoesRoutes);
+app.use('/', resgatesesRoutes);
+app.use('/', tratamentosRoutes);
+app.use('/', vacinasRoutes);
+app.use('/', historicoRoutes);
+
+// Tratamento de erros 404
+app.use((req, res) => {
+  res.status(404).json({ error: 'Rota não encontrada' });
+});
+
+// Tratamento de erros global
+app.use((err, req, res, next) => {
+  console.error('Erro:', err.message);
+  res.status(500).json({ error: 'Erro interno do servidor' });
+});
+
+// Iniciar servidor
+const startServer = async () => {
+  try {
+    // Testar conexão com banco de dados
+    const connected = await testConnection();
+    
+    if (!connected) {
+      console.error('Não foi possível conectar ao banco de dados. Encerrando...');
+      process.exit(1);
+    }
+
+    app.listen(PORT, () => {
+      console.log(`\n✓ Servidor ARPAA rodando em http://0.0.0.0:${PORT}`);
+      console.log(`✓ CORS habilitado para todas as origens`);
+      console.log(`✓ Ambiente: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`✓ Banco de dados: ${process.env.DB_NAME} @ ${process.env.DB_HOST}\n`);
+    });
+  } catch (error) {
+    console.error('Erro ao iniciar servidor:', error.message);
+    process.exit(1);
+  }
+};
+
+// Tratar encerramento gracioso
+process.on('SIGTERM', () => {
+  console.log('SIGTERM recebido, encerrando servidor...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT recebido, encerrando servidor...');
+  process.exit(0);
+});
+
+// Iniciar servidor
+startServer();
