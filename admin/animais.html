@@ -50,35 +50,51 @@ Painel Administrativo
 <ul class="space-y-4">
 
 <li>
-<a href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-chart-line"></i>
 Dashboard
 </a>
 </li>
 
 <li>
-<a href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-dog"></i>
 Animais
 </a>
 </li>
 
 <li>
-<a href="adocoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
-<i class="fas fa-heart"></i>
-Adoções
-</a>
+  <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+    <span class="flex gap-3">
+      <i class="fas fa-heart"></i>
+      Adoções
+    </span>
+    <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+  </button>
+
+  <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+    <li>
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+        Processos
+      </a>
+    </li>
+    <li>
+      <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+        Adotantes
+      </a>
+    </li>
+  </ul>
 </li>
 
 <li>
-<a href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-hand-holding-heart"></i>
 Doações
 </a>
 </li>
 
 <li>
-<a href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-calendar"></i>
 Eventos
 </a>
@@ -147,13 +163,6 @@ Dados do Animal
 <option>Pequeno</option>
 <option>Médio</option>
 <option>Grande</option>
-</select>
-
-<select id="status" class="border p-3 rounded">
-<option value="">Status</option>
-<option>Disponível</option>
-<option>Adotado</option>
-<option>Em tratamento</option>
 </select>
 
 </div>
@@ -343,6 +352,17 @@ Animais cadastrados
 
 </div>
 
+<div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+
+<i class="fas fa-undo text-purple-500 text-xl"></i>
+
+<div>
+<p class="text-gray-500 text-sm">Devolvidos</p>
+<p id="totalDevolvidos" class="text-2xl font-bold text-purple-600">0</p>
+</div>
+
+</div>
+
 </div>
 
 <div class="bg-white p-4 rounded-xl shadow mb-6 grid md:grid-cols-5 gap-4">
@@ -383,14 +403,15 @@ onchange="filtrarAnimais()">
 
 </select>
 
-<select
-id="filtroStatus"
-class="border p-2 rounded"
-onchange="filtrarAnimais()">
+<select id="filtroStatus" class="border p-2 rounded" onchange="filtrarAnimais()">
 
 <option value="">Todos status</option>
 <option>Disponível</option>
+<option>Reservado</option>
 <option>Adotado</option>
+<option>Em tratamento</option>
+<option>Devolvido</option>
+
 </select>
 
 <select
@@ -415,7 +436,7 @@ Limpar filtros
 
 <p id="contadorAnimais" class="text-gray-600 mb-4 font-medium"></p>
 
-<div id="listaAnimais" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div id="listaAnimais" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 </div>
 
 
@@ -459,6 +480,14 @@ Editar Animal
 <option>Pequeno</option>
 <option>Médio</option>
 <option>Grande</option>
+</select>
+
+<select id="editStatus" class="border p-3 rounded">
+<option value="Disponível">Disponível</option>
+<option value="Reservado">Reservado</option>
+<option value="Adotado">Adotado</option>
+<option value="Em tratamento">Em tratamento</option>
+<option value="Devolvido">Devolvido</option>
 </select>
 
 </div>
@@ -633,7 +662,6 @@ let raca = document.getElementById("raca").value
 let idade = document.getElementById("idade").value
 let sexo = document.getElementById("sexo").value
 let porte = document.getElementById("porte").value
-let status = document.getElementById("status").value
 
 let vacinado = document.getElementById("vacinado").value
 let castrado = document.getElementById("castrado").value
@@ -662,13 +690,14 @@ reader.onload = function(e){
 let fotoBase64 = e.target.result
 
 let animal = {
+id: Date.now(), // 🔥 ESSENCIAL
 nome,
 especie,
 raca,
 idade,
 sexo,
 porte,
-status,
+status: "Disponível",
 
 dataCadastro: Date.now(),
 
@@ -691,6 +720,7 @@ let animais = JSON.parse(localStorage.getItem("animais")) || []
 
 if(animalEditando !== null){
 
+animal.id = animais[animalEditando].id
 animais[animalEditando] = animal
 animalEditando = null
 
@@ -720,16 +750,23 @@ if(status === "Disponível"){
 return '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Disponível</span>'
 }
 
+if(status === "Reservado"){
+return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Reservado</span>'
+}
+
 if(status === "Adotado"){
-return '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-semibold">Adotado</span>'
+return '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">Adotado</span>'
 }
 
 if(status === "Em tratamento"){
-return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Em tratamento</span>'
+return '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-semibold">Em tratamento</span>'
+}
+
+if(status === "Devolvido"){
+return '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-semibold">Devolvido</span>'
 }
 
 return ""
-
 }
 
 function mostrarAnimais(){
@@ -755,20 +792,28 @@ lista.innerHTML = ""
 
 animais.forEach((animal,index)=>{
 
-lista.innerHTML += `
+let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
+
+let temPendente = adocoes.some(a => 
+  a.animalId == animal.id && a.status === "pendente"
+)
+
+  lista.innerHTML += `
 
 <div onclick='verAnimal(${JSON.stringify(animal)})'
 class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
 <img src="${animal.foto}"
-class="w-full h-44 object-cover">
+class="w-full h-28 object-cover">
 
 <div class="p-4">
 
 <div class="flex justify-between items-center mb-1">
-<h3 class="text-lg font-bold">${animal.nome}</h3>
+<h3 class="text-base font-semibold">${animal.nome}</h3>
 ${badgeStatus(animal.status)}
 </div>
+
+${temPendente ? '<span class="text-xs text-yellow-600">Em processo de adoção</span>' : ''}
 
 <p class="text-sm text-gray-500 mb-2">
 ${animal.especie || ""} • ${animal.idade} • Porte ${animal.porte}
@@ -780,12 +825,12 @@ ${animal.descricao || ""}
 
 <div class="flex gap-2">
 
-<button onclick="event.stopPropagation(); abrirEditar(${index})"
+<button onclick="event.stopPropagation(); abrirEditarPorId(${animal.id})"
 class="bg-yellow-500 text-white px-3 py-1 rounded">
 Editar
 </button>
 
-<button onclick="event.stopPropagation(); excluirAnimal(${index})"
+<button onclick="event.stopPropagation(); excluirAnimal(${animal.id})"
 class="bg-red-500 text-white px-3 py-1 rounded">
 Excluir
 </button>
@@ -860,16 +905,16 @@ animaisFiltrados.forEach((animal,index)=>{
 
 lista.innerHTML += `
 
-<div onclick="verAnimal(${index})"
+<div onclick='verAnimal(${JSON.stringify(animal)})'
 class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
 <img src="${animal.foto}"
-class="w-full h-44 object-cover">
+class="w-full h-28 object-cover">
 
 <div class="p-4">
 
 <div class="flex justify-between items-center mb-1">
-<h3 class="text-lg font-bold">${animal.nome}</h3>
+<h3 class="text-base font-semibold">${animal.nome}</h3>
 ${badgeStatus(animal.status)}
 </div>
 
@@ -883,12 +928,12 @@ ${animal.descricao || ""}
 
 <div class="flex gap-2">
 
-<button onclick="event.stopPropagation(); abrirEditar(${index})"
+<button onclick="event.stopPropagation(); abrirEditarPorId(${animal.id})"
 class="bg-yellow-500 text-white px-3 py-1 rounded">
 Editar
 </button>
 
-<button onclick="event.stopPropagation(); excluirAnimal(${index})"
+<button onclick="event.stopPropagation(); excluirAnimal(${animal.id})"
 class="bg-red-500 text-white px-3 py-1 rounded">
 Excluir
 </button>
@@ -930,6 +975,7 @@ document.getElementById("editRaca").value = animal.raca || ""
 document.getElementById("editIdade").value = animal.idade || ""
 document.getElementById("editSexo").value = animal.sexo || ""
 document.getElementById("editPorte").value = animal.porte || ""
+document.getElementById("editStatus").value = animal.status || "Disponível"
 
 document.getElementById("editVacinado").value = animal.vacinado || ""
 document.getElementById("editCastrado").value = animal.castrado || ""
@@ -955,16 +1001,14 @@ document.getElementById("modalEditar").classList.remove("hidden")
 
 }
 
-function excluirAnimal(index){
+function excluirAnimal(id){
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-let animais = JSON.parse(localStorage.getItem("animais"))
+  animais = animais.filter(animal => animal.id !== id)
 
-animais.splice(index,1)
+  localStorage.setItem("animais", JSON.stringify(animais))
 
-localStorage.setItem("animais", JSON.stringify(animais))
-
-mostrarAnimais()
-
+  mostrarAnimais()
 }
 
 function limparFormulario(){
@@ -1012,6 +1056,7 @@ animal.raca = document.getElementById("editRaca").value
 animal.idade = document.getElementById("editIdade").value
 animal.sexo = document.getElementById("editSexo").value
 animal.porte = document.getElementById("editPorte").value
+animal.status = document.getElementById("editStatus").value
 
 animal.vacinado = document.getElementById("editVacinado").value
 animal.castrado = document.getElementById("editCastrado").value
@@ -1120,6 +1165,8 @@ let total = animais.length
 let disponiveis = 0
 let adotados = 0
 let tratamento = 0
+let reservados = 0
+let devolvidos = 0
 
 animais.forEach(animal => {
 
@@ -1135,25 +1182,40 @@ if(animal.status === "Em tratamento"){
 tratamento++
 }
 
+if(animal.status === "Reservado"){
+reservados++
+}
+
+if(animal.status === "Devolvido"){
+devolvidos++
+}
+
 })
 
 document.getElementById("totalAnimais").innerText = total
 document.getElementById("totalDisponiveis").innerText = disponiveis
 document.getElementById("totalAdotados").innerText = adotados
 document.getElementById("totalTratamento").innerText = tratamento
+document.getElementById("totalDevolvidos").innerText = devolvidos
 
 }
 
-const paginaAtual = window.location.pathname.split("/").pop()
-const links = document.querySelectorAll(".menu-link")
 
-links.forEach(link => {
-  if (link.getAttribute("href") === paginaAtual) {
-    link.classList.add("text-yellow-300")
-  }
-})
+function abrirEditarPorId(id){
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+let index = animais.findIndex(a => a.id === id)
+
+if(index === -1) return
+
+abrirEditar(index)
+
+}
 
 </script>
+
+<script src="menu.js"></script>
 
 </body>
 </html>

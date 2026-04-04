@@ -50,35 +50,51 @@ Painel Administrativo
 <ul class="space-y-4">
 
 <li>
-<a href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-chart-line"></i>
 Dashboard
 </a>
 </li>
 
 <li>
-<a href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-dog"></i>
 Animais
 </a>
 </li>
 
 <li>
-<a href="adocoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
-<i class="fas fa-heart"></i>
-Adoções
-</a>
+  <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+    <span class="flex gap-3">
+      <i class="fas fa-heart"></i>
+      Adoções
+    </span>
+    <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+  </button>
+
+  <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+    <li>
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+        Processos
+      </a>
+    </li>
+    <li>
+      <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+        Adotantes
+      </a>
+    </li>
+  </ul>
 </li>
 
 <li>
-<a href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-hand-holding-heart"></i>
 Doações
 </a>
 </li>
 
 <li>
-<a href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-calendar"></i>
 Eventos
 </a>
@@ -264,17 +280,9 @@ window.location.href="index.html"
 
 }
 
-const paginaAtual = window.location.pathname.split("/").pop()
-const links = document.querySelectorAll(".menu-link")
-
-links.forEach(link => {
-  if (link.getAttribute("href") === paginaAtual) {
-    link.classList.add("text-yellow-300")
-  }
-})
-
 </script>
 
+<script src="menu.js"></script>
 
 </body>
 </html>

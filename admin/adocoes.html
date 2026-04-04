@@ -19,7 +19,7 @@ if(localStorage.getItem("adminLogado") !== "true"){
 
 <div class="flex min-h-screen">
 
-<!-- MENU LATERAL -->
+    <!-- MENU LATERAL -->
 <aside class="w-64 bg-teal-700 text-white flex flex-col">
 
 <div class="p-6 border-b border-teal-600">
@@ -41,35 +41,52 @@ Painel Administrativo
 <ul class="space-y-4">
 
 <li>
-<a href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-chart-line"></i>
 Dashboard
 </a>
 </li>
 
 <li>
-<a href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-dog"></i>
 Animais
 </a>
 </li>
 
 <li>
-<a href="adocoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
-<i class="fas fa-heart"></i>
-Adoções
-</a>
+  <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+    <span class="flex gap-3">
+      <i class="fas fa-heart"></i>
+      Adoções
+    </span>
+    <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+  </button>
+
+  
+  <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+    <li>
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+        Processos
+      </a>
+    </li>
+    <li>
+      <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+        Adotantes
+      </a>
+    </li>
+  </ul>
 </li>
 
 <li>
-<a href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-hand-holding-heart"></i>
 Doações
 </a>
 </li>
 
 <li>
-<a href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-calendar"></i>
 Eventos
 </a>
@@ -94,7 +111,7 @@ Sair
 <!-- CONTEÚDO -->
 <main class="flex-1 p-10">
 
-<h1 class="text-3xl font-bold text-gray-800 mb-8">Adoções</h1>
+<h1 class="text-3xl font-bold text-gray-800 mb-8">Processos de Adoção</h1>
 
 <!-- CARDS -->
 <div class="grid md:grid-cols-3 gap-6 mb-10">
@@ -123,7 +140,7 @@ Sair
       <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
       <input 
         id="busca" 
-        placeholder="Buscar adotante..." 
+        placeholder="Buscar animal..." 
         class="border pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
       />
     </div>
@@ -148,7 +165,7 @@ Sair
 
   <!-- BOTÃO -->
   <button onclick="abrirModal()" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
-    Nova Adoção
+    + Nova Adoção
   </button>
 
 </div>
@@ -159,8 +176,8 @@ Sair
   <table class="w-full text-left border-collapse">
     <thead class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider font-medium">
   <tr>
-    <th class="px-4 py-3 text-left">Adotante</th>
     <th class="px-4 py-3 text-left">Animal</th>
+    <th class="px-4 py-3 text-left">Adotante</th>
     <th class="px-4 py-3 text-left">Telefone</th>
     <th class="px-4 py-3 text-left">Data</th>
     <th class="px-4 py-3 text-center">Status</th>
@@ -179,14 +196,44 @@ Sair
   <div class="bg-white p-6 rounded-xl w-full max-w-md">
     <h2 class="text-xl font-bold mb-4">Nova Adoção</h2>
 
+    <!-- Animal primeiro -->
+    <select id="animalSelect" class="w-full border p-2 rounded mb-3">
+      <option value="">Selecione o animal</option>
+    </select>
+
+    <!-- Nome do adotante depois -->
     <input id="nome" placeholder="Nome do adotante" class="w-full border p-2 rounded mb-3">
-    <input id="animal" placeholder="Animal" class="w-full border p-2 rounded mb-3">
+
     <input id="telefone" placeholder="(xx) xxxxx-xxxx" class="w-full border p-2 rounded mb-3"/>
+
+<!-- Status da adoção -->
+    <select id="statusAdocao" class="w-full border p-2 rounded mb-3">
+  <option value="">Status da Adoção</option>
+  <option value="pendente">Pendente</option>
+  <option value="aprovado">Aprovado</option>
+  <option value="recusado">Recusado</option>
+</select>
 
     <div class="flex justify-end gap-2">
       <button onclick="fecharModal()" class="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
       <button onclick="salvarAdocao()" class="px-4 py-2 bg-teal-600 text-white rounded">Salvar</button>
     </div>
+  </div>
+</div>
+
+<div id="modalAnimal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-full max-w-lg">
+    
+    <h2 class="text-xl font-bold mb-4">Detalhes do Animal</h2>
+
+    <div id="conteudoAnimal" class="space-y-2 text-gray-700"></div>
+
+    <div class="flex justify-end mt-4">
+      <button onclick="fecharModalAnimal()" class="px-4 py-2 bg-gray-300 rounded">
+        Fechar
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -207,34 +254,45 @@ function fecharModal(){
 }
 
 function salvarAdocao(){
-  let nome = document.getElementById("nome").value
-  let animal = document.getElementById("animal").value
-  let telefone = document.getElementById("telefone").value.replace(/\D/g, "")
 
-  if(!nome || !animal || !telefone){
+  let nome = document.getElementById("nome").value
+  let animalId = Number(document.getElementById("animalSelect").value)
+  let telefone = document.getElementById("telefone").value.replace(/\D/g, "")
+  let status = document.getElementById("statusAdocao").value
+
+let adotanteId = salvarAdotante(nome, telefone)
+
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  let animalObj = animais.find(a => a.id == animalId)
+
+  // validação
+  if(!nome || !animalId || !telefone){
     alert("Preencha todos os campos")
     return
   }
 
   if(indexEditando !== null){
-    // edição
     adocoes[indexEditando] = {
       ...adocoes[indexEditando],
       nome,
-      animal,
-      telefone
+      animalId,
+      animalNome: animalObj.nome,
+      telefone,
+      status
     }
+    alterarStatus(indexEditando, status)
     indexEditando = null
   } else {
-    // novo
     adocoes.push({
-      nome,
-      animal,
-      telefone,
-      data: new Date().toLocaleDateString(),
-      status: "pendente",
-      contato: false,
-    })
+  adotanteId,
+  nome,
+  animalId,
+  animalNome: animalObj.nome,
+  telefone,
+  data: new Date().toISOString(),
+  status,
+  contato: false
+})
   }
 
   salvar()
@@ -242,8 +300,35 @@ function salvarAdocao(){
   render()
 }
 
+
 function alterarStatus(index, status){
+  // Atualiza o status da adoção
   adocoes[index].status = status
+
+  // Pega a lista de animais do localStorage
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  let animal = animais.find(a => a.id == adocoes[index].animalId)
+
+  if(!animal) return // se não encontrar o animal, sai da função
+
+  if(status === "pendente"){
+    // processo em análise → animal reservado
+    animal.status = "Reservado"
+  } else if(status === "aprovado"){
+    // adoção aprovada → animal adotado
+    animal.status = "Adotado"
+  } else if(status === "recusado"){
+    // se não houver outra adoção pendente ou aprovada para esse animal
+    let existePendenteOuAprovada = adocoes.some(a => 
+      a.animalId == animal.id && (a.status === "pendente" || a.status === "aprovado")
+    )
+    if(!existePendenteOuAprovada){
+      animal.status = "Disponível"
+    }
+  }
+
+  // Salva as alterações no localStorage
+  localStorage.setItem("animais", JSON.stringify(animais))
   salvar()
   render()
 }
@@ -276,26 +361,36 @@ function render(){
     if(adocao.status === "recusado") r++
 
     if(filtro !== "todos" && adocao.status !== filtro) return
-    if(!adocao.nome.toLowerCase().includes(termoBusca)) return
+    if(!adocao.animalNome.toLowerCase().includes(termoBusca)) return
 
-    let cor = adocao.status === "pendente" ? "yellow" : adocao.status === "aprovado" ? "green" : "red"
+    let cor = "gray"
+if(adocao.status === "pendente") cor = "yellow"
+else if(adocao.status === "aprovado") cor = "green"
+else if(adocao.status === "recusado") cor = "red"
+else if(adocao.status === "devolvido") cor = "blue"
 
     lista.innerHTML += `
 <tr class="border-t hover:bg-gray-50">
+
+  <td class="px-4 py-4">
+  <span 
+    onclick="verAnimal(${adocao.animalId})"
+    class="text-teal-600 hover:underline cursor-pointer font-medium"
+  >
+    ${adocao.animalNome}
+  </span>
+</td>
+
   <td class="px-4 py-4 text-left">
     ${adocao.nome}
-    <div class="text-xs mt-1">
-      ${
-        adocao.contato 
-        ? '<span class="text-green-600">✔ Contatado</span>' 
-        : '<span class="text-gray-400">Não contatado</span>'
-      }
-    </div>
+    
   </td>
-
- <td class="px-4 py-4">${adocao.animal}</td>
   <td class="px-4 py-4">${formatarTelefone(adocao.telefone)}</td>
-  <td class="px-4 py-4">${adocao.data}</td>
+  <td class="px-4 py-4">
+  ${new Date(adocao.data).toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo"
+  })}
+</td>
 
   <td class="px-4 py-4 text-center">
     <span class="bg-${cor}-100 text-${cor}-700 px-3 py-1 rounded-full text-sm inline-flex items-center gap-1">
@@ -315,9 +410,12 @@ function render(){
     <button onclick="alterarStatus(${i}, 'recusado')" class="text-red-600"><i class="fas fa-times"></i></button>
     <button onclick="editar(${i})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-pen"></i></button>
     <button onclick="excluir(${i})" class="text-gray-500 hover:text-black"><i class="fas fa-trash"></i></button>
-    <button onclick="marcarContato(${i})" class="${adocao.contato ? 'text-green-600' : 'text-gray-400'} hover:text-purple-800">
-      <i class="fas fa-phone"></i>
-    </button>
+    <button 
+  onclick="marcarContato(${i})" 
+  title="${adocao.contato ? 'Contato realizado' : 'Marcar como contatado'}"
+  class="${adocao.contato ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-teal-600'}">
+  <i class="fas fa-phone"></i>
+</button>
   </td>
 </tr>`
   })
@@ -329,23 +427,19 @@ function render(){
 
 document.getElementById("filtro").addEventListener("change", render)
 
-const paginaAtual = window.location.pathname.split("/").pop()
-const links = document.querySelectorAll(".menu-link")
-
-links.forEach(link => {
-  if (link.getAttribute("href") === paginaAtual) {
-    link.classList.add("text-yellow-300")
-  }
-})
-
 let indexEditando = null
 
 function editar(index){
   const adocao = adocoes[index]
 
   document.getElementById("nome").value = adocao.nome
-  document.getElementById("animal").value = adocao.animal
   document.getElementById("telefone").value = adocao.telefone
+
+  // carrega todos os animais (mesmo os adotados) e seleciona o atual
+  carregarAnimaisParaEdicao(index)
+
+  // define o status atual da adoção
+  document.getElementById("statusAdocao").value = adocao.status
 
   indexEditando = index
   abrirModal()
@@ -401,8 +495,110 @@ function limparFiltro(){
   render()
 }
 
+
+function carregarAnimais(){
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  let select = document.getElementById("animalSelect")
+
+  select.innerHTML = '<option value="">Selecione o animal</option>'
+
+  animais
+    .filter(animal => animal.status === "Disponível" || animal.status === "Devolvido")
+    .forEach(animal => {
+      select.innerHTML += `
+        <option value="${animal.id}">
+          ${animal.nome} ${animal.status === "Devolvido" ? "(Devolvido)" : ""}
+        </option>
+      `
+    })
+}
+
+function verAnimal(animalId){
+
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
+
+  let animal = animais.find(a => a.id == animalId)
+
+  if(!animal){
+    alert("Animal não encontrado")
+    return
+  }
+
+  let historico = adocoes.filter(a => a.animalId == animalId)
+
+  let total = historico.length
+  let aprovadas = historico.filter(a => a.status === "aprovado").length
+  let recusadas = historico.filter(a => a.status === "recusado").length
+  let contatos = historico.filter(a => a.contato).length
+
+  document.getElementById("conteudoAnimal").innerHTML = `
+    <p><strong>Nome:</strong> ${animal.nome}</p>
+    <p><strong>Espécie:</strong> ${animal.especie}</p>
+    <p><strong>Raça:</strong> ${animal.raca}</p>
+    <p><strong>Idade:</strong> ${animal.idade}</p>
+
+    <hr class="my-3">
+
+    <p><strong>Total de tentativas:</strong> ${total}</p>
+    <p><strong>Aprovadas:</strong> ${aprovadas}</p>
+    <p><strong>Recusadas:</strong> ${recusadas}</p>
+    <p><strong>Contatos realizados:</strong> ${contatos}</p>
+  `
+
+  document.getElementById("modalAnimal").classList.remove("hidden")
+  document.getElementById("modalAnimal").classList.add("flex")
+}
+
+function fecharModalAnimal(){
+  document.getElementById("modalAnimal").classList.add("hidden")
+}
+
+function carregarAnimaisParaEdicao(index) {
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  let select = document.getElementById("animalSelect")
+  select.innerHTML = '<option value="">Selecione o animal</option>'
+
+  animais.forEach(animal => {
+    select.innerHTML += `
+      <option value="${animal.id}" ${adocoes[index].animalId === animal.id ? 'selected' : ''}>
+        ${animal.nome} ${animal.status === "Adotado" ? "(Adotado)" : ""}
+      </option>
+    `
+  })
+}
+
+function salvarAdotante(nome, telefone){
+
+  let adotantes = JSON.parse(localStorage.getItem("adotantes")) || []
+
+  // evita duplicado
+  let existente = adotantes.find(a => 
+    a.nome === nome && a.telefone === telefone
+  )
+
+  if(existente){
+    return existente.id
+  }
+
+  let novo = {
+    id: Date.now(),
+    nome,
+    telefone
+  }
+
+  adotantes.push(novo)
+
+  localStorage.setItem("adotantes", JSON.stringify(adotantes))
+
+  return novo.id
+}
+
 render()
+carregarAnimais()
 
 </script>
+
+<script src="menu.js"></script>
 
 </html>
