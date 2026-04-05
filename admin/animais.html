@@ -13,6 +13,27 @@
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<style>
+.menu-ativo {
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.modal-box {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.modal-box.ativo {
+  transform: scale(1);
+  opacity: 1;
+}
+</style>
+
+
 </head>
 
 
@@ -621,6 +642,41 @@ Fechar
 </div>
 </div>
 
+<!-- MODAL CONFIRMAÇÃO -->
+<div id="modalConfirmar" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
+    <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
+    <h2 class="text-lg font-bold mb-4">Tem certeza?</h2>
+    <p id="textoConfirmacao" class="text-gray-600 mb-6"></p>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="fecharModal('modalConfirmar')" 
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarAcao"
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div id="modalSucesso" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
+    <i class="fas fa-check-circle text-green-500 text-4xl mb-3"></i>
+    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
+    <p id="mensagemSucesso" class="mb-6"></p>
+
+    <button onclick="fecharModal('modalSucesso')" 
+            class="px-4 py-2 bg-green-600 text-white rounded">
+      OK
+    </button>
+  </div>
+</div>
+
 <script>
 
 let animalEditando = null
@@ -687,7 +743,7 @@ let reader = new FileReader()
 
 reader.onload = function(e){
 
-let fotoBase64 = e.target.result
+let fotoURL = URL.createObjectURL(arquivo)
 
 let animal = {
 id: Date.now(), // 🔥 ESSENCIAL
@@ -712,7 +768,7 @@ temperamento,
 criancas,
 animais: conviveAnimais,
 
-foto: fotoBase64,
+foto: fotoURL,
 descricao
 }
 
@@ -720,14 +776,17 @@ let animais = JSON.parse(localStorage.getItem("animais")) || []
 
 if(animalEditando !== null){
 
-animal.id = animais[animalEditando].id
-animais[animalEditando] = animal
-animalEditando = null
+  let index = animais.findIndex(a => a.id === animalEditando)
+
+  if(index !== -1){
+    animal.id = animalEditando
+    animais[index] = animal
+  }
+
+  animalEditando = null
 
 }else{
-
-animais.push(animal)
-
+  animais.push(animal)
 }
 
 localStorage.setItem("animais", JSON.stringify(animais))
@@ -735,6 +794,8 @@ localStorage.setItem("animais", JSON.stringify(animais))
 mostrarAnimais()
 
 limparFormulario()
+
+mostrarSucesso("Animal cadastrado com sucesso!")
 
 console.log("Animal salvo com sucesso")
 
@@ -961,13 +1022,13 @@ mostrarAnimais()
 
 }
 
-function abrirEditar(index){
+function abrirEditar(id){
 
 let animais = JSON.parse(localStorage.getItem("animais"))
 
-let animal = animais[index]
+let animal = animais.find(a => a.id === id)
 
-animalEditando = index
+animalEditando = id
 
 document.getElementById("editNome").value = animal.nome || ""
 document.getElementById("editEspecie").value = animal.especie || ""
@@ -1002,13 +1063,18 @@ document.getElementById("modalEditar").classList.remove("hidden")
 }
 
 function excluirAnimal(id){
-  let animais = JSON.parse(localStorage.getItem("animais")) || []
+  abrirConfirmacao("Deseja realmente excluir este animal?", () => {
 
-  animais = animais.filter(animal => animal.id !== id)
+    let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-  localStorage.setItem("animais", JSON.stringify(animais))
+    animais = animais.filter(animal => animal.id !== id)
 
-  mostrarAnimais()
+    localStorage.setItem("animais", JSON.stringify(animais))
+
+    mostrarAnimais()
+    mostrarSucesso("Animal excluído com sucesso!")
+
+  })
 }
 
 function limparFormulario(){
@@ -1046,9 +1112,13 @@ mostrarAnimais()
 
 function salvarEdicao(){
 
+abrirConfirmacao("Salvar alterações deste animal?", () => {
+
 let animais = JSON.parse(localStorage.getItem("animais"))
 
-let animal = animais[animalEditando]
+let index = animais.findIndex(a => a.id === animalEditando)
+
+let animal = animais[index]
 
 animal.nome = document.getElementById("editNome").value
 animal.especie = document.getElementById("editEspecie").value
@@ -1085,6 +1155,7 @@ localStorage.setItem("animais", JSON.stringify(animais))
 
 fecharEditar()
 mostrarAnimais()
+mostrarSucesso("Alterações salvas com sucesso!")
 
 }
 
@@ -1096,9 +1167,11 @@ localStorage.setItem("animais", JSON.stringify(animais))
 
 fecharEditar()
 mostrarAnimais()
+mostrarSucesso("Alterações salvas com sucesso!")
 
 }
 
+})
 }
 
 function fecharEditar(){
@@ -1209,8 +1282,54 @@ let index = animais.findIndex(a => a.id === id)
 
 if(index === -1) return
 
-abrirEditar(index)
+abrirEditar(id)
 
+}
+
+let acaoConfirmada = null;
+
+function abrirConfirmacao(msg, callback){
+  const modal = document.getElementById("modalConfirmar")
+  const box = modal.querySelector(".modal-box")
+
+  document.getElementById("textoConfirmacao").innerText = msg
+
+  modal.classList.remove("hidden")
+
+  setTimeout(() => {
+    box.classList.add("ativo")
+  }, 10)
+
+  acaoConfirmada = callback
+}
+
+document.getElementById("btnConfirmarAcao").onclick = function(){
+  if(acaoConfirmada) acaoConfirmada();
+  fecharModal("modalConfirmar");
+};
+
+function fecharModal(id){
+  const modal = document.getElementById(id)
+  const box = modal.querySelector(".modal-box")
+
+  box.classList.remove("ativo")
+
+  setTimeout(() => {
+    modal.classList.add("hidden")
+  }, 200)
+}
+
+function mostrarSucesso(msg){
+  const modal = document.getElementById("modalSucesso")
+  const box = modal.querySelector(".modal-box")
+
+  document.getElementById("mensagemSucesso").innerText = msg
+
+  modal.classList.remove("hidden")
+
+  setTimeout(() => {
+    box.classList.add("ativo")
+  }, 10)
 }
 
 </script>

@@ -3,7 +3,7 @@ const links = document.querySelectorAll(".menu-link")
 
 links.forEach(link => {
   if (link.getAttribute("href") === paginaAtual) {
-    link.classList.add("text-yellow-300")
+    link.classList.add("text-yellow-300", "menu-ativo")
   }
 })
 

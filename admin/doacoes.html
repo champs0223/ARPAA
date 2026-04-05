@@ -6,8 +6,49 @@
 <title>Doações - ARPAA</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.menu-ativo {
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+</style>
+
+
 </head>
 <body class="bg-gray-100 font-sans">
+
+  <!-- MODAL CONFIRMAÇÃO -->
+<div id="modalConfirmar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-lg font-bold mb-4">Confirmar ação</h2>
+    <p id="textoConfirmacao" class="text-gray-600 mb-6"></p>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="fecharModal('modalConfirmar')" class="px-4 py-2 bg-gray-300 rounded">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarAcao" class="px-4 py-2 bg-red-600 text-white rounded">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div id="modalSucesso" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
+    <p id="mensagemSucesso" class="mb-6"></p>
+
+    <button onclick="fecharModal('modalSucesso')" class="px-4 py-2 bg-green-600 text-white rounded">
+      OK
+    </button>
+  </div>
+</div>
 
 <script>
 if(localStorage.getItem("adminLogado") !== "true"){
@@ -261,6 +302,13 @@ Sair
 </div>
 
 <script>
+  function formatarMoeda(valor){
+  return Number(valor).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
 // Abrir/Fechar Modal
   const modal = document.getElementById("modalDoacao");
 document.getElementById("btnNovaDoacao").addEventListener("click", () => {
@@ -281,11 +329,11 @@ document.getElementById("fecharModal").addEventListener("click", () => {
   let editandoId = null;
 
   function atualizarCards(){
-    let dinheiro = doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade), 0);
+    let dinheiro = doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
     let itens = doacoes.filter(d => d.tipo !== 'dinheiro').length;
-    let totalItens = doacoes.filter(d => d.tipo !== 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade), 0);
+    let totalItens = doacoes.filter(d => d.tipo !== 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
 
-    document.getElementById("totalDinheiro").innerText = dinheiro;
+    document.getElementById("totalDinheiro").innerText = formatarMoeda(dinheiro);
     document.getElementById("totalItens").innerText = itens;
     document.getElementById("itensRecebidos").innerText = totalItens;
   }
@@ -312,7 +360,7 @@ doacoes
 </td>
   <td class="px-4 py-4">${d.contato || "-"}</td>
   <td class="px-4 py-4 capitalize">${d.tipo}</td>
-  <td class="px-4 py-4">${d.quantidade || "-"}</td>
+  <td class="px-4 py-4">${d.tipo === "dinheiro" ? formatarMoeda(Number(d.quantidade)) : (d.quantidade || "-")}</td>
   <td class="px-4 py-4">${d.descricao || "-"}</td>
   <td class="px-4 py-4">${d.obs || "-"}</td>
 
@@ -377,26 +425,33 @@ inputContato.addEventListener("input", function(){
     obs: form.obs.value
   };
 
-  if(editandoId){
-    // EDITAR
-    const index = doacoes.findIndex(d => d.id === editandoId);
-    doacoes[index] = { ...doacoes[index], ...dados };
-    editandoId = null;
-  } else {
-    // NOVO
-    doacoes.push({
-      id: Date.now(),
-      ...dados
-    });
-  }
+// 🔥 salva o estado antes de mexer
+const estavaEditando = !!editandoId;
 
-  localStorage.setItem("doacoes", JSON.stringify(doacoes));
+if(editandoId){
+  const index = doacoes.findIndex(d => d.id === editandoId);
+  doacoes[index] = { ...doacoes[index], ...dados };
+  editandoId = null;
+} else {
+  doacoes.push({
+    id: Date.now(),
+    ...dados
+  });
+}
 
-  atualizarCards();
-  renderDoacoes();
-  form.reset();
+localStorage.setItem("doacoes", JSON.stringify(doacoes));
 
-  modal.classList.add("hidden");
+atualizarCards();
+renderDoacoes();
+form.reset();
+
+modal.classList.add("hidden");
+
+mostrarSucesso(
+  estavaEditando 
+    ? "Doação atualizada com sucesso!" 
+    : "Doação registrada com sucesso!"
+);
 });
 
 document.getElementById("filtro").addEventListener("change", renderDoacoes);
@@ -428,12 +483,20 @@ form.obs.value = doacao.obs || "";
 }
 
 function excluirDoacao(id){
-  if(confirm("Tem certeza que deseja excluir essa doação?")){
-    doacoes = doacoes.filter(d => d.id !== id);
-    localStorage.setItem("doacoes", JSON.stringify(doacoes));
-    atualizarCards();
-    renderDoacoes();
-  }
+
+  abrirConfirmacao("Deseja excluir essa doação?", () => {
+
+    doacoes = doacoes.filter(d => d.id !== id)
+
+    localStorage.setItem("doacoes", JSON.stringify(doacoes))
+
+    atualizarCards()
+    renderDoacoes()
+
+    mostrarSucesso("Doação excluída com sucesso!")
+
+  })
+
 }
 
 function verDoador(nome){
@@ -444,15 +507,15 @@ function verDoador(nome){
 
   let totalDinheiro = historico
     .filter(d => d.tipo === "dinheiro")
-    .reduce((sum, d) => sum + Number(d.quantidade), 0);
+  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
 
   let totalItens = historico
     .filter(d => d.tipo !== "dinheiro")
-    .reduce((sum, d) => sum + Number(d.quantidade), 0);
+  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
 
   conteudo.innerHTML = `
     <p><strong>Nome:</strong> ${nome}</p>
-    <p><strong>Total em dinheiro:</strong> R$ ${totalDinheiro}</p>
+    <p><strong>Total em dinheiro:</strong> ${formatarMoeda(totalDinheiro)}</p>
     <p><strong>Total de itens:</strong> ${totalItens}</p>
 
     <hr class="my-3">
@@ -476,6 +539,32 @@ function fecharDoador(){
   const modal = document.getElementById("modalDoador");
   modal.classList.add("hidden");
   modal.classList.remove("flex");
+}
+
+function abrirConfirmacao(texto, callback){
+  document.getElementById("textoConfirmacao").innerText = texto
+
+  const btn = document.getElementById("btnConfirmarAcao")
+  btn.onclick = null
+
+  btn.onclick = () => {
+    callback()
+    fecharModal("modalConfirmar")
+  }
+
+  document.getElementById("modalConfirmar").classList.remove("hidden")
+  document.getElementById("modalConfirmar").classList.add("flex")
+}
+
+function mostrarSucesso(msg){
+  document.getElementById("mensagemSucesso").innerText = msg
+
+  document.getElementById("modalSucesso").classList.remove("hidden")
+  document.getElementById("modalSucesso").classList.add("flex")
+}
+
+function fecharModal(id){
+  document.getElementById(id).classList.add("hidden")
 }
 
 // Inicialização

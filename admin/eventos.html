@@ -7,6 +7,17 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.menu-ativo {
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+</style>
+
+
 </head>
 
 <body class="bg-gray-100">
@@ -216,9 +227,39 @@ Sair
     <textarea id="descricaoEvento" placeholder="Descrição do evento" class="w-full border p-2 rounded mb-3"></textarea>
 
     <div class="flex justify-end gap-2">
-      <button onclick="fecharModal()" class="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
+      <button onclick="fecharModal('modal')" class="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
       <button onclick="salvarEvento()" class="px-4 py-2 bg-teal-600 text-white rounded">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAÇÃO -->
+<div id="modalConfirmar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-lg font-bold mb-4">Confirmar ação</h2>
+    <p id="textoConfirmacao" class="text-gray-600 mb-6"></p>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="fecharModal('modalConfirmar')" class="px-4 py-2 bg-gray-300 rounded">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarAcao" class="px-4 py-2 bg-red-600 text-white rounded">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div id="modalSucesso" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
+    <p id="mensagemSucesso" class="mb-6"></p>
+
+    <button onclick="fecharModal('modalSucesso')" class="px-4 py-2 bg-green-600 text-white rounded">
+      OK
+    </button>
   </div>
 </div>
 
@@ -230,7 +271,13 @@ function salvar(){
   localStorage.setItem("eventos", JSON.stringify(eventos))
 }
 
-function abrirModal(){
+function abrirModal(modo = "criar"){
+  
+  if(modo === "criar"){
+    limparCampos()
+    indexEditando = null
+  }
+
   document.getElementById("modal").classList.remove("hidden")
   document.getElementById("modal").classList.add("flex")
 }
@@ -245,42 +292,61 @@ function limparCampos(){
   document.getElementById("nomeEvento").value = ""
   document.getElementById("dataEvento").value = ""
   document.getElementById("localEvento").value = ""
+  document.getElementById("enderecoEvento").value = ""
+  document.getElementById("horaEvento").value = ""
   document.getElementById("tipoEvento").value = ""
+  document.getElementById("descricaoEvento").value = ""
 }
 
 function salvarEvento(){
-  let nome = document.getElementById("nomeEvento").value
-  let data = document.getElementById("dataEvento").value
-  let local = document.getElementById("localEvento").value
-  let endereco = document.getElementById("enderecoEvento").value
-  let hora = document.getElementById("horaEvento").value
-  let tipo = document.getElementById("tipoEvento").value
-  let descricao = document.getElementById("descricaoEvento").value
 
-  if(!nome || !data || !local || !tipo){
-    alert("Preencha todos os campos")
-    return
-  }
+  abrirConfirmacao("Deseja salvar este evento?", () => {
 
-  if(indexEditando !== null){
-    eventos[indexEditando] = { ...eventos[indexEditando], nome, data, local,endereco, hora, tipo, descricao  }
-    indexEditando = null
-  } else {
-    eventos.push({
-      id: Date.now(),
-      nome,
-      data,
-      local,
-      endereco,
-      hora,
-      tipo,
-      descricao
-    })
-  }
+    let nome = document.getElementById("nomeEvento").value
+    let data = document.getElementById("dataEvento").value
+    let local = document.getElementById("localEvento").value
+    let endereco = document.getElementById("enderecoEvento").value
+    let hora = document.getElementById("horaEvento").value
+    let tipo = document.getElementById("tipoEvento").value
+    let descricao = document.getElementById("descricaoEvento").value
 
-  salvar()
-  fecharModal()
-  render()
+    if(!nome || !data || !local || !tipo){
+      alert("Preencha todos os campos")
+      return
+    }
+
+    const estavaEditando = indexEditando !== null
+
+    if(indexEditando !== null){
+      eventos[indexEditando] = { 
+        ...eventos[indexEditando], 
+        nome, data, local, endereco, hora, tipo, descricao  
+      }
+      indexEditando = null
+    } else {
+      eventos.push({
+        id: Date.now(),
+        nome,
+        data,
+        local,
+        endereco,
+        hora,
+        tipo,
+        descricao
+      })
+    }
+
+    salvar()
+    fecharModal("modal")
+    render()
+
+    mostrarSucesso(
+      estavaEditando 
+        ? "Evento atualizado com sucesso!" 
+        : "Evento criado com sucesso!"
+    )
+
+  })
 }
 
 function editarEvento(index){
@@ -293,15 +359,21 @@ function editarEvento(index){
   document.getElementById("tipoEvento").value = evento.tipo
   document.getElementById("descricaoEvento").value = evento.descricao || ""
   indexEditando = index
-  abrirModal()
+  abrirModal("editar")
 }
 
 function excluirEvento(index){
-  if(confirm("Tem certeza que deseja excluir este evento?")){
+
+  abrirConfirmacao("Deseja excluir este evento?", () => {
+
     eventos.splice(index,1)
     salvar()
     render()
-  }
+
+    mostrarSucesso("Evento excluído com sucesso!")
+
+  })
+
 }
 
 function render() {
@@ -408,6 +480,39 @@ function fecharDetalhes() {
 
 document.getElementById("filtro").addEventListener("change", render);
 document.getElementById("busca").addEventListener("input", render);
+
+function abrirConfirmacao(texto, callback){
+  document.getElementById("textoConfirmacao").innerText = texto
+
+  const btn = document.getElementById("btnConfirmarAcao")
+  btn.onclick = null
+
+  btn.onclick = () => {
+    callback()
+    fecharModal("modalConfirmar")
+  }
+
+  document.getElementById("modalConfirmar").classList.remove("hidden")
+  document.getElementById("modalConfirmar").classList.add("flex")
+}
+
+function mostrarSucesso(msg){
+  document.getElementById("mensagemSucesso").innerText = msg
+
+  document.getElementById("modalSucesso").classList.remove("hidden")
+  document.getElementById("modalSucesso").classList.add("flex")
+}
+
+// 🔥 IMPORTANTE: substitui sua função antiga
+function fecharModal(id){
+  document.getElementById(id).classList.add("hidden")
+
+  // 👇 só limpa se for o modal principal
+  if(id === "modal"){
+    limparCampos()
+    indexEditando = null
+  }
+}
 
 render();
 </script>

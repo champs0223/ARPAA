@@ -7,6 +7,29 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.menu-ativo {
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.modal-box {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.modal-box.ativo {
+  transform: scale(1);
+  opacity: 1;
+}
+
+</style>
+
+
 </head>
 
 <body class="bg-gray-100">
@@ -115,18 +138,40 @@ Sair
 
 <!-- CARDS -->
 <div class="grid md:grid-cols-3 gap-6 mb-10">
-  <div class="bg-white p-6 rounded-xl shadow">
-    <p class="text-gray-500">Pendentes</p>
-    <p id="pendentes" class="text-2xl font-bold text-yellow-500">0</p>
+
+  <!-- Pendentes -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
+    <div class="flex-shrink-0">
+      <i class="fas fa-clock text-yellow-500 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Pendentes</p>
+      <p id="pendentes" class="text-2xl font-bold text-yellow-500">0</p>
+    </div>
   </div>
-  <div class="bg-white p-6 rounded-xl shadow">
-    <p class="text-gray-500">Aprovadas</p>
-    <p id="aprovadas" class="text-2xl font-bold text-green-600">0</p>
+
+  <!-- Aprovadas -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
+    <div class="flex-shrink-0">
+      <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Aprovadas</p>
+      <p id="aprovadas" class="text-2xl font-bold text-green-600">0</p>
+    </div>
   </div>
-  <div class="bg-white p-6 rounded-xl shadow">
-    <p class="text-gray-500">Recusadas</p>
-    <p id="recusadas" class="text-2xl font-bold text-red-600">0</p>
+
+  <!-- Recusadas -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
+    <div class="flex-shrink-0">
+      <i class="fas fa-times-circle text-red-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Recusadas</p>
+      <p id="recusadas" class="text-2xl font-bold text-red-600">0</p>
+    </div>
   </div>
+
 </div>
 
 <!-- FILTRO -->
@@ -237,6 +282,49 @@ Sair
   </div>
 </div>
 
+<div id="modalConfirmar" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
+
+    <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
+
+    <h2 class="text-lg font-bold mb-2">Tem certeza?</h2>
+
+    <p id="textoConfirmacao" class="text-gray-600 mb-6"></p>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="fecharModalConfirmar()" 
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarAcao"
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+        Confirmar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div id="modalSucesso" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
+
+    <i class="fas fa-check-circle text-green-500 text-4xl mb-3"></i>
+
+    <h2 class="text-green-600 text-xl font-bold mb-2">Sucesso</h2>
+
+    <p id="mensagemSucesso" class="mb-6 text-gray-600"></p>
+
+    <button onclick="fecharModalSucesso()" 
+            class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+      OK
+    </button>
+
+  </div>
+</div>
+
 <script>
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
@@ -247,6 +335,18 @@ function salvar(){
 function abrirModal(){
   document.getElementById("modal").classList.remove("hidden")
   document.getElementById("modal").classList.add("flex")
+
+  // 🔥 limpar formulário
+  document.getElementById("nome").value = ""
+  document.getElementById("telefone").value = ""
+  document.getElementById("animalSelect").value = ""
+  document.getElementById("statusAdocao").value = ""
+
+  // 🔥 resetar edição
+  indexEditando = null
+
+  // 🔥 recarregar animais disponíveis
+  carregarAnimais()
 }
 
 function fecharModal(){
@@ -267,7 +367,7 @@ let adotanteId = salvarAdotante(nome, telefone)
 
   // validação
   if(!nome || !animalId || !telefone){
-    alert("Preencha todos os campos")
+    mostrarSucesso("Preencha todos os campos")
     return
   }
 
@@ -298,6 +398,7 @@ let adotanteId = salvarAdotante(nome, telefone)
   salvar()
   fecharModal()
   render()
+  mostrarSucesso("Adoção salva com sucesso!")
 }
 
 
@@ -334,11 +435,12 @@ function alterarStatus(index, status){
 }
 
 function excluir(index){
-  if(confirm("Tem certeza que deseja excluir essa adoção?")){
+  abrirConfirmacao("Deseja excluir essa adoção?", () => {
     adocoes.splice(index, 1)
     salvar()
     render()
-  }
+    mostrarSucesso("Adoção excluída com sucesso!")
+  })
 }
 
 function render(){
@@ -592,6 +694,63 @@ function salvarAdotante(nome, telefone){
   localStorage.setItem("adotantes", JSON.stringify(adotantes))
 
   return novo.id
+}
+
+let acaoConfirmada = null
+
+function abrirConfirmacao(msg, callback){
+  const modal = document.getElementById("modalConfirmar")
+  const box = modal.querySelector(".modal-box")
+
+  document.getElementById("textoConfirmacao").innerText = msg
+
+  modal.classList.remove("hidden")
+
+  setTimeout(() => {
+    box.classList.add("ativo")
+  }, 10)
+
+  acaoConfirmada = callback
+}
+
+document.getElementById("btnConfirmarAcao").onclick = () => {
+  if(acaoConfirmada) acaoConfirmada()
+  fecharModalConfirmar()
+}
+
+function fecharModalConfirmar(){
+  const modal = document.getElementById("modalConfirmar")
+  const box = modal.querySelector(".modal-box")
+
+  box.classList.remove("ativo")
+
+  setTimeout(() => {
+    modal.classList.add("hidden")
+  }, 200)
+}
+
+function mostrarSucesso(msg){
+  const modal = document.getElementById("modalSucesso")
+  const box = modal.querySelector(".modal-box")
+
+  document.getElementById("mensagemSucesso").innerText = msg
+
+  modal.classList.remove("hidden")
+
+  setTimeout(() => {
+    box.classList.add("ativo")
+  }, 10)
+}
+
+function fecharModalSucesso(){
+  const modal = document.getElementById("modalSucesso")
+  const box = modal.querySelector(".modal-box")
+
+  box.classList.remove("ativo")
+
+  setTimeout(() => {
+    modal.classList.add("hidden")
+  }, 200)
 }
 
 render()
