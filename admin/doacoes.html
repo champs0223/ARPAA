@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doações - ARPAA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.menu-ativo {
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+</style>
+
+
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- MODAL CONFIRMAÇÃO -->
+<div id="modalConfirmar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-lg font-bold mb-4">Confirmar ação</h2>
+    <p id="textoConfirmacao" class="text-gray-600 mb-6"></p>
+
+    <div class="flex justify-center gap-4">
+      <button onclick="fecharModal('modalConfirmar')" class="px-4 py-2 bg-gray-300 rounded">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarAcao" class="px-4 py-2 bg-red-600 text-white rounded">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div id="modalSucesso" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
+    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
+    <p id="mensagemSucesso" class="mb-6"></p>
+
+    <button onclick="fecharModal('modalSucesso')" class="px-4 py-2 bg-green-600 text-white rounded">
+      OK
+    </button>
+  </div>
+</div>
+
+<script>
+if(localStorage.getItem("adminLogado") !== "true"){
+  window.location.href = "index.html"
+}
+</script>
+
+<div class="flex min-h-screen">
+
+    <!-- MENU LATERAL -->
+<aside class="w-64 bg-teal-700 text-white flex flex-col">
+
+<div class="p-6 border-b border-teal-600">
+
+<h1 class="text-2xl font-bold flex items-center gap-2">
+<i class="fas fa-paw"></i>
+ARPAA
+</h1>
+
+<p class="text-sm text-teal-200">
+Painel Administrativo
+</p>
+
+</div>
+
+
+<nav class="flex-1 p-6">
+
+<ul class="space-y-4">
+
+<li>
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-chart-line"></i>
+Dashboard
+</a>
+</li>
+
+<li>
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-dog"></i>
+Animais
+</a>
+</li>
+
+<li>
+  <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+    <span class="flex gap-3">
+      <i class="fas fa-heart"></i>
+      Adoções
+    </span>
+    <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+  </button>
+
+  
+  <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+    <li>
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+        Processos
+      </a>
+    </li>
+    <li>
+      <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+        Adotantes
+      </a>
+    </li>
+  </ul>
+</li>
+
+<li>
+<a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-hand-holding-heart"></i>
+Doações
+</a>
+</li>
+
+<li>
+<a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-calendar"></i>
+Eventos
+</a>
+</li>
+
+</ul>
+
+</nav>
+
+<div class="p-6 border-t border-teal-600">
+
+<button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+<i class="fas fa-sign-out-alt"></i>
+Sair
+</button>
+
+</div>
+
+</aside>
+
+<!-- MAIN -->
+<main class="flex-1 p-10 space-y-10">
+
+  <h1 class="text-3xl font-bold mb-4">Doações</h1>
+
+  <!-- CARDS DE DOAÇÕES -->
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+
+  <!-- Doações em Dinheiro -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
+    <div class="flex-shrink-0">
+      <i class="fas fa-hand-holding-usd text-teal-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Doações em Dinheiro</p>
+      <p id="totalDinheiro" class="text-2xl font-bold text-teal-600">0</p>
+    </div>
+  </div>
+
+  <!-- Doações de Itens -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
+    <div class="flex-shrink-0">
+      <i class="fas fa-box-open text-green-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Doações de Itens</p>
+      <p id="totalItens" class="text-2xl font-bold text-green-600">0</p>
+    </div>
+  </div>
+
+  <!-- Itens Recebidos -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
+    <div class="flex-shrink-0">
+      <i class="fas fa-clipboard-list text-yellow-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Itens Recebidos</p>
+      <p id="itensRecebidos" class="text-2xl font-bold text-yellow-600">0</p>
+    </div>
+  </div>
+
+</div>
+
+ <!-- Botão +Nova Doação e Modal -->
+<section class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold">Doações</h2>
+  <button id="btnNovaDoacao" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition">
+    + Nova Doação
+  </button>
+</section>
+
+<!-- Modal -->
+<div id="modalDoacao" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
+    <button id="fecharModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <h3 id="tituloModal" class="text-xl font-bold mb-4">Registrar Nova Doação</h3>
+    <form id="form-doacao-modal" class="grid gap-4">
+      <input type="text" name="nome" placeholder="Nome do Doador" class="border p-2 rounded" required>
+      <input id="contato" type="text" name="contato" placeholder="WhatsApp ou Email" class="border p-2 rounded">
+      <select name="tipo" id="tipoDoacaoModal" class="border p-2 rounded" required>
+        <option value="">Selecione o tipo de doação</option>
+        <option value="dinheiro">Dinheiro</option>
+        <option value="racao">Ração</option>
+        <option value="medicamento">Medicamento</option>
+        <option value="limpeza">Material de Limpeza</option>
+        <option value="higiene">Produtos de Higiene</option>
+        <option value="conforto">Produtos de Conforto</option>
+      </select>
+      <input type="text" name="descricao" placeholder="Descrição / Nome do Produto" class="border p-2 rounded" required>
+      <input type="number" name="quantidade" placeholder="Quantidade / Valor" class="border p-2 rounded" required>
+      <textarea name="obs" placeholder="Observações" class="border p-2 rounded"></textarea>
+      <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition">
+        Registrar
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL PERFIL DOADOR -->
+<div id="modalDoador" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg relative">
+    
+    <button onclick="fecharDoador()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h3 class="text-xl font-bold mb-4">Perfil do Doador</h3>
+
+    <div id="conteudoDoador" class="space-y-3"></div>
+
+  </div>
+</div>
+
+  <!-- FILTROS SUAVES COM INDICADOR ATIVO -->
+<div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+
+  <div class="flex items-center gap-3">
+
+    <!-- BUSCA -->
+    <div class="relative">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      <input 
+        id="busca" 
+        placeholder="Buscar doação..." 
+        class="border pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+      />
+    </div>
+
+    <!-- FILTRO -->
+    <select id="filtro" class="border p-2 rounded-lg">
+      <option value="todos">Todos</option>
+      <option value="dinheiro">Dinheiro</option>
+      <option value="racao">Ração</option>
+      <option value="medicamento">Medicamento</option>
+      <option value="limpeza">Limpeza</option>
+      <option value="higiene">Higiene</option>
+      <option value="conforto">Conforto</option>
+    </select>
+
+    <button 
+      onclick="limparFiltro()" 
+      class="flex items-center gap-2 border border-teal-600 text-teal-600 px-3 py-2 rounded-lg text-sm hover:bg-teal-50 transition"
+    >
+      <i class="fas fa-rotate-right"></i>
+      Limpar filtro
+    </button>
+
+  </div>
+
+</div>
+
+  <!-- HISTÓRICO -->
+    <div class="overflow-x-auto">
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="w-full text-left border-collapse">
+    <thead class="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider font-medium">
+      <tr>
+        <th class="px-4 py-3 text-left">Doador</th>
+        <th class="px-4 py-3 text-left">Contato</th>
+        <th class="px-4 py-3 text-left">Tipo</th>
+        <th class="px-4 py-3 text-left">Quantidade / Valor</th>
+        <th class="px-4 py-3 text-left">Descrição</th>
+        <th class="px-4 py-3 text-left">Observações</th>
+        <th class="px-4 py-3 text-left">Ações</th>
+      </tr>
+    </thead>
+    <tbody id="listaDoacoes"></tbody>
+  </table>
+</div>
+
+</main>
+</div>
+
+<script>
+  function formatarMoeda(valor){
+  return Number(valor).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+// Abrir/Fechar Modal
+  const modal = document.getElementById("modalDoacao");
+document.getElementById("btnNovaDoacao").addEventListener("click", () => {
+  document.getElementById("tituloModal").innerText = "Registrar Nova Doação";
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  editandoId = null; // importante!
+});
+document.getElementById("fecharModal").addEventListener("click", () => {
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+});
+
+  // LocalStorage
+  let doacoes = JSON.parse(localStorage.getItem("doacoes")) || [];
+  let editandoId = null;
+
+  function atualizarCards(){
+    let dinheiro = doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
+    let itens = doacoes.filter(d => d.tipo !== 'dinheiro').length;
+    let totalItens = doacoes.filter(d => d.tipo !== 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
+
+    document.getElementById("totalDinheiro").innerText = formatarMoeda(dinheiro);
+    document.getElementById("totalItens").innerText = itens;
+    document.getElementById("itensRecebidos").innerText = totalItens;
+  }
+
+  function renderDoacoes(){
+    let tbody = document.getElementById("listaDoacoes");
+    tbody.innerHTML = "";
+    let filtro = document.getElementById("filtro").value;
+let busca = document.getElementById("busca").value.toLowerCase();
+
+doacoes
+  .filter(d => filtro === "todos" || d.tipo === filtro)
+  .filter(d => 
+    d.nome.toLowerCase().includes(busca) ||
+    (d.descricao && d.descricao.toLowerCase().includes(busca))
+  ).forEach(d => {
+      tbody.innerHTML += `
+<tr class="border-t hover:bg-gray-50">
+  <td 
+  onclick="verDoador('${d.nome}')" 
+  class="px-4 py-4 font-medium cursor-pointer hover:text-teal-600 transition"
+>
+  ${d.nome}
+</td>
+  <td class="px-4 py-4">${d.contato || "-"}</td>
+  <td class="px-4 py-4 capitalize">${d.tipo}</td>
+  <td class="px-4 py-4">${d.tipo === "dinheiro" ? formatarMoeda(Number(d.quantidade)) : (d.quantidade || "-")}</td>
+  <td class="px-4 py-4">${d.descricao || "-"}</td>
+  <td class="px-4 py-4">${d.obs || "-"}</td>
+
+  <td class="px-4 py-4 flex gap-3">
+    <button onclick="editarDoacao(${d.id})" class="text-blue-600 hover:text-blue-800">
+      <i class="fas fa-pen"></i>
+    </button>
+
+    <button onclick="excluirDoacao(${d.id})" class="text-red-600 hover:text-red-800">
+      <i class="fas fa-trash"></i>
+    </button>
+  </td>
+</tr>
+`;
+    });
+  }
+
+function formatarContato(valor){
+  // Se tiver letras, já considera email → NÃO mexe
+  if(/[a-zA-Z]/.test(valor)){
+    return valor;
+  }
+
+  // Senão trata como telefone
+  let numeros = valor.replace(/\D/g, "");
+
+  if(numeros.length > 11) numeros = numeros.slice(0,11);
+
+  if(numeros.length <= 10){
+    return numeros.replace(/(\d{2})(\d{0,4})(\d{0,4})/, (m, p1, p2, p3) => {
+      let r = `(${p1}`;
+      if(p2) r += `) ${p2}`;
+      if(p3) r += `-${p3}`;
+      return r;
+    });
+  } else {
+    return numeros.replace(/(\d{2})(\d{0,5})(\d{0,4})/, (m, p1, p2, p3) => {
+      let r = `(${p1}`;
+      if(p2) r += `) ${p2}`;
+      if(p3) r += `-${p3}`;
+      return r;
+    });
+  }
+}
+
+const inputContato = document.getElementById("contato");
+
+inputContato.addEventListener("input", function(){
+  this.value = formatarContato(this.value);
+});
+
+  document.getElementById("form-doacao-modal").addEventListener("submit", function(e){
+  e.preventDefault();
+  const form = e.target;
+
+  const dados = {
+    tipo: form.tipo.value,
+    nome: form.nome.value,
+    contato: formatarContato(form.contato.value),
+    descricao: form.descricao.value,
+    quantidade: form.quantidade.value,
+    obs: form.obs.value
+  };
+
+// 🔥 salva o estado antes de mexer
+const estavaEditando = !!editandoId;
+
+if(editandoId){
+  const index = doacoes.findIndex(d => d.id === editandoId);
+  doacoes[index] = { ...doacoes[index], ...dados };
+  editandoId = null;
+} else {
+  doacoes.push({
+    id: Date.now(),
+    ...dados
+  });
+}
+
+localStorage.setItem("doacoes", JSON.stringify(doacoes));
+
+atualizarCards();
+renderDoacoes();
+form.reset();
+
+modal.classList.add("hidden");
+
+mostrarSucesso(
+  estavaEditando 
+    ? "Doação atualizada com sucesso!" 
+    : "Doação registrada com sucesso!"
+);
+});
+
+document.getElementById("filtro").addEventListener("change", renderDoacoes);
+document.getElementById("busca").addEventListener("input", renderDoacoes);
+
+function limparFiltro(){
+  document.getElementById("filtro").value = "todos";
+  document.getElementById("busca").value = "";
+  renderDoacoes();
+}
+
+function editarDoacao(id){
+  const doacao = doacoes.find(d => d.id === id);
+  const form = document.getElementById("form-doacao-modal");
+
+  form.nome.value = doacao.nome || "";
+form.contato.value = doacao.contato || "";
+form.tipo.value = doacao.tipo || "";
+form.descricao.value = doacao.descricao || "";
+form.quantidade.value = doacao.quantidade || "";
+form.obs.value = doacao.obs || "";
+
+  document.getElementById("tituloModal").innerText = "Editar Doação";
+
+  editandoId = id;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function excluirDoacao(id){
+
+  abrirConfirmacao("Deseja excluir essa doação?", () => {
+
+    doacoes = doacoes.filter(d => d.id !== id)
+
+    localStorage.setItem("doacoes", JSON.stringify(doacoes))
+
+    atualizarCards()
+    renderDoacoes()
+
+    mostrarSucesso("Doação excluída com sucesso!")
+
+  })
+
+}
+
+function verDoador(nome){
+  const modal = document.getElementById("modalDoador");
+  const conteudo = document.getElementById("conteudoDoador");
+
+  const historico = doacoes.filter(d => d.nome === nome);
+
+  let totalDinheiro = historico
+    .filter(d => d.tipo === "dinheiro")
+  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
+
+  let totalItens = historico
+    .filter(d => d.tipo !== "dinheiro")
+  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
+
+  conteudo.innerHTML = `
+    <p><strong>Nome:</strong> ${nome}</p>
+    <p><strong>Total em dinheiro:</strong> ${formatarMoeda(totalDinheiro)}</p>
+    <p><strong>Total de itens:</strong> ${totalItens}</p>
+
+    <hr class="my-3">
+
+    <p class="font-semibold">Histórico:</p>
+
+    ${historico.map(d => `
+  <div class="border p-3 rounded-lg bg-gray-50 text-sm">
+    <p><strong>Tipo:</strong> ${d.tipo || "-"}</p>
+    <p><strong>Quantidade:</strong> ${d.quantidade || "-"}</p>
+    <p><strong>Descrição:</strong> ${d.descricao || "-"}</p>
+  </div>
+`).join("")}
+  `;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+function fecharDoador(){
+  const modal = document.getElementById("modalDoador");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+function abrirConfirmacao(texto, callback){
+  document.getElementById("textoConfirmacao").innerText = texto
+
+  const btn = document.getElementById("btnConfirmarAcao")
+  btn.onclick = null
+
+  btn.onclick = () => {
+    callback()
+    fecharModal("modalConfirmar")
+  }
+
+  document.getElementById("modalConfirmar").classList.remove("hidden")
+  document.getElementById("modalConfirmar").classList.add("flex")
+}
+
+function mostrarSucesso(msg){
+  document.getElementById("mensagemSucesso").innerText = msg
+
+  document.getElementById("modalSucesso").classList.remove("hidden")
+  document.getElementById("modalSucesso").classList.add("flex")
+}
+
+function fecharModal(id){
+  document.getElementById(id).classList.add("hidden")
+}
+
+// Inicialização
+atualizarCards();
+renderDoacoes();
+</script>
+
+<script src="menu.js"></script>
+</body>
+</html>
