@@ -38,7 +38,7 @@ git push
 3. Clique em **"New Project"**
 4. Escolha **"Deploy from GitHub"**
 5. Selecione o repositório **ARPAA**
-6. Railway vai detectar Node.js automaticamente
+6. Railway vai detectar Node.js automaticamente, mas o backend real fica em `admin/backend`.
 7. Clique em **"Deploy"**
 
 ### Opção B: Via Railway CLI
@@ -51,7 +51,7 @@ npm i -g @railway/cli
 railway login
 
 # 3. Ir para pasta do backend
-cd /workspaces/ARPAA
+cd /workspaces/ARPAA/admin/backend
 
 # 4. Criar projeto no Railway
 railway init
@@ -190,8 +190,8 @@ MySQL (hopper.proxy.rlwy.net)
 ✅ Solução:
 ```bash
 # Certifique-se que tem package.json e server.js
-ls /workspaces/ARPAA/backend/package.json
-ls /workspaces/ARPAA/backend/server.js
+ls /workspaces/ARPAA/admin/backend/package.json
+ls /workspaces/ARPAA/admin/backend/server.js
 ```
 
 ### "Cannot find module"

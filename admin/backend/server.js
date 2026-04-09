@@ -84,11 +84,17 @@ const startServer = async () => {
       console.warn('⚠ Aviso de DB:', dbError.message);
     }
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n✓ Servidor ARPAA rodando em http://0.0.0.0:${PORT}`);
       console.log(`✓ CORS habilitado para todas as origens`);
       console.log(`✓ Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`✓ Banco de dados: ${process.env.DB_NAME} @ ${process.env.DB_HOST}\n`);
+      console.log(`✓ Server listening on all interfaces\n`);
+    });
+    
+    server.on('error', (err) => {
+      console.error('SERVER ERROR:', err);
+      process.exit(1);
     });
   } catch (error) {
     console.error('Erro CRÍTICO ao iniciar servidor:', error.message);
