@@ -52,12 +52,12 @@ router.get('/animais-com-usuario', async (req, res) => {
 // POST - Criar novo animal
 router.post('/animais', async (req, res) => {
   try {
-    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, status, descricao, foto_url, registrado_por } = req.body;
+    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais } = req.body;
     const connection = await pool.getConnection();
     
     const [result] = await connection.query(
-      'INSERT INTO animais (nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, status, descricao, foto_url, registrado_por, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, status || 'resgatado', descricao, foto_url, registrado_por]
+      'INSERT INTO animais (nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, local_resgate, status || 'resgatado', descricao, foto_url, registrado_por, vacinado || '', castrado || '', vermifugado || '', temperamento || '', convive_criancas || '', convive_animais || '']
     );
     
     // Buscar o animal criado
@@ -74,11 +74,11 @@ router.post('/animais', async (req, res) => {
 // PUT - Atualizar animal
 router.put('/animais/:id', async (req, res) => {
   try {
-    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, status, descricao, foto_url, registrado_por } = req.body;
+    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais } = req.body;
     const connection = await pool.getConnection();
     await connection.query(
-      'UPDATE animais SET nome = ?, especie = ?, raca = ?, sexo = ?, idade_aproximada = ?, porte = ?, data_resgate = ?, status = ?, descricao = ?, foto_url = ?, registrado_por = ? WHERE id = ?',
-      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, status || 'resgatado', descricao, foto_url, registrado_por, req.params.id]
+      'UPDATE animais SET nome = ?, especie = ?, raca = ?, sexo = ?, idade_aproximada = ?, porte = ?, data_resgate = ?, local_resgate = ?, status = ?, descricao = ?, foto_url = ?, registrado_por = ?, vacinado = ?, castrado = ?, vermifugado = ?, temperamento = ?, convive_criancas = ?, convive_animais = ? WHERE id = ?',
+      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, local_resgate, status || 'resgatado', descricao, foto_url, registrado_por, vacinado || '', castrado || '', vermifugado || '', temperamento || '', convive_criancas || '', convive_animais || '', req.params.id]
     );
     connection.release();
     res.json({ id: req.params.id, ...req.body });

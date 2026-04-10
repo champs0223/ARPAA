@@ -34,14 +34,14 @@ router.get('/usuarios/:id', async (req, res) => {
 // POST - Criar novo usuário
 router.post('/usuarios', async (req, res) => {
   try {
-    const { nome, email, telefone, tipo } = req.body;
+    const { nome, cpf, senha } = req.body;
     const connection = await pool.getConnection();
     const [result] = await connection.query(
-      'INSERT INTO usuarios (nome, email, telefone, tipo) VALUES (?, ?, ?, ?)',
-      [nome, email, telefone, tipo]
+      'INSERT INTO usuarios (nome, cpf, senha) VALUES (?, ?, ?)',
+      [nome, cpf, senha]
     );
     connection.release();
-    res.status(201).json({ id: result.insertId, ...req.body });
+    res.status(201).json({ id: result.insertId, nome, cpf });
   } catch (error) {
     console.error('Erro ao criar usuário:', error.message);
     res.status(500).json({ error: error.message });
@@ -51,14 +51,14 @@ router.post('/usuarios', async (req, res) => {
 // PUT - Atualizar usuário
 router.put('/usuarios/:id', async (req, res) => {
   try {
-    const { nome, email, telefone, tipo } = req.body;
+    const { nome, cpf, senha } = req.body;
     const connection = await pool.getConnection();
     await connection.query(
-      'UPDATE usuarios SET nome = ?, email = ?, telefone = ?, tipo = ? WHERE id = ?',
-      [nome, email, telefone, tipo, req.params.id]
+      'UPDATE usuarios SET nome = ?, cpf = ?, senha = ? WHERE id = ?',
+      [nome, cpf, senha, req.params.id]
     );
     connection.release();
-    res.json({ id: req.params.id, ...req.body });
+    res.json({ id: req.params.id, nome, cpf });
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error.message);
     res.status(500).json({ error: error.message });

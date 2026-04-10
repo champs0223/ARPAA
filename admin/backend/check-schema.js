@@ -25,26 +25,42 @@ async function checkSchema() {
     // Estrutura usuarios
     console.log('\n📋 COLUNAS DA TABELA USUARIOS:');
     console.log('════════════════════════════════════════\n');
-    const [usuariosStruct] = await connection.query('DESCRIBE usuarios');
-    console.table(usuariosStruct);
+    try {
+      const [usuariosStruct] = await connection.query('DESCRIBE usuarios');
+      console.table(usuariosStruct);
+    } catch (e) {
+      console.log('⚠️  Tabela usuarios não existe ainda');
+    }
     
     // Estrutura animais
     console.log('\n📋 COLUNAS DA TABELA ANIMAIS:');
     console.log('════════════════════════════════════════\n');
-    const [animaisStruct] = await connection.query('DESCRIBE animais');
-    console.table(animaisStruct);
+    try {
+      const [animaisStruct] = await connection.query('DESCRIBE animais');
+      console.table(animaisStruct);
+    } catch (e) {
+      console.log('⚠️  Tabela animais não existe ainda');
+    }
     
     // Primeiros registros de animais
     console.log('\n📋 EXEMPLOS DE DADOS - ANIMAIS:');
     console.log('════════════════════════════════════════\n');
-    const [animais] = await connection.query('SELECT * FROM animais LIMIT 2');
-    console.table(animais);
+    try {
+      const [animais] = await connection.query('SELECT * FROM animais LIMIT 2');
+      console.table(animais);
+    } catch (e) {
+      console.log('⚠️  Tabela animais vazia ou não existe');
+    }
     
     // Primeiros usuários
     console.log('\n📋 EXEMPLOS DE DADOS - USUÁRIOS:');
     console.log('════════════════════════════════════════\n');
-    const [usuarios] = await connection.query('SELECT id, nome FROM usuarios LIMIT 3');
-    console.table(usuarios);
+    try {
+      const [usuarios] = await connection.query('SELECT id, nome, cpf FROM usuarios LIMIT 3');
+      console.table(usuarios);
+    } catch (e) {
+      console.log('⚠️  Tabela usuarios vazia ou não existe');
+    }
     
     connection.end();
   } catch (error) {

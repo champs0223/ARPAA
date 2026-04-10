@@ -679,6 +679,7 @@ Fechar
 
 <script>
 
+const API_BASE_URL = 'https://arpaa-production.up.railway.app'
 let animalEditando = null
 
 function logout(){
@@ -735,70 +736,76 @@ let descricao = document.getElementById("descricao").value
 let arquivo = document.getElementById("foto").files[0]
 
 if(!arquivo){
-alert("Selecione uma foto do animal")
-return
+  alert("Selecione uma foto do animal")
+  return
 }
 
 let reader = new FileReader()
 
-reader.onload = function(e){
+reader.onload = async function(e){
+  let fotoURL = URL.createObjectURL(arquivo)
 
-let fotoURL = URL.createObjectURL(arquivo)
-
-let animal = {
-id: Date.now(), // 🔥 ESSENCIAL
-nome,
-especie,
-raca,
-idade,
-sexo,
-porte,
-status: "Disponível",
-
-dataCadastro: Date.now(),
-
-vacinado,
-castrado,
-vermifugado,
-
-dataResgate,
-localResgate,
-
-temperamento,
-criancas,
-animais: conviveAnimais,
-
-foto: fotoURL,
-descricao
-}
-
-let animais = JSON.parse(localStorage.getItem("animais")) || []
-
-if(animalEditando !== null){
-
-  let index = animais.findIndex(a => a.id === animalEditando)
-
-  if(index !== -1){
-    animal.id = animalEditando
-    animais[index] = animal
+  let animal = {
+    nome,
+    especie,
+    raca,
+    sexo,
+    idade_aproximada: idade,
+    porte,
+    status: "Disponível",
+    data_resgate: dataResgate,
+    local_resgate: localResgate,
+    descricao,
+    foto_url: fotoURL,
+    registrado_por: localStorage.getItem("usuarioId") || null,
+    vacinado,
+    castrado,
+    vermifugado,
+    temperamento,
+    convive_criancas: criancas,
+    convive_animais: conviveAnimais
   }
 
-  animalEditando = null
+  try {
+    const response = await fetch(`${API_BASE_URL}/animais`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(animal)
+    })
 
-}else{
-  animais.push(animal)
-}
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Erro ao enviar animal para o servidor')
+    }
 
-localStorage.setItem("animais", JSON.stringify(animais))
+    const savedAnimal = await response.json()
 
-mostrarAnimais()
+    let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-limparFormulario()
+    if (animalEditando !== null) {
+      let index = animais.findIndex(a => a.id === animalEditando)
+      if (index !== -1) {
+        animal.id = animalEditando
+        animais[index] = animal
+      }
+      animalEditando = null
+    } else {
+      animal.id = savedAnimal.id || Date.now()
+      animais.push(animal)
+    }
 
-mostrarSucesso("Animal cadastrado com sucesso!")
+    localStorage.setItem("animais", JSON.stringify(animais))
 
-console.log("Animal salvo com sucesso")
-
+    mostrarAnimais()
+    limparFormulario()
+    mostrarSucesso("Animal cadastrado com sucesso!")
+    console.log("Animal salvo no servidor:", savedAnimal)
+  } catch (error) {
+    console.error(error)
+    alert('Falha ao salvar o animal: ' + error.message)
+  }
 }
 
 reader.readAsDataURL(arquivo)
@@ -830,36 +837,73 @@ return '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs fon
 return ""
 }
 
-function mostrarAnimais(){
+async function carregarAnimaisDaAPI(){
+  try {
+    const response = await fetch(`${API_BASE_URL}/animais`)
+    if (!response.ok) {
+      throw new Error('Erro ao carregar animais da API')
+    }
+    const animais = await response.json()
 
-let animais = JSON.parse(localStorage.getItem("animais")) || []
+    // Atualiza o localStorage com os dados da API
+    localStorage.setItem("animais", JSON.stringify(animais.map(animal => ({
+      id: animal.id,
+      nome: animal.nome,
+      especie: animal.especie,
+      raca: animal.raca,
+      idade: animal.idade_aproximada,
+      sexo: animal.sexo,
+      porte: animal.porte,
+      status: animal.status,
+      dataCadastro: animal.created_at,
+      vacinado: animal.vacinado,
+      castrado: animal.castrado,
+      vermifugado: animal.vermifugado,
+      dataResgate: animal.data_resgate,
+      localResgate: animal.local_resgate,
+      temperamento: animal.temperamento,
+      criancas: animal.convive_criancas,
+      animais: animal.convive_animais,
+      foto: animal.foto_url,
+      descricao: animal.descricao
+    }))))
 
-atualizarEstatisticas()
-
-animais.sort((a, b) => a.nome.localeCompare(b.nome))
-
-let contador = document.getElementById("contadorAnimais")
-
-if(animais.length === 1){
-contador.innerText = "1 animal cadastrado"
-}else{
-contador.innerText = animais.length + " animais cadastrados"
+    mostrarAnimais()
+  } catch (error) {
+    console.error('Erro ao carregar animais:', error)
+    // Se falhar, usa dados do localStorage
+    mostrarAnimais()
+  }
 }
 
-let lista = document.getElementById("listaAnimais")
+function mostrarAnimais(){
+  let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-lista.innerHTML = ""
+  atualizarEstatisticas()
 
+  animais.sort((a, b) => a.nome.localeCompare(b.nome))
 
-animais.forEach((animal,index)=>{
+  let contador = document.getElementById("contadorAnimais")
 
-let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
+  if(animais.length === 1){
+    contador.innerText = "1 animal cadastrado"
+  }else{
+    contador.innerText = animais.length + " animais cadastrados"
+  }
 
-let temPendente = adocoes.some(a => 
-  a.animalId == animal.id && a.status === "pendente"
-)
+  let lista = document.getElementById("listaAnimais")
 
-  lista.innerHTML += `
+  lista.innerHTML = ""
+
+  animais.forEach((animal,index)=>{
+
+    let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
+
+    let temPendente = adocoes.some(a => 
+      a.animalId == animal.id && a.status === "pendente"
+    )
+
+    lista.innerHTML += `
 
 <div onclick='verAnimal(${JSON.stringify(animal)})'
 class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
@@ -1063,17 +1107,28 @@ document.getElementById("modalEditar").classList.remove("hidden")
 }
 
 function excluirAnimal(id){
-  abrirConfirmacao("Deseja realmente excluir este animal?", () => {
+  abrirConfirmacao("Deseja realmente excluir este animal?", async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/animais/${id}`, {
+        method: 'DELETE'
+      })
 
-    let animais = JSON.parse(localStorage.getItem("animais")) || []
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao excluir animal')
+      }
 
-    animais = animais.filter(animal => animal.id !== id)
+      // Remove do localStorage também
+      let animais = JSON.parse(localStorage.getItem("animais")) || []
+      animais = animais.filter(animal => animal.id !== id)
+      localStorage.setItem("animais", JSON.stringify(animais))
 
-    localStorage.setItem("animais", JSON.stringify(animais))
-
-    mostrarAnimais()
-    mostrarSucesso("Animal excluído com sucesso!")
-
+      mostrarAnimais()
+      mostrarSucesso("Animal excluído com sucesso!")
+    } catch (error) {
+      console.error(error)
+      alert('Falha ao excluir o animal: ' + error.message)
+    }
   })
 }
 
@@ -1111,67 +1166,69 @@ preview.classList.add("hidden")
 mostrarAnimais()
 
 function salvarEdicao(){
+  abrirConfirmacao("Salvar alterações deste animal?", async () => {
+    let animais = JSON.parse(localStorage.getItem("animais"))
+    let index = animais.findIndex(a => a.id === animalEditando)
+    let animal = animais[index]
 
-abrirConfirmacao("Salvar alterações deste animal?", () => {
+    let animalAtualizado = {
+      nome: document.getElementById("editNome").value,
+      especie: document.getElementById("editEspecie").value,
+      raca: document.getElementById("editRaca").value,
+      sexo: document.getElementById("editSexo").value,
+      idade_aproximada: document.getElementById("editIdade").value,
+      porte: document.getElementById("editPorte").value,
+      status: document.getElementById("editStatus").value,
+      data_resgate: document.getElementById("editDataResgate").value,
+      local_resgate: document.getElementById("editLocalResgate").value,
+      descricao: document.getElementById("editDescricao").value,
+      vacinado: document.getElementById("editVacinado").value,
+      castrado: document.getElementById("editCastrado").value,
+      vermifugado: document.getElementById("editVermifugado").value,
+      temperamento: document.getElementById("editTemperamento").value,
+      convive_criancas: document.getElementById("editCriancas").value,
+      convive_animais: document.getElementById("editAnimais").value
+    }
 
-let animais = JSON.parse(localStorage.getItem("animais"))
+    try {
+      const response = await fetch(`${API_BASE_URL}/animais/${animalEditando}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(animalAtualizado)
+      })
 
-let index = animais.findIndex(a => a.id === animalEditando)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao atualizar animal')
+      }
 
-let animal = animais[index]
+      // Atualiza no localStorage também
+      Object.assign(animal, animalAtualizado)
 
-animal.nome = document.getElementById("editNome").value
-animal.especie = document.getElementById("editEspecie").value
-animal.raca = document.getElementById("editRaca").value
-animal.idade = document.getElementById("editIdade").value
-animal.sexo = document.getElementById("editSexo").value
-animal.porte = document.getElementById("editPorte").value
-animal.status = document.getElementById("editStatus").value
-
-animal.vacinado = document.getElementById("editVacinado").value
-animal.castrado = document.getElementById("editCastrado").value
-animal.vermifugado = document.getElementById("editVermifugado").value
-
-animal.dataResgate = document.getElementById("editDataResgate").value
-animal.localResgate = document.getElementById("editLocalResgate").value
-
-animal.temperamento = document.getElementById("editTemperamento").value
-animal.criancas = document.getElementById("editCriancas").value
-animal.animais = document.getElementById("editAnimais").value
-
-animal.descricao = document.getElementById("editDescricao").value
-
-let novaFoto = document.getElementById("editFoto").files[0]
-
-if(novaFoto){
-
-let reader = new FileReader()
-
-reader.onload = function(e){
-
-animal.foto = e.target.result
-
-localStorage.setItem("animais", JSON.stringify(animais))
-
-fecharEditar()
-mostrarAnimais()
-mostrarSucesso("Alterações salvas com sucesso!")
-
-}
-
-reader.readAsDataURL(novaFoto)
-
-}else{
-
-localStorage.setItem("animais", JSON.stringify(animais))
-
-fecharEditar()
-mostrarAnimais()
-mostrarSucesso("Alterações salvas com sucesso!")
-
-}
-
-})
+      let novaFoto = document.getElementById("editFoto").files[0]
+      if(novaFoto){
+        let reader = new FileReader()
+        reader.onload = function(e){
+          animal.foto = e.target.result
+          localStorage.setItem("animais", JSON.stringify(animais))
+          fecharEditar()
+          mostrarAnimais()
+          mostrarSucesso("Alterações salvas com sucesso!")
+        }
+        reader.readAsDataURL(novaFoto)
+      } else {
+        localStorage.setItem("animais", JSON.stringify(animais))
+        fecharEditar()
+        mostrarAnimais()
+        mostrarSucesso("Alterações salvas com sucesso!")
+      }
+    } catch (error) {
+      console.error(error)
+      alert('Falha ao salvar alterações: ' + error.message)
+    }
+  })
 }
 
 function fecharEditar(){
@@ -1331,6 +1388,11 @@ function mostrarSucesso(msg){
     box.classList.add("ativo")
   }, 10)
 }
+
+// Carrega animais da API quando a página carrega
+window.addEventListener('load', () => {
+  carregarAnimaisDaAPI()
+})
 
 </script>
 

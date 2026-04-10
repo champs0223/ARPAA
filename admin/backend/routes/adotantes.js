@@ -34,12 +34,12 @@ router.get('/adotantes/:id', async (req, res) => {
 // POST - Criar novo adotante
 router.post('/adotantes', async (req, res) => {
   try {
-    const { nome, email, telefone, endereco, cidade, estado, cpf } = req.body;
+    const { nome, email, telefone, endereco, complemento, cidade, estado, cpf, idade, trabalha, tem_criancas, tem_pets, tem_quintal, observacoes } = req.body;
     const id = require('crypto').randomBytes(6).toString('hex');
     const connection = await pool.getConnection();
     const [result] = await connection.query(
-      'INSERT INTO adotantes (id, nome, email, telefone, endereco, cidade, estado, cpf) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, nome, email, telefone, endereco, cidade, estado, cpf]
+      'INSERT INTO adotantes (id, nome, email, telefone, endereco, complemento, cidade, estado, cpf, idade, trabalha, tem_criancas, tem_pets, tem_quintal, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, nome, email, telefone, endereco, complemento || '', cidade, estado, cpf, idade || null, trabalha || '', tem_criancas || '', tem_pets || '', tem_quintal || '', observacoes || '']
     );
     connection.release();
     res.status(201).json({ id, ...req.body });
@@ -52,11 +52,11 @@ router.post('/adotantes', async (req, res) => {
 // PUT - Atualizar adotante
 router.put('/adotantes/:id', async (req, res) => {
   try {
-    const { nome, email, telefone, endereco, cidade, estado, cpf } = req.body;
+    const { nome, email, telefone, endereco, complemento, cidade, estado, cpf, idade, trabalha, tem_criancas, tem_pets, tem_quintal, observacoes } = req.body;
     const connection = await pool.getConnection();
     await connection.query(
-      'UPDATE adotantes SET nome = ?, email = ?, telefone = ?, endereco = ?, cidade = ?, estado = ?, cpf = ? WHERE id = ?',
-      [nome, email, telefone, endereco, cidade, estado, cpf, req.params.id]
+      'UPDATE adotantes SET nome = ?, email = ?, telefone = ?, endereco = ?, complemento = ?, cidade = ?, estado = ?, cpf = ?, idade = ?, trabalha = ?, tem_criancas = ?, tem_pets = ?, tem_quintal = ?, observacoes = ? WHERE id = ?',
+      [nome, email, telefone, endereco, complemento || '', cidade, estado, cpf, idade || null, trabalha || '', tem_criancas || '', tem_pets || '', tem_quintal || '', observacoes || '', req.params.id]
     );
     connection.release();
     res.json({ id: req.params.id, ...req.body });

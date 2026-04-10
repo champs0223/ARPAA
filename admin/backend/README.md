@@ -9,7 +9,7 @@ Backend Node.js + Express para o sistema ARPAA, integrado com banco de dados MyS
 ### 1. Instalar Dependências
 
 ```bash
-cd /workspaces/ARPAA/backend
+cd /workspaces/ARPAA/admin/backend
 npm install
 ```
 
