@@ -4,9 +4,9 @@
 
 // URL base da API
 // Desenvolvimento local:
-// const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'http://localhost:3000';
 // Produção no Railway:
-const API_BASE_URL = 'https://arpaa-production.up.railway.app';
+// const API_BASE_URL = 'https://arpaa-production.up.railway.app';
 
 // ==========================================
 // FUNÇÕES AUXILIARES

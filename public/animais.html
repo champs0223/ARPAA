@@ -42,7 +42,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <!-- PROTEÇÃO DE LOGIN -->
 <script>
 if(localStorage.getItem("adminLogado") !== "true"){
-window.location.href = "../index.html"
+window.location.href = "index.html"
 }
 </script>
 
@@ -684,7 +684,7 @@ let animalEditando = null
 function logout(){
 
 localStorage.removeItem("adminLogado")
-window.location.href="../index.html"
+window.location.href="index.html"
 
 }
 
@@ -711,80 +711,109 @@ reader.readAsDataURL(arquivo)
 
 
 function cadastrarAnimal(){
-  let nome = document.getElementById("nome").value
-  let especie = document.getElementById("especie").value
-  let raca = document.getElementById("raca").value
-  let idade = document.getElementById("idade").value
-  let sexo = document.getElementById("sexo").value
-  let porte = document.getElementById("porte").value
 
-  let vacinado = document.getElementById("vacinado").value
-  let castrado = document.getElementById("castrado").value
-  let vermifugado = document.getElementById("vermifugado").value
+let nome = document.getElementById("nome").value
+let especie = document.getElementById("especie").value
+let raca = document.getElementById("raca").value
+let idade = document.getElementById("idade").value
+let sexo = document.getElementById("sexo").value
+let porte = document.getElementById("porte").value
 
-  let dataResgate = document.getElementById("dataResgate").value
-  let localResgate = document.getElementById("localResgate").value
+let vacinado = document.getElementById("vacinado").value
+let castrado = document.getElementById("castrado").value
+let vermifugado = document.getElementById("vermifugado").value
 
-  let temperamento = document.getElementById("temperamento").value
-  let criancas = document.getElementById("criancas").value
-  let conviveAnimais = document.getElementById("animais").value
+let dataResgate = document.getElementById("dataResgate").value
+let localResgate = document.getElementById("localResgate").value
 
-  let descricao = document.getElementById("descricao").value
+let temperamento = document.getElementById("temperamento").value
+let criancas = document.getElementById("criancas").value
+let conviveAnimais = document.getElementById("animais").value
 
-  let arquivo = document.getElementById("foto").files[0]
+let descricao = document.getElementById("descricao").value
 
-  if(!arquivo){
-    alert("Selecione uma foto do animal")
-    return
-  }
+let arquivo = document.getElementById("foto").files[0]
 
-  // Criar FormData para enviar arquivo
-  let formData = new FormData()
-  formData.append('foto', arquivo)
-  formData.append('nome', nome)
-  formData.append('especie', especie)
-  formData.append('raca', raca)
-  formData.append('idade_aproximada', idade)
-  formData.append('sexo', sexo)
-  formData.append('porte', porte)
-  formData.append('status', 'disponivel')
-  formData.append('data_resgate', dataResgate)
-  formData.append('descricao', descricao)
-  formData.append('registrado_por', localStorage.getItem('usuario_id') || '1') // ID do usuário logado
-
-  // Mostrar loading
-  let btn = document.querySelector('button[type="submit"]')
-  let textoOriginal = btn.textContent
-  btn.textContent = 'Salvando...'
-  btn.disabled = true
-
-  fetch('/animais', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Animal criado:', data)
-    mostrarSucesso("Animal cadastrado com sucesso!")
-    limparFormulario()
-    mostrarAnimais() // Recarregar lista
-  })
-  .catch(error => {
-    console.error('Erro:', error)
-    alert('Erro ao cadastrar animal: ' + error.message)
-  })
-  .finally(() => {
-    btn.textContent = textoOriginal
-    btn.disabled = false
-  })
+if(!arquivo){
+alert("Selecione uma foto do animal")
+return
 }
 
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let fotoURL = URL.createObjectURL(arquivo)
+
+let animal = {
+id: Date.now(), // 🔥 ESSENCIAL
+nome,
+especie,
+raca,
+idade,
+sexo,
+porte,
+status: "Disponível",
+
+dataCadastro: Date.now(),
+
+vacinado,
+castrado,
+vermifugado,
+
+dataResgate,
+localResgate,
+
+temperamento,
+criancas,
+animais: conviveAnimais,
+
+foto: fotoURL,
+descricao
+}
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+if(animalEditando !== null){
+
+  let index = animais.findIndex(a => a.id === animalEditando)
+
+  if(index !== -1){
+    animal.id = animalEditando
+    animais[index] = animal
+  }
+
+  animalEditando = null
+
+}else{
+  animais.push(animal)
+}
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+mostrarAnimais()
+
+limparFormulario()
+
+mostrarSucesso("Animal cadastrado com sucesso!")
+
+console.log("Animal salvo com sucesso")
+
+}
+
+reader.readAsDataURL(arquivo)
+
+}
 
 function badgeStatus(status){
 
-  if(status === "Reservado"){
-    return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Reservado</span>'
-  }
+if(status === "Disponível"){
+return '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Disponível</span>'
+}
+
+if(status === "Reservado"){
+return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Reservado</span>'
+}
 
 if(status === "Adotado"){
 return '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">Adotado</span>'
@@ -802,76 +831,81 @@ return ""
 }
 
 function mostrarAnimais(){
-  fetch('/animais-com-usuario')
-  .then(response => response.json())
-  .then(animais => {
-    atualizarEstatisticas(animais)
 
-    animais.sort((a, b) => a.nome.localeCompare(b.nome))
+let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-    let contador = document.getElementById("contadorAnimais")
+atualizarEstatisticas()
 
-    if(animais.length === 1){
-      contador.innerText = "1 animal cadastrado"
-    }else{
-      contador.innerText = animais.length + " animais cadastrados"
-    }
+animais.sort((a, b) => a.nome.localeCompare(b.nome))
 
-    let lista = document.getElementById("listaAnimais")
-    lista.innerHTML = ""
+let contador = document.getElementById("contadorAnimais")
 
-    animais.forEach((animal,index)=>{
-      let temPendente = false // TODO: implementar verificação de adoções pendentes via API
+if(animais.length === 1){
+contador.innerText = "1 animal cadastrado"
+}else{
+contador.innerText = animais.length + " animais cadastrados"
+}
 
-      lista.innerHTML += `
-        <div onclick='verAnimal(${JSON.stringify(animal)})'
-        class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
+let lista = document.getElementById("listaAnimais")
 
-        <img src="${animal.foto_url || 'https://via.placeholder.com/300x200?text=Sem+Foto'}"
-        class="w-full h-28 object-cover">
+lista.innerHTML = ""
 
-        <div class="p-4">
 
-        <div class="flex justify-between items-center mb-1">
-        <h3 class="text-base font-semibold">${animal.nome}</h3>
-        ${badgeStatus(animal.status)}
-        </div>
+animais.forEach((animal,index)=>{
 
-        ${temPendente ? '<span class="text-xs text-yellow-600">Em processo de adoção</span>' : ''}
+let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
-        <p class="text-sm text-gray-500 mb-2">
-        ${animal.especie || ""} • ${animal.idade_aproximada} • Porte ${animal.porte}
-        </p>
+let temPendente = adocoes.some(a => 
+  a.animalId == animal.id && a.status === "pendente"
+)
 
-        <p class="text-sm text-gray-600 mb-3">
-        ${animal.descricao || ""}
-        </p>
+  lista.innerHTML += `
 
-        <div class="flex gap-2">
+<div onclick='verAnimal(${JSON.stringify(animal)})'
+class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
-        <button onclick="event.stopPropagation(); abrirEditarPorId(${animal.id})"
-        class="bg-yellow-500 text-white px-3 py-1 rounded">
-        Editar
-        </button>
+<img src="${animal.foto}"
+class="w-full h-28 object-cover">
 
-        <button onclick="event.stopPropagation(); excluirAnimal(${animal.id})"
-        class="bg-red-500 text-white px-3 py-1 rounded">
-        Excluir
-        </button>
+<div class="p-4">
 
-        </div>
+<div class="flex justify-between items-center mb-1">
+<h3 class="text-base font-semibold">${animal.nome}</h3>
+${badgeStatus(animal.status)}
+</div>
 
-        </div>
+${temPendente ? '<span class="text-xs text-yellow-600">Em processo de adoção</span>' : ''}
 
-        </div>
-      `
-    })
-  })
-  .catch(error => {
-    console.error('Erro ao carregar animais:', error)
-    alert('Erro ao carregar animais: ' + error.message)
-  })
-  }
+<p class="text-sm text-gray-500 mb-2">
+${animal.especie || ""} • ${animal.idade} • Porte ${animal.porte}
+</p>
+
+<p class="text-sm text-gray-600 mb-3">
+${animal.descricao || ""}
+</p>
+
+<div class="flex gap-2">
+
+<button onclick="event.stopPropagation(); abrirEditarPorId(${animal.id})"
+class="bg-yellow-500 text-white px-3 py-1 rounded">
+Editar
+</button>
+
+<button onclick="event.stopPropagation(); excluirAnimal(${animal.id})"
+class="bg-red-500 text-white px-3 py-1 rounded">
+Excluir
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`
+})
+
+}
 
 function filtrarAnimais(){
 
@@ -988,67 +1022,58 @@ mostrarAnimais()
 
 }
 
-function abrirEditar(id, animal = null){
+function abrirEditar(id){
 
-  // Se não passou animal, buscar do localStorage (fallback)
-  if(!animal){
-    let animais = JSON.parse(localStorage.getItem("animais"))
-    animal = animais.find(a => a.id === id)
-  }
+let animais = JSON.parse(localStorage.getItem("animais"))
 
-  animalEditando = id
+let animal = animais.find(a => a.id === id)
 
-  document.getElementById("editNome").value = animal.nome || ""
-  document.getElementById("editEspecie").value = animal.especie || ""
-  document.getElementById("editRaca").value = animal.raca || ""
-  document.getElementById("editIdade").value = animal.idade_aproximada || ""
-  document.getElementById("editSexo").value = animal.sexo || ""
-  document.getElementById("editPorte").value = animal.porte || ""
-  document.getElementById("editStatus").value = animal.status || "disponivel"
+animalEditando = id
 
-  document.getElementById("editVacinado").value = animal.vacinado || ""
-  document.getElementById("editCastrado").value = animal.castrado || ""
-  document.getElementById("editVermifugado").value = animal.vermifugado || ""
+document.getElementById("editNome").value = animal.nome || ""
+document.getElementById("editEspecie").value = animal.especie || ""
+document.getElementById("editRaca").value = animal.raca || ""
+document.getElementById("editIdade").value = animal.idade || ""
+document.getElementById("editSexo").value = animal.sexo || ""
+document.getElementById("editPorte").value = animal.porte || ""
+document.getElementById("editStatus").value = animal.status || "Disponível"
 
-  document.getElementById("editDataResgate").value = animal.data_resgate || ""
-  document.getElementById("editLocalResgate").value = animal.local_resgate || ""
+document.getElementById("editVacinado").value = animal.vacinado || ""
+document.getElementById("editCastrado").value = animal.castrado || ""
+document.getElementById("editVermifugado").value = animal.vermifugado || ""
 
-  document.getElementById("editTemperamento").value = animal.temperamento || ""
-  document.getElementById("editCriancas").value = animal.criancas || ""
-  document.getElementById("editAnimais").value = animal.animais || ""
+document.getElementById("editDataResgate").value = animal.dataResgate || ""
+document.getElementById("editLocalResgate").value = animal.localResgate || ""
 
-  document.getElementById("editDescricao").value = animal.descricao || ""
+document.getElementById("editTemperamento").value = animal.temperamento || ""
+document.getElementById("editCriancas").value = animal.criancas || ""
+document.getElementById("editAnimais").value = animal.animais || ""
 
-  let preview = document.getElementById("editPreview")
+document.getElementById("editDescricao").value = animal.descricao || ""
 
-  if(animal.foto_url){
-    preview.src = animal.foto_url
-    preview.classList.remove("hidden")
-  } else {
-    preview.classList.add("hidden")
-  }
+let preview = document.getElementById("editPreview")
 
-  document.getElementById("modalEditar").classList.remove("hidden")
+if(animal.foto){
+preview.src = animal.foto
+preview.classList.remove("hidden")
+}
+
+document.getElementById("modalEditar").classList.remove("hidden")
 
 }
 
 function excluirAnimal(id){
   abrirConfirmacao("Deseja realmente excluir este animal?", () => {
-    fetch(`/animais/${id}`, {
-      method: 'DELETE'
-    })
-    .then(response => {
-      if (response.ok) {
-        mostrarSucesso("Animal excluído com sucesso!")
-        mostrarAnimais() // Recarregar lista
-      } else {
-        throw new Error('Erro ao excluir animal')
-      }
-    })
-    .catch(error => {
-      console.error('Erro:', error)
-      alert('Erro ao excluir animal: ' + error.message)
-    })
+
+    let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+    animais = animais.filter(animal => animal.id !== id)
+
+    localStorage.setItem("animais", JSON.stringify(animais))
+
+    mostrarAnimais()
+    mostrarSucesso("Animal excluído com sucesso!")
+
   })
 }
 
@@ -1086,48 +1111,67 @@ preview.classList.add("hidden")
 mostrarAnimais()
 
 function salvarEdicao(){
-  abrirConfirmacao("Salvar alterações deste animal?", () => {
-    let novaFoto = document.getElementById("editFoto").files[0]
 
-    // Criar FormData para enviar dados e possível nova foto
-    let formData = new FormData()
-    formData.append('nome', document.getElementById("editNome").value)
-    formData.append('especie', document.getElementById("editEspecie").value)
-    formData.append('raca', document.getElementById("editRaca").value)
-    formData.append('idade_aproximada', document.getElementById("editIdade").value)
-    formData.append('sexo', document.getElementById("editSexo").value)
-    formData.append('porte', document.getElementById("editPorte").value)
-    formData.append('status', document.getElementById("editStatus").value)
-    formData.append('vacinado', document.getElementById("editVacinado").value)
-    formData.append('castrado', document.getElementById("editCastrado").value)
-    formData.append('vermifugado', document.getElementById("editVermifugado").value)
-    formData.append('data_resgate', document.getElementById("editDataResgate").value)
-    formData.append('local_resgate', document.getElementById("editLocalResgate").value)
-    formData.append('temperamento', document.getElementById("editTemperamento").value)
-    formData.append('criancas', document.getElementById("editCriancas").value)
-    formData.append('animais', document.getElementById("editAnimais").value)
-    formData.append('descricao', document.getElementById("editDescricao").value)
+abrirConfirmacao("Salvar alterações deste animal?", () => {
 
-    if(novaFoto){
-      formData.append('foto', novaFoto)
-    }
+let animais = JSON.parse(localStorage.getItem("animais"))
 
-    fetch(`/animais/${animalEditando}`, {
-      method: 'PUT',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Animal atualizado:', data)
-      fecharEditar()
-      mostrarAnimais()
-      mostrarSucesso("Alterações salvas com sucesso!")
-    })
-    .catch(error => {
-      console.error('Erro:', error)
-      alert('Erro ao atualizar animal: ' + error.message)
-    })
-  })
+let index = animais.findIndex(a => a.id === animalEditando)
+
+let animal = animais[index]
+
+animal.nome = document.getElementById("editNome").value
+animal.especie = document.getElementById("editEspecie").value
+animal.raca = document.getElementById("editRaca").value
+animal.idade = document.getElementById("editIdade").value
+animal.sexo = document.getElementById("editSexo").value
+animal.porte = document.getElementById("editPorte").value
+animal.status = document.getElementById("editStatus").value
+
+animal.vacinado = document.getElementById("editVacinado").value
+animal.castrado = document.getElementById("editCastrado").value
+animal.vermifugado = document.getElementById("editVermifugado").value
+
+animal.dataResgate = document.getElementById("editDataResgate").value
+animal.localResgate = document.getElementById("editLocalResgate").value
+
+animal.temperamento = document.getElementById("editTemperamento").value
+animal.criancas = document.getElementById("editCriancas").value
+animal.animais = document.getElementById("editAnimais").value
+
+animal.descricao = document.getElementById("editDescricao").value
+
+let novaFoto = document.getElementById("editFoto").files[0]
+
+if(novaFoto){
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+animal.foto = e.target.result
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+fecharEditar()
+mostrarAnimais()
+mostrarSucesso("Alterações salvas com sucesso!")
+
+}
+
+reader.readAsDataURL(novaFoto)
+
+}else{
+
+localStorage.setItem("animais", JSON.stringify(animais))
+
+fecharEditar()
+mostrarAnimais()
+mostrarSucesso("Alterações salvas com sucesso!")
+
+}
+
+})
 }
 
 function fecharEditar(){
@@ -1157,18 +1201,18 @@ reader.readAsDataURL(arquivo)
 
 function verAnimal(animal){
 
-document.getElementById("detFoto").src = animal.foto_url || 'https://via.placeholder.com/300x200?text=Sem+Foto'
+document.getElementById("detFoto").src = animal.foto
 
 document.getElementById("detNome").innerText = animal.nome
 
 document.getElementById("detInfo").innerText =
-`${animal.especie || ""} • ${animal.raca || ""} • ${animal.idade_aproximada} • Porte ${animal.porte}`
+`${animal.especie || ""} • ${animal.raca || ""} • ${animal.idade} • Porte ${animal.porte}`
 
 document.getElementById("detSaude").innerText =
 `Saúde: Vacinado ${animal.vacinado || "?"} | Castrado ${animal.castrado || "?"} | Vermifugado ${animal.vermifugado || "?"}`
 
 document.getElementById("detResgate").innerText =
-`Resgate: ${animal.data_resgate || ""} - ${animal.local_resgate || ""}`
+`Resgate: ${animal.dataResgate || ""} - ${animal.localResgate || ""}`
 
 document.getElementById("detComportamento").innerText =
 `Temperamento: ${animal.temperamento || ""} | Crianças: ${animal.criancas || ""} | Animais: ${animal.animais || ""}`
@@ -1186,54 +1230,60 @@ document.getElementById("modalDetalhes").classList.add("hidden")
 
 }
 
-function atualizarEstatisticas(animais){
-  let total = animais.length
-  let disponiveis = 0
-  let adotados = 0
-  let tratamento = 0
-  let reservados = 0
-  let devolvidos = 0
+function atualizarEstatisticas(){
 
-  animais.forEach(animal => {
-    if(animal.status === "disponivel" || animal.status === "Disponível"){
-      disponiveis++
-    }
+let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-    if(animal.status === "adotado" || animal.status === "Adotado"){
-      adotados++
-    }
+let total = animais.length
+let disponiveis = 0
+let adotados = 0
+let tratamento = 0
+let reservados = 0
+let devolvidos = 0
 
-    if(animal.status === "em_tratamento" || animal.status === "Em tratamento"){
-      tratamento++
-    }
+animais.forEach(animal => {
 
-    if(animal.status === "reservado" || animal.status === "Reservado"){
-      reservados++
-    }
+if(animal.status === "Disponível"){
+disponiveis++
+}
 
-    if(animal.status === "devolvido" || animal.status === "Devolvido"){
-      devolvidos++
-    }
-  })
+if(animal.status === "Adotado"){
+adotados++
+}
 
-  document.getElementById("totalAnimais").innerText = total
-  document.getElementById("totalDisponiveis").innerText = disponiveis
-  document.getElementById("totalAdotados").innerText = adotados
-  document.getElementById("totalTratamento").innerText = tratamento
-  document.getElementById("totalDevolvidos").innerText = devolvidos
+if(animal.status === "Em tratamento"){
+tratamento++
+}
+
+if(animal.status === "Reservado"){
+reservados++
+}
+
+if(animal.status === "Devolvido"){
+devolvidos++
+}
+
+})
+
+document.getElementById("totalAnimais").innerText = total
+document.getElementById("totalDisponiveis").innerText = disponiveis
+document.getElementById("totalAdotados").innerText = adotados
+document.getElementById("totalTratamento").innerText = tratamento
+document.getElementById("totalDevolvidos").innerText = devolvidos
+
 }
 
 
 function abrirEditarPorId(id){
-  fetch(`/animais/${id}`)
-  .then(response => response.json())
-  .then(animal => {
-    abrirEditar(id, animal)
-  })
-  .catch(error => {
-    console.error('Erro ao buscar animal:', error)
-    alert('Erro ao carregar dados do animal: ' + error.message)
-  })
+
+let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+let index = animais.findIndex(a => a.id === id)
+
+if(index === -1) return
+
+abrirEditar(id)
+
 }
 
 let acaoConfirmada = null;
@@ -1284,7 +1334,7 @@ function mostrarSucesso(msg){
 
 </script>
 
-<script src="../menu.js"></script>
+<script src="menu.js"></script>
 
 </body>
 </html>

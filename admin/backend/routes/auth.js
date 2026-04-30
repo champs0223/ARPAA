@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db/connection');
+const { findOne, insertItem } = require('../db/localdb');
 
 // POST - Login
 router.post('/login', async (req, res) => {
@@ -11,25 +11,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query(
-      'SELECT id, nome, senha, is_admin FROM usuarios WHERE nome = ?',
-      [usuario]
-    );
-    connection.release();
+    const user = findOne('usuarios', (u) => String(u.nome) === String(usuario));
 
-    if (rows.length === 0) {
+    if (!user || user.senha !== senha) {
       return res.status(401).json({ error: 'Usuário ou senha incorretos' });
     }
 
-    const user = rows[0];
-
-    // Comparar senha (em produção, use bcrypt)
-    if (user.senha !== senha) {
-      return res.status(401).json({ error: 'Usuário ou senha incorretos' });
-    }
-
-    // Login bem-sucedido
     res.json({
       success: true,
       id: user.id,
@@ -53,30 +40,22 @@ router.post('/registro', async (req, res) => {
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
-    const connection = await pool.getConnection();
+    const exists = findOne('usuarios', (u) => String(u.nome) === String(usuario));
 
-    // Verificar se usuário já existe
-    const [exists] = await connection.query(
-      'SELECT id FROM usuarios WHERE nome = ?',
-      [usuario]
-    );
-
-    if (exists.length > 0) {
-      connection.release();
+    if (exists) {
       return res.status(400).json({ error: 'Usuário já existe' });
     }
 
-    // Criar novo usuário
-    const [result] = await connection.query(
-      'INSERT INTO usuarios (nome, senha, is_admin, created_at) VALUES (?, ?, ?, NOW())',
-      [usuario, senha, 0]
-    );
-
-    connection.release();
+    const newUser = insertItem('usuarios', {
+      nome: usuario,
+      senha,
+      is_admin: 0,
+      created_at: new Date().toISOString()
+    });
 
     res.status(201).json({
       success: true,
-      id: result.insertId,
+      id: newUser.id,
       usuario,
       message: 'Usuário criado com sucesso'
     });
@@ -95,10 +74,6 @@ router.get('/verificar-token', async (req, res) => {
     if (!token) {
       return res.status(401).json({ error: 'Não autenticado' });
     }
-
-    // Em produção, validar JWT
-    // Por enquanto, apenas retornar OK
-    res.json({ success: true, message: 'Token válido' });
 
   } catch (error) {
     res.status(500).json({ error: error.message });

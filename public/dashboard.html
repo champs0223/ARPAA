@@ -29,7 +29,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <!-- PROTEÇÃO DE LOGIN -->
 <script>
 if(localStorage.getItem("adminLogado") !== "true"){
-window.location.href = "../index.html"
+window.location.href = "index.html"
 }
 </script>
 
@@ -460,12 +460,12 @@ function animarNumero(elemento, valorFinal, duracao = 1000, isMoney = false) {
 
 function logout(){
 localStorage.removeItem("adminLogado")
-window.location.href="../index.html"
+window.location.href="index.html"
 }
 
 </script>
 
-<script src="../menu.js"></script>
+<script src="menu.js"></script>
 <!-- Primeiro Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

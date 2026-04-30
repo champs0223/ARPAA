@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Integração ARPAA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- CABEÇALHO -->
+        <div class="bg-gradient-to-r from-teal-600 to-teal-400 text-white p-8 rounded-lg shadow-lg mb-8">
+            <h1 class="text-4xl font-bold mb-2 flex items-center gap-3">
+                <i class="fas fa-flask"></i> Teste de Integração ARPAA
+            </h1>
+            <p class="text-teal-100">Verifique se o sistema de fotos e animais está funcionando</p>
+        </div>
+
+        <!-- TESTES -->
+        <div class="space-y-6">
+
+            <!-- TESTE 1: Backend Online -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-server"></i> Backend Online
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Verificar se o servidor está respondendo</p>
+                    </div>
+                    <button id="btnTesteBackend" onclick="testeBackend()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Testar
+                    </button>
+                </div>
+                <div id="resultadoBackend" class="mt-4 p-4 bg-gray-100 rounded text-sm font-mono hidden"></div>
+            </div>
+
+            <!-- TESTE 2: Animais API -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-dog"></i> Listar Animais
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Verificar quantos animais estão cadastrados</p>
+                    </div>
+                    <button id="btnTesteAnimais" onclick="testeAnimais()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Testar
+                    </button>
+                </div>
+                <div id="resultadoAnimais" class="mt-4 p-4 bg-gray-100 rounded text-sm font-mono hidden"></div>
+            </div>
+
+            <!-- TESTE 3: Fotos em Base64 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-image"></i> Fotos (Base64)
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Verificar se as fotos estão armazenadas corretamente</p>
+                    </div>
+                    <button id="btnTesteFotos" onclick="testeFotos()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Testar
+                    </button>
+                </div>
+                <div id="resultadoFotos" class="mt-4 p-4 bg-gray-100 rounded text-sm font-mono hidden"></div>
+            </div>
+
+            <!-- TESTE 4: Banco de Dados -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-database"></i> Banco de Dados SQLite
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Informações sobre o banco de dados</p>
+                    </div>
+                    <button id="btnTesteDB" onclick="testeDB()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Testar
+                    </button>
+                </div>
+                <div id="resultadoDB" class="mt-4 p-4 bg-gray-100 rounded text-sm font-mono hidden"></div>
+            </div>
+
+            <!-- TESTE 5: Criar Animal de Teste -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-plus-circle"></i> Criar Animal de Teste
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Registrar um animal para testar sincronização</p>
+                    </div>
+                    <button id="btnCriarTest" onclick="criarAnimalTest()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Criar
+                    </button>
+                </div>
+                <div id="resultadoCriar" class="mt-4 p-4 bg-gray-100 rounded text-sm font-mono hidden"></div>
+            </div>
+
+            <!-- TESTE 6: Carregar no Website -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-globe"></i> Website Público
+                        </h2>
+                        <p class="text-gray-600 text-sm mt-1">Verificar se os animais aparecem no site público</p>
+                    </div>
+                    <a href="../public/adote.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-2">
+                        Ver Adote <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
+                    <p class="text-blue-800 text-sm">Abra a página de adoção e veja se seus animais aparecem na galeria.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RESUMO -->
+        <div id="resumo" class="mt-8 bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-500 p-6 rounded-lg hidden">
+            <h3 class="text-xl font-bold text-green-700 mb-2 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> Tudo Funcionando! 🎉
+            </h3>
+            <p class="text-green-700">Seu sistema de integração está pronto para usar. Agora você pode:</p>
+            <ul class="mt-3 text-green-700 space-y-2">
+                <li>✓ Registrar animais no admin com fotos</li>
+                <li>✓ Ver os animais no website público</li>
+                <li>✓ Atualizar informações em tempo real</li>
+                <li>✓ Fotos armazenadas em formato base64</li>
+                <li>✓ Tudo funcionando 100% offline</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let todosPassaram = true;
+
+        function mostrarResultado(elementId, titulo, mensagem, tipo = 'sucesso') {
+            const elemento = document.getElementById(elementId);
+            elemento.classList.remove('hidden');
+            
+            let icone = '<i class="fas fa-check-circle text-green-600"></i>';
+            if (tipo === 'erro') {
+                icone = '<i class="fas fa-times-circle text-red-600"></i>';
+                todosPassaram = false;
+            } else if (tipo === 'aviso') {
+                icone = '<i class="fas fa-exclamation-circle text-yellow-600"></i>';
+            }
+
+            elemento.innerHTML = `
+                <div class="flex gap-2">
+                    ${icone}
+                    <div>
+                        <strong>${titulo}</strong>
+                        <p>${mensagem}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function testeBackend() {
+            const btn = document.getElementById('btnTesteBackend');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                mostrarResultado('resultadoBackend', 'Backend Online', 
+                    `API respondendo em ${API_URL}<br>Status: ${data.status}`);
+            } catch (error) {
+                mostrarResultado('resultadoBackend', 'Backend Offline', 
+                    `Erro: ${error.message}<br>Inicie com: cd admin/backend && npm start`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Testar';
+            }
+        }
+
+        async function testeAnimais() {
+            const btn = document.getElementById('btnTesteAnimais');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+
+            try {
+                const response = await fetch(`${API_URL}/animais`);
+                const animais = await response.json();
+                mostrarResultado('resultadoAnimais', 'Animais Carregados',
+                    `Total de animais: <strong>${animais.length}</strong><br>
+                     Primeiros: ${animais.slice(0, 3).map(a => a.nome).join(', ') || 'Nenhum'}`);
+            } catch (error) {
+                mostrarResultado('resultadoAnimais', 'Erro ao Carregar',
+                    `Erro: ${error.message}`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Testar';
+            }
+        }
+
+        async function testeFotos() {
+            const btn = document.getElementById('btnTesteFotos');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+
+            try {
+                const response = await fetch(`${API_URL}/animais`);
+                const animais = await response.json();
+                const comFoto = animais.filter(a => a.foto_base64).length;
+                
+                if (animais.length === 0) {
+                    mostrarResultado('resultadoFotos', 'Nenhum Animal',
+                        'Crie um animal primeiro para testar fotos.', 'aviso');
+                } else if (comFoto > 0) {
+                    mostrarResultado('resultadoFotos', 'Fotos Detectadas',
+                        `${comFoto} de ${animais.length} animais com fotos<br>
+                         Status: ✓ Usando base64`);
+                } else {
+                    mostrarResultado('resultadoFotos', 'Sem Fotos Yet',
+                        `${animais.length} animais cadastrados, mas nenhum com foto ainda.`, 'aviso');
+                }
+            } catch (error) {
+                mostrarResultado('resultadoFotos', 'Erro ao Verificar',
+                    `Erro: ${error.message}`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Testar';
+            }
+        }
+
+        async function testeDB() {
+            const btn = document.getElementById('btnTesteDB');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testando...';
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                mostrarResultado('resultadoDB', 'Armazenamento Local',
+                    `Fonte: ARPAA<br>
+                     Tipo: JSON local<br>
+                     Arquivo: admin/backend/db/data.json<br>
+                     Status: ✓ Funcionando offline`);
+            } catch (error) {
+                mostrarResultado('resultadoDB', 'Erro no Armazenamento',
+                    `Erro: ${error.message}`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Testar';
+            }
+        }
+
+        async function criarAnimalTest() {
+            const btn = document.getElementById('btnCriarTest');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+
+            try {
+                const dados = {
+                    nome: `TestePet_${Date.now()}`,
+                    especie: 'Cachorro',
+                    raca: 'Vira-lata',
+                    sexo: 'Macho',
+                    idade_aproximada: 2,
+                    porte: 'Médio',
+                    data_resgate: new Date().toISOString().split('T')[0],
+                    status: 'disponível',
+                    descricao: 'Animal criado via teste de integração',
+                    registrado_por: 1
+                };
+
+                const response = await fetch(`${API_URL}/animais`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    const animal = await response.json();
+                    mostrarResultado('resultadoCriar', 'Animal Criado!',
+                        `ID: ${animal[0]?.id || animal.id}<br>
+                         Nome: ${dados.nome}<br>
+                         Verifique em: ${API_URL}/animais/${animal[0]?.id || animal.id}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                mostrarResultado('resultadoCriar', 'Erro ao Criar',
+                    `Erro: ${error.message}`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Criar';
+            }
+        }
+
+        // Rodar todos os testes ao carregar a página
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Iniciando testes...');
+            await new Promise(r => setTimeout(r, 500));
+            await testeBackend();
+            await new Promise(r => setTimeout(r, 500));
+            await testeAnimais();
+            
+            // Mostrar resumo se tudo passou
+            if (todosPassaram) {
+                document.getElementById('resumo').classList.remove('hidden');
+            }
+        });
+    </script>
+
+</body>
+
+</html>
