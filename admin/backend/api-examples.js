@@ -77,13 +77,12 @@ async function obterUsuario(id) {
 /**
  * Criar novo usuário
  */
-async function criarUsuario(nome, email, telefone, tipo) {
+async function criarUsuario(nome, cpf, senha) {
   try {
     const novoUsuario = await apiRequest('/usuarios', 'POST', {
       nome,
-      email,
-      telefone,
-      tipo
+      cpf,
+      senha
     });
     console.log('Usuário criado:', novoUsuario);
     return novoUsuario;
@@ -96,13 +95,12 @@ async function criarUsuario(nome, email, telefone, tipo) {
 /**
  * Atualizar usuário
  */
-async function atualizarUsuario(id, nome, email, telefone, tipo) {
+async function atualizarUsuario(id, nome, cpf, senha) {
   try {
     const usuarioAtualizado = await apiRequest(`/usuarios/${id}`, 'PUT', {
       nome,
-      email,
-      telefone,
-      tipo
+      cpf,
+      senha
     });
     console.log('Usuário atualizado:', usuarioAtualizado);
     return usuarioAtualizado;

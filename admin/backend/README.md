@@ -10,7 +10,11 @@ Não requer servidor de banco de dados externo, MySQL ou SQLite.
 ### 1. Instalar Dependências
 
 ```bash
+<<<<<<< HEAD
 cd admin/backend
+=======
+cd /workspaces/ARPAA/admin/backend
+>>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
 npm install
 ```
 

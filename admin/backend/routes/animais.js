@@ -81,6 +81,7 @@ router.get('/animais-com-usuario', async (req, res) => {
 // POST - Criar novo animal (com foto em base64)
 router.post('/animais', upload.single('foto'), async (req, res) => {
   try {
+<<<<<<< HEAD
     let foto_base64 = null;
 
     if (req.file) {
@@ -111,6 +112,21 @@ router.post('/animais', upload.single('foto'), async (req, res) => {
     });
 
     res.status(201).json(animal);
+=======
+    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais } = req.body;
+    const connection = await pool.getConnection();
+    
+    const [result] = await connection.query(
+      'INSERT INTO animais (nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, local_resgate, status || 'resgatado', descricao, foto_url, registrado_por, vacinado || '', castrado || '', vermifugado || '', temperamento || '', convive_criancas || '', convive_animais || '']
+    );
+    
+    // Buscar o animal criado
+    const [newAnimal] = await connection.query('SELECT * FROM animais WHERE id = ?', [result.insertId]);
+    connection.release();
+    
+    res.status(201).json(newAnimal[0] || { message: 'Animal criado com sucesso' });
+>>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
   } catch (error) {
     console.error('Erro ao criar animal:', error.message);
     res.status(500).json({ error: error.message });
@@ -120,6 +136,7 @@ router.post('/animais', upload.single('foto'), async (req, res) => {
 // PUT - Atualizar animal
 router.put('/animais/:id', upload.single('foto'), async (req, res) => {
   try {
+<<<<<<< HEAD
     let foto_base64 = req.body.foto_base64 || null;
 
     if (req.file) {
@@ -153,6 +170,16 @@ router.put('/animais/:id', upload.single('foto'), async (req, res) => {
     }
 
     res.json(updated);
+=======
+    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, local_resgate, status, descricao, foto_url, registrado_por, vacinado, castrado, vermifugado, temperamento, convive_criancas, convive_animais } = req.body;
+    const connection = await pool.getConnection();
+    await connection.query(
+      'UPDATE animais SET nome = ?, especie = ?, raca = ?, sexo = ?, idade_aproximada = ?, porte = ?, data_resgate = ?, local_resgate = ?, status = ?, descricao = ?, foto_url = ?, registrado_por = ?, vacinado = ?, castrado = ?, vermifugado = ?, temperamento = ?, convive_criancas = ?, convive_animais = ? WHERE id = ?',
+      [nome, especie, raca, sexo || 'desconhecido', idade_aproximada, porte || 'desconhecido', data_resgate, local_resgate, status || 'resgatado', descricao, foto_url, registrado_por, vacinado || '', castrado || '', vermifugado || '', temperamento || '', convive_criancas || '', convive_animais || '', req.params.id]
+    );
+    connection.release();
+    res.json({ id: req.params.id, ...req.body });
+>>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
   } catch (error) {
     console.error('Erro ao atualizar animal:', error.message);
     res.status(500).json({ error: error.message });
