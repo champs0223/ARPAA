@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db/connection');
+const { getAll, getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
 // GET - Listar todos os resgates
 router.get('/resgates', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM resgates');
-    connection.release();
+    const rows = getAll('resgates');
     res.json(rows);
   } catch (error) {
     console.error('Erro ao listar resgates:', error.message);
@@ -18,13 +16,11 @@ router.get('/resgates', async (req, res) => {
 // GET - Obter resgate por ID
 router.get('/resgates/:id', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM resgates WHERE id = ?', [req.params.id]);
-    connection.release();
-    if (rows.length === 0) {
+    const resgate = getById('resgates', req.params.id);
+    if (!resgate) {
       return res.status(404).json({ error: 'Resgate não encontrado' });
     }
-    res.json(rows[0]);
+    res.json(resgate);
   } catch (error) {
     console.error('Erro ao buscar resgate:', error.message);
     res.status(500).json({ error: error.message });
@@ -34,15 +30,9 @@ router.get('/resgates/:id', async (req, res) => {
 // POST - Criar novo resgate
 router.post('/resgates', async (req, res) => {
   try {
-    const { animal_id, local_resgate, data_resgate, responsavel_id } = req.body;
-    const id = require('crypto').randomBytes(6).toString('hex');
-    const connection = await pool.getConnection();
-    const [result] = await connection.query(
-      'INSERT INTO resgates (id, animal_id, local_resgate, data_resgate, responsavel_id) VALUES (?, ?, ?, ?, ?)',
-      [id, animal_id, local_resgate, data_resgate, responsavel_id]
-    );
-    connection.release();
-    res.status(201).json({ id, ...req.body });
+    const { animal_id, local_resgate, data_resgate, descricao, resgatado_por } = req.body;
+    const resgate = insertItem('resgates', { animal_id, local_resgate, data_resgate, descricao, resgatado_por });
+    res.status(201).json(resgate);
   } catch (error) {
     console.error('Erro ao criar resgate:', error.message);
     res.status(500).json({ error: error.message });
@@ -52,14 +42,12 @@ router.post('/resgates', async (req, res) => {
 // PUT - Atualizar resgate
 router.put('/resgates/:id', async (req, res) => {
   try {
-    const { animal_id, local_resgate, data_resgate, responsavel_id } = req.body;
-    const connection = await pool.getConnection();
-    await connection.query(
-      'UPDATE resgates SET animal_id = ?, local_resgate = ?, data_resgate = ?, responsavel_id = ? WHERE id = ?',
-      [animal_id, local_resgate, data_resgate, responsavel_id, req.params.id]
-    );
-    connection.release();
-    res.json({ id: req.params.id, ...req.body });
+    const { animal_id, local_resgate, data_resgate, descricao, resgatado_por } = req.body;
+    const updated = updateItem('resgates', req.params.id, { animal_id, local_resgate, data_resgate, descricao, resgatado_por });
+    if (!updated) {
+      return res.status(404).json({ error: 'Resgate não encontrado' });
+    }
+    res.json(updated);
   } catch (error) {
     console.error('Erro ao atualizar resgate:', error.message);
     res.status(500).json({ error: error.message });
@@ -69,9 +57,10 @@ router.put('/resgates/:id', async (req, res) => {
 // DELETE - Deletar resgate
 router.delete('/resgates/:id', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    await connection.query('DELETE FROM resgates WHERE id = ?', [req.params.id]);
-    connection.release();
+    const deleted = deleteById('resgates', req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Resgate não encontrado' });
+    }
     res.json({ message: 'Resgate deletado com sucesso' });
   } catch (error) {
     console.error('Erro ao deletar resgate:', error.message);

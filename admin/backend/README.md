@@ -2,31 +2,52 @@
 
 ## 📋 Visão Geral
 
-Backend Node.js + Express para o sistema ARPAA, integrado com banco de dados MySQL hospedado na nuvem (Railway).
+Backend Node.js + Express para o sistema ARPAA, usando armazenamento local em arquivo JSON (`admin/backend/db/data.json`).
+Não requer servidor de banco de dados externo, MySQL ou SQLite.
 
 ## 🚀 Início Rápido
 
 ### 1. Instalar Dependências
 
 ```bash
+<<<<<<< HEAD
+cd admin/backend
+=======
 cd /workspaces/ARPAA/admin/backend
+>>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
 npm install
 ```
 
 ### 2. Configurar Variáveis de Ambiente
 
-O arquivo `.env` já está configurado com as credenciais fornecidas:
+O backend usa apenas o Cloudinary para upload de fotos. Configure as variáveis abaixo:
 
 ```
-DB_HOST=hopper.proxy.rlwy.net
-DB_PORT=55302
-DB_USER=root
-DB_PASSWORD=GRmZFEYJgGNFOVRyQkBCRlWCPLnJTxHo
-DB_NAME=railway
 NODE_ENV=development
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### 3. Iniciar o Servidor
+### 3. Configurar Cloudinary para Upload de Fotos
+
+Para habilitar o upload de fotos dos animais:
+
+1. **Crie uma conta gratuita no [Cloudinary](https://cloudinary.com)**
+2. **Acesse o Dashboard** e copie as credenciais:
+   - Cloud Name
+   - API Key
+   - API Secret
+3. **Preencha as variáveis no arquivo `.env`**:
+   ```
+   CLOUDINARY_CLOUD_NAME=seu_cloud_name
+   CLOUDINARY_API_KEY=sua_api_key
+   CLOUDINARY_API_SECRET=seu_api_secret
+   ```
+4. **Reinicie o servidor** após configurar as credenciais
+
+### 4. Iniciar o Servidor
 
 ```bash
 npm start

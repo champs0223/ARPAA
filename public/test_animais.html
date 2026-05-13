@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Animais</title>
+</head>
+<body>
+    <h1>Teste de Carregamento de Animais</h1>
+    <div id="animais-container">Carregando...</div>
+    
+    <script>
+        let todosAnimais = [];
+
+        async function carregarAnimais() {
+            try {
+                const response = await fetch('http://localhost:3000/animais');
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar animais');
+                }
+                const animais = await response.json();
+                todosAnimais = animais;
+                renderizarAnimais(animais);
+            } catch (error) {
+                console.error('Erro ao carregar animais:', error);
+                usarDadosMock();
+            }
+        }
+
+        function usarDadosMock() {
+            const animaisMock = [
+                { id: 1, nome: "Luna", especie: "Gato", idade: 2, porte: "Porte Pequeno", sexo: "Fêmea", vacinado: true, castrado: true, descricao: "Luna é carinhosa", foto_url: "https://via.placeholder.com/300x200" },
+                { id: 2, nome: "Thor", especie: "Cachorro", idade: 3, porte: "Porte Médio", sexo: "Macho", vacinado: true, castrado: true, descricao: "Thor é brincalhão", foto_url: "https://via.placeholder.com/300x200" }
+            ];
+            todosAnimais = animaisMock;
+            renderizarAnimais(animaisMock);
+        }
+
+        function renderizarAnimais(animais) {
+            const container = document.getElementById('animais-container');
+            const html = animais.map(animal => `<div><h3>${animal.nome}</h3><p>${animal.descricao}</p></div>`).join('');
+            container.innerHTML = html;
+        }
+
+        // Carregar quando a página carrega
+        carregarAnimais();
+    </script>
+</body>
+</html>

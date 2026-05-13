@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exemplo de Integração API - ARPAA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50">
+
+  <!-- Incluir arquivo de funções fetch da API -->
+  <script src="../backend/api-examples.js"></script>
+
+  <div class="container mx-auto p-8 max-w-6xl">
+    <!-- CABEÇALHO -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-teal-700 mb-2 flex items-center gap-2">
+        <i class="fas fa-paw"></i> Exemplo de Integração API ARPAA
+      </h1>
+      <p class="text-gray-600">Demonstra como usar a API REST do backend com fetch</p>
+      <p class="text-sm text-blue-600 mt-2">
+        <i class="fas fa-info-circle"></i> Abra o Console (F12) para ver os logs das requisições
+      </p>
+    </div>
+
+    <!-- LAYOUT EM GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- PAINEL: LISTAR ANIMAIS -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-list"></i> Listar Animais
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Busca todos os animais cadastrados no banco de dados.
+        </p>
+        <button onclick="handleListarAnimais()"
+          class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded transition">
+          <i class="fas fa-arrow-down"></i> Listar Animais
+        </button>
+        <div id="listar-animais-resultado" class="mt-4 text-sm"></div>
+      </div>
+
+      <!-- PAINEL: LISTAR ANIMAIS COM USUÁRIO -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-users"></i> Animais + Usuário (JOIN)
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Mostra animais com o nome do usuário que cadastrou (JOIN).
+        </p>
+        <button onclick="handleListarAnimaisComUsuario()"
+          class="w-full bg-violet-500 hover:bg-violet-600 text-white font-bold py-2 px-4 rounded transition">
+          <i class="fas fa-database"></i> Listar com JOIN
+        </button>
+        <div id="animais-usuario-resultado" class="mt-4 text-sm"></div>
+      </div>
+
+      <!-- PAINEL: CADASTRAR ANIMAL -->
+      <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+        <h2 class="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-plus"></i> Cadastrar Novo Animal
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Preencha o formulário abaixo para cadastrar um novo animal.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input type="text" id="animal-nome" placeholder="Nome do animal" class="border rounded p-2"
+            value="Rex">
+          <input type="text" id="animal-especie" placeholder="Espécie (ex: Cão)" class="border rounded p-2"
+            value="Cão">
+          <input type="text" id="animal-raca" placeholder="Raça" class="border rounded p-2" value="Labrador">
+          <input type="date" id="animal-data" class="border rounded p-2" value="2023-01-15">
+          <select id="animal-status" class="border rounded p-2">
+            <option value="disponivel">Disponível</option>
+            <option value="adotado">Adotado</option>
+            <option value="resgate">Resgate</option>
+            <option value="hospitalizacao">Hospitalização</option>
+          </select>
+          <input type="number" id="animal-usuario" placeholder="ID do usuário" class="border rounded p-2" value="1"
+            min="1">
+        </div>
+
+        <button onclick="handleCriarAnimal()"
+          class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition">
+          <i class="fas fa-save"></i> Cadastrar Animal
+        </button>
+        <div id="criar-animal-resultado" class="mt-4 text-sm"></div>
+      </div>
+
+      <!-- PAINEL: LISTAR USUÁRIOS -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-users-cog"></i> Listar Usuários
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Busca todos os usuários cadastrados.
+        </p>
+        <button onclick="handleListarUsuarios()"
+          class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
+          <i class="fas fa-arrow-down"></i> Listar Usuários
+        </button>
+        <div id="listar-usuarios-resultado" class="mt-4 text-sm"></div>
+      </div>
+
+      <!-- PAINEL: LISTAR ADOTANTES -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-heart"></i> Listar Adotantes
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+          Busca todos os adotantes cadastrados.
+        </p>
+        <button onclick="handleListarAdotantes()"
+          class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition">
+          <i class="fas fa-arrow-down"></i> Listar Adotantes
+        </button>
+        <div id="listar-adotantes-resultado" class="mt-4 text-sm"></div>
+      </div>
+
+    </div>
+
+    <!-- INFORMAÇÕES ADICIONAIS -->
+    <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+      <h3 class="font-bold text-yellow-900 mb-2">
+        <i class="fas fa-lightbulb"></i> Dica: Usando a API
+      </h3>
+      <p class="text-yellow-800 text-sm mb-2">
+        O arquivo <code class="bg-white px-2 py-1 rounded">api-examples.js</code> contém funções prontas para usar em seu código:
+      </p>
+      <pre class="bg-white p-3 rounded text-xs overflow-auto mb-2"><code>// Exemplos de uso:
+listarAnimais().then(animais => console.table(animais));
+
+criarAnimal('Rex', 'Cão', 'Labrador', '2023-01-15', 'disponivel', 1)
+  .then(animal => console.log('Criado:', animal));
+
+listarAnimaisComUsuario().then(animais => console.log(animais));</code></pre>
+      <p class="text-yellow-800 text-sm">
+        Verifique o Console (F12) para ver todos os logs!
+      </p>
+    </div>
+
+    <!-- TESTE DE CONEXÃO -->
+    <div class="mt-6 p-4 bg-white rounded-lg shadow-md">
+      <h3 class="font-bold text-teal-700 mb-2">
+        <i class="fas fa-plug"></i> Status da Conexão
+      </h3>
+      <button onclick="handleTesteConexao()"
+        class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition">
+        <i class="fas fa-heartbeat"></i> Testar Conexão
+      </button>
+      <div id="teste-conexao-resultado" class="mt-4 text-sm"></div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+    // Função para formatar resultado
+    function mostrarResultado(elementId, dados, tipo = 'sucesso') {
+      const elemento = document.getElementById(elementId);
+      if (tipo === 'sucesso') {
+        elemento.innerHTML = `
+          <div class="bg-green-50 border border-green-200 rounded p-3">
+            <p class="text-green-700 font-bold mb-2">✓ Sucesso!</p>
+            <pre class="text-xs bg-white p-2 rounded overflow-auto max-h-64">${JSON.stringify(dados, null, 2)}</pre>
+          </div>
+        `;
+      } else {
+        elemento.innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded p-3">
+            <p class="text-red-700 font-bold mb-2">✗ Erro</p>
+            <pre class="text-xs bg-white p-2 rounded overflow-auto">${dados}</pre>
+          </div>
+        `;
+      }
+    }
+
+    // LISTAR ANIMAIS
+    async function handleListarAnimais() {
+      const elemento = document.getElementById('listar-animais-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+      try {
+        const animais = await listarAnimais();
+        mostrarResultado('listar-animais-resultado', animais);
+      } catch (error) {
+        mostrarResultado('listar-animais-resultado', error.message, 'erro');
+      }
+    }
+
+    // LISTAR ANIMAIS COM USUÁRIO
+    async function handleListarAnimaisComUsuario() {
+      const elemento = document.getElementById('animais-usuario-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+      try {
+        const animais = await listarAnimaisComUsuario();
+        mostrarResultado('animais-usuario-resultado', animais);
+      } catch (error) {
+        mostrarResultado('animais-usuario-resultado', error.message, 'erro');
+      }
+    }
+
+    // CRIAR ANIMAL
+    async function handleCriarAnimal() {
+      const nome = document.getElementById('animal-nome').value;
+      const especie = document.getElementById('animal-especie').value;
+      const raca = document.getElementById('animal-raca').value;
+      const data = document.getElementById('animal-data').value;
+      const status = document.getElementById('animal-status').value;
+      const usuario = parseInt(document.getElementById('animal-usuario').value);
+
+      if (!nome || !especie || !raca || !data) {
+        mostrarResultado('criar-animal-resultado', 'Preencha todos os campos', 'erro');
+        return;
+      }
+
+      const elemento = document.getElementById('criar-animal-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Criando animal...</p>';
+
+      try {
+        const animal = await criarAnimal(nome, especie, raca, data, status, usuario);
+        mostrarResultado('criar-animal-resultado', animal);
+      } catch (error) {
+        mostrarResultado('criar-animal-resultado', error.message, 'erro');
+      }
+    }
+
+    // LISTAR USUÁRIOS
+    async function handleListarUsuarios() {
+      const elemento = document.getElementById('listar-usuarios-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+      try {
+        const usuarios = await listarUsuarios();
+        mostrarResultado('listar-usuarios-resultado', usuarios);
+      } catch (error) {
+        mostrarResultado('listar-usuarios-resultado', error.message, 'erro');
+      }
+    }
+
+    // LISTAR ADOTANTES
+    async function handleListarAdotantes() {
+      const elemento = document.getElementById('listar-adotantes-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
+      try {
+        const adotantes = await listarAdotantes();
+        mostrarResultado('listar-adotantes-resultado', adotantes);
+      } catch (error) {
+        mostrarResultado('listar-adotantes-resultado', error.message, 'erro');
+      }
+    }
+
+    // TESTE DE CONEXÃO
+    async function handleTesteConexao() {
+      const elemento = document.getElementById('teste-conexao-resultado');
+      elemento.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Testando conexão...</p>';
+      try {
+        const response = await fetch('http://localhost:3000/health');
+        const dados = await response.json();
+        if (response.ok) {
+          elemento.innerHTML = `
+            <div class="bg-green-50 border border-green-200 rounded p-3">
+              <p class="text-green-700 font-bold">✓ Conexão OK!</p>
+              <p class="text-green-700 text-sm">Servidor: ${dados.server}</p>
+              <p class="text-green-700 text-sm">Status: ${dados.status}</p>
+              <p class="text-green-700 text-xs text-gray-500">Hora: ${dados.timestamp}</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        elemento.innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded p-3">
+            <p class="text-red-700 font-bold">✗ Erro na conexão</p>
+            <p class="text-red-700 text-sm">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Teste automático ao carregar página
+    window.addEventListener('load', () => {
+      console.log('🐾 Página de exemplo ARPAA carregada');
+      console.log('📚 Funções disponíveis:');
+      console.log('  - listarAnimais()');
+      console.log('  - criarAnimal()');
+      console.log('  - listarAnimaisComUsuario()');
+      console.log('  - listarUsuarios()');
+      console.log('  - listarAdotantes()');
+      console.log('  - ... e muitas outras!');
+      console.log('💡 Veja api-examples.js para a documentação completa');
+    });
+  </script>
+
+</body>
+
+</html>

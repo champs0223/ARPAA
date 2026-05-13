@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db/connection');
+const { getAll, getById, insertItem, updateItem, deleteById, filterItems } = require('../db/localdb');
 
 // GET - Listar todo o histórico de animais
 router.get('/historico-animal', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM historico_animal ORDER BY data_evento DESC');
-    connection.release();
+    const rows = getAll('historico_animal').sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento));
     res.json(rows);
   } catch (error) {
     console.error('Erro ao listar histórico:', error.message);
@@ -18,13 +16,11 @@ router.get('/historico-animal', async (req, res) => {
 // GET - Obter histórico por ID
 router.get('/historico-animal/:id', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM historico_animal WHERE id = ?', [req.params.id]);
-    connection.release();
-    if (rows.length === 0) {
+    const registro = getById('historico_animal', req.params.id);
+    if (!registro) {
       return res.status(404).json({ error: 'Histórico não encontrado' });
     }
-    res.json(rows[0]);
+    res.json(registro);
   } catch (error) {
     console.error('Erro ao buscar histórico:', error.message);
     res.status(500).json({ error: error.message });
@@ -34,12 +30,8 @@ router.get('/historico-animal/:id', async (req, res) => {
 // GET - Histórico por animal ID
 router.get('/historico-animal/animal/:animal_id', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query(
-      'SELECT * FROM historico_animal WHERE animal_id = ? ORDER BY data_evento DESC',
-      [req.params.animal_id]
-    );
-    connection.release();
+    const rows = filterItems('historico_animal', (item) => String(item.animal_id) === String(req.params.animal_id))
+      .sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento));
     res.json(rows);
   } catch (error) {
     console.error('Erro ao buscar histórico do animal:', error.message);
@@ -51,14 +43,14 @@ router.get('/historico-animal/animal/:animal_id', async (req, res) => {
 router.post('/historico-animal', async (req, res) => {
   try {
     const { animal_id, tipo_evento, descricao, usuario_id } = req.body;
-    const id = require('crypto').randomBytes(6).toString('hex');
-    const connection = await pool.getConnection();
-    const [result] = await connection.query(
-      'INSERT INTO historico_animal (id, animal_id, tipo_evento, descricao, usuario_id, data_evento) VALUES (?, ?, ?, ?, ?, NOW())',
-      [id, animal_id, tipo_evento, descricao, usuario_id]
-    );
-    connection.release();
-    res.status(201).json({ id, ...req.body, data_evento: new Date() });
+    const registro = insertItem('historico_animal', {
+      animal_id,
+      tipo_evento,
+      descricao,
+      usuario_id,
+      data_evento: new Date().toISOString()
+    });
+    res.status(201).json(registro);
   } catch (error) {
     console.error('Erro ao criar histórico:', error.message);
     res.status(500).json({ error: error.message });
@@ -69,13 +61,16 @@ router.post('/historico-animal', async (req, res) => {
 router.put('/historico-animal/:id', async (req, res) => {
   try {
     const { animal_id, tipo_evento, descricao, usuario_id } = req.body;
-    const connection = await pool.getConnection();
-    await connection.query(
-      'UPDATE historico_animal SET animal_id = ?, tipo_evento = ?, descricao = ?, usuario_id = ? WHERE id = ?',
-      [animal_id, tipo_evento, descricao, usuario_id, req.params.id]
-    );
-    connection.release();
-    res.json({ id: req.params.id, ...req.body });
+    const updated = updateItem('historico_animal', req.params.id, {
+      animal_id,
+      tipo_evento,
+      descricao,
+      usuario_id
+    });
+    if (!updated) {
+      return res.status(404).json({ error: 'Histórico não encontrado' });
+    }
+    res.json(updated);
   } catch (error) {
     console.error('Erro ao atualizar histórico:', error.message);
     res.status(500).json({ error: error.message });
@@ -85,9 +80,10 @@ router.put('/historico-animal/:id', async (req, res) => {
 // DELETE - Deletar registro no histórico
 router.delete('/historico-animal/:id', async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    await connection.query('DELETE FROM historico_animal WHERE id = ?', [req.params.id]);
-    connection.release();
+    const deleted = deleteById('historico_animal', req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Histórico não encontrado' });
+    }
     res.json({ message: 'Histórico deletado com sucesso' });
   } catch (error) {
     console.error('Erro ao deletar histórico:', error.message);
