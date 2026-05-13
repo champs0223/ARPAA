@@ -736,147 +736,93 @@ function cadastrarAnimal(){
 
   let arquivo = document.getElementById("foto").files[0]
 
-<<<<<<< HEAD
   if(!arquivo){
     alert("Selecione uma foto do animal")
     return
   }
 
-  // Criar FormData para enviar arquivo
-  let formData = new FormData()
-  formData.append('foto', arquivo)
-  formData.append('nome', nome)
-  formData.append('especie', especie)
-  formData.append('raca', raca)
-  formData.append('idade_aproximada', idade)
-  formData.append('sexo', sexo)
-  formData.append('porte', porte)
-  formData.append('status', 'disponivel')
-  formData.append('data_resgate', dataResgate)
-  formData.append('descricao', descricao)
-  formData.append('registrado_por', localStorage.getItem('usuario_id') || '1') // ID do usuário logado
+  const uploadData = new FormData()
+  uploadData.append('foto', arquivo)
 
-  // Mostrar loading
-  let btn = document.querySelector('button[type="submit"]')
-  let textoOriginal = btn.textContent
-  btn.textContent = 'Salvando...'
-  btn.disabled = true
-
-  fetch('/animais', {
+  fetch(`${API_BASE_URL}/upload`, {
     method: 'POST',
-    body: formData
+    body: uploadData
   })
   .then(response => response.json())
-  .then(data => {
-    console.log('Animal criado:', data)
-    mostrarSucesso("Animal cadastrado com sucesso!")
-    limparFormulario()
-    mostrarAnimais() // Recarregar lista
+  .then(async uploadResult => {
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || 'Erro ao fazer upload da foto')
+    }
+
+    const fotoURL = uploadResult.foto_url || ''
+
+    let animal = {
+      nome,
+      especie,
+      raca,
+      sexo,
+      idade_aproximada: idade,
+      porte,
+      status: "Disponível",
+      data_resgate: dataResgate,
+      local_resgate: localResgate,
+      descricao,
+      foto_url: fotoURL,
+      registrado_por: localStorage.getItem("usuarioId") || null,
+      vacinado,
+      castrado,
+      vermifugado,
+      temperamento,
+      convive_criancas: criancas,
+      convive_animais: conviveAnimais
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/animais`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(animal)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao enviar animal para o servidor')
+      }
+
+      const savedAnimal = await response.json()
+
+      let animais = JSON.parse(localStorage.getItem("animais")) || []
+
+      if (animalEditando !== null) {
+        let index = animais.findIndex(a => a.id === animalEditando)
+        if (index !== -1) {
+          animal.id = animalEditando
+          animais[index] = animal
+        }
+        animalEditando = null
+      } else {
+        animal.id = savedAnimal.id || Date.now()
+        animais.push(animal)
+      }
+
+      localStorage.setItem("animais", JSON.stringify(animais))
+
+      mostrarAnimais()
+      limparFormulario()
+      mostrarSucesso("Animal cadastrado com sucesso!")
+      console.log("Animal salvo no servidor:", savedAnimal)
+    } catch (error) {
+      console.error(error)
+      alert('Falha ao salvar o animal: ' + error.message)
+    }
   })
   .catch(error => {
-    console.error('Erro:', error)
-    alert('Erro ao cadastrar animal: ' + error.message)
-  })
-  .finally(() => {
-    btn.textContent = textoOriginal
-    btn.disabled = false
+    console.error('Erro ao fazer upload:', error)
+    alert('Erro ao fazer upload da foto: ' + error.message)
   })
 }
-
-=======
-let arquivo = document.getElementById("foto").files[0]
-
-if(!arquivo){
-  alert("Selecione uma foto do animal")
-  return
-}
-
-// Fazer upload da foto primeiro
-const formData = new FormData()
-formData.append('foto', arquivo)
-
-fetch(`${API_BASE_URL}/upload`, {
-  method: 'POST',
-  body: formData
-})
-.then(response => response.json())
-.then(async uploadResult => {
-  if (!uploadResult.success) {
-    throw new Error(uploadResult.error || 'Erro ao fazer upload da foto')
-  }
-
-  // Upload bem-sucedido, agora salvar o animal
-  let fotoURL = uploadResult.foto_url
-
-  let animal = {
-    nome,
-    especie,
-    raca,
-    sexo,
-    idade_aproximada: idade,
-    porte,
-    status: "Disponível",
-    data_resgate: dataResgate,
-    local_resgate: localResgate,
-    descricao,
-    foto_url: fotoURL,
-    registrado_por: localStorage.getItem("usuarioId") || null,
-    vacinado,
-    castrado,
-    vermifugado,
-    temperamento,
-    convive_criancas: criancas,
-    convive_animais: conviveAnimais
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/animais`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(animal)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Erro ao enviar animal para o servidor')
-    }
-
-    const savedAnimal = await response.json()
-
-    let animais = JSON.parse(localStorage.getItem("animais")) || []
-
-    if (animalEditando !== null) {
-      let index = animais.findIndex(a => a.id === animalEditando)
-      if (index !== -1) {
-        animal.id = animalEditando
-        animais[index] = animal
-      }
-      animalEditando = null
-    } else {
-      animal.id = savedAnimal.id || Date.now()
-      animais.push(animal)
-    }
-
-    localStorage.setItem("animais", JSON.stringify(animais))
-
-    mostrarAnimais()
-    limparFormulario()
-    mostrarSucesso("Animal cadastrado com sucesso!")
-    console.log("Animal salvo no servidor:", savedAnimal)
-  } catch (error) {
-    console.error(error)
-    alert('Falha ao salvar o animal: ' + error.message)
-  }
-})
-.catch(error => {
-  console.error('Erro ao fazer upload:', error)
-  alert('Erro ao fazer upload da foto: ' + error.message)
-})
-
-}
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
 
 function badgeStatus(status){
 
@@ -899,53 +845,6 @@ return '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs fon
 return ""
 }
 
-<<<<<<< HEAD
-function mostrarAnimais(){
-  fetch('/animais-com-usuario')
-  .then(response => response.json())
-  .then(animais => {
-    atualizarEstatisticas(animais)
-
-    animais.sort((a, b) => a.nome.localeCompare(b.nome))
-
-    let contador = document.getElementById("contadorAnimais")
-
-    if(animais.length === 1){
-      contador.innerText = "1 animal cadastrado"
-    }else{
-      contador.innerText = animais.length + " animais cadastrados"
-    }
-
-    let lista = document.getElementById("listaAnimais")
-    lista.innerHTML = ""
-
-    animais.forEach((animal,index)=>{
-      let temPendente = false // TODO: implementar verificação de adoções pendentes via API
-
-      lista.innerHTML += `
-        <div onclick='verAnimal(${JSON.stringify(animal)})'
-        class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
-
-        <img src="${animal.foto_url || 'https://via.placeholder.com/300x200?text=Sem+Foto'}"
-        class="w-full h-28 object-cover">
-
-        <div class="p-4">
-
-        <div class="flex justify-between items-center mb-1">
-        <h3 class="text-base font-semibold">${animal.nome}</h3>
-        ${badgeStatus(animal.status)}
-        </div>
-
-        ${temPendente ? '<span class="text-xs text-yellow-600">Em processo de adoção</span>' : ''}
-
-        <p class="text-sm text-gray-500 mb-2">
-        ${animal.especie || ""} • ${animal.idade_aproximada} • Porte ${animal.porte}
-        </p>
-
-        <p class="text-sm text-gray-600 mb-3">
-        ${animal.descricao || ""}
-        </p>
-=======
 async function carregarAnimaisDaAPI(){
   try {
     const response = await fetch(`${API_BASE_URL}/animais`)
@@ -954,33 +853,10 @@ async function carregarAnimaisDaAPI(){
     }
     const animais = await response.json()
 
-    // Atualiza o localStorage com os dados da API
-    localStorage.setItem("animais", JSON.stringify(animais.map(animal => ({
-      id: animal.id,
-      nome: animal.nome,
-      especie: animal.especie,
-      raca: animal.raca,
-      idade: animal.idade_aproximada,
-      sexo: animal.sexo,
-      porte: animal.porte,
-      status: animal.status,
-      dataCadastro: animal.created_at,
-      vacinado: animal.vacinado,
-      castrado: animal.castrado,
-      vermifugado: animal.vermifugado,
-      dataResgate: animal.data_resgate,
-      localResgate: animal.local_resgate,
-      temperamento: animal.temperamento,
-      criancas: animal.convive_criancas,
-      animais: animal.convive_animais,
-      foto: animal.foto_url,
-      descricao: animal.descricao
-    }))))
-
-    mostrarAnimais()
+    localStorage.setItem("animais", JSON.stringify(animais))
   } catch (error) {
     console.error('Erro ao carregar animais:', error)
-    // Se falhar, usa dados do localStorage
+  } finally {
     mostrarAnimais()
   }
 }
@@ -988,7 +864,7 @@ async function carregarAnimaisDaAPI(){
 function mostrarAnimais(){
   let animais = JSON.parse(localStorage.getItem("animais")) || []
 
-  atualizarEstatisticas()
+  atualizarEstatisticas(animais)
 
   animais.sort((a, b) => a.nome.localeCompare(b.nome))
 
@@ -1013,11 +889,32 @@ function mostrarAnimais(){
     )
 
     lista.innerHTML += `
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
+        <div onclick='verAnimal(${JSON.stringify(animal)})'
+        class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
+
+        <img src="${animal.foto_url || animal.foto || 'https://via.placeholder.com/300x200?text=Sem+Foto'}"
+        class="w-full h-28 object-cover">
+
+        <div class="p-4">
+
+        <div class="flex justify-between items-center mb-1">
+        <h3 class="text-base font-semibold">${animal.nome}</h3>
+        ${badgeStatus(animal.status)}
+        </div>
+
+        ${temPendente ? '<span class="text-xs text-yellow-600">Em processo de adoção</span>' : ''}
+
+        <p class="text-sm text-gray-500 mb-2">
+        ${animal.especie || ""} • ${animal.idade_aproximada || animal.idade || ""} • Porte ${animal.porte}
+        </p>
+
+        <p class="text-sm text-gray-600 mb-3">
+        ${animal.descricao || ""}
+        </p>
 
         <div class="flex gap-2">
 
-        <button onclick="event.stopPropagation(); abrirEditarPorId(${animal.id})"
+        <button onclick="event.stopPropagation(); abrirEditar(${animal.id})"
         class="bg-yellow-500 text-white px-3 py-1 rounded">
         Editar
         </button>
@@ -1033,13 +930,8 @@ function mostrarAnimais(){
 
         </div>
       `
-    })
   })
-  .catch(error => {
-    console.error('Erro ao carregar animais:', error)
-    alert('Erro ao carregar animais: ' + error.message)
-  })
-  }
+}
 
 function filtrarAnimais(){
 
@@ -1201,24 +1093,6 @@ function abrirEditar(id, animal = null){
 }
 
 function excluirAnimal(id){
-<<<<<<< HEAD
-  abrirConfirmacao("Deseja realmente excluir este animal?", () => {
-    fetch(`/animais/${id}`, {
-      method: 'DELETE'
-    })
-    .then(response => {
-      if (response.ok) {
-        mostrarSucesso("Animal excluído com sucesso!")
-        mostrarAnimais() // Recarregar lista
-      } else {
-        throw new Error('Erro ao excluir animal')
-      }
-    })
-    .catch(error => {
-      console.error('Erro:', error)
-      alert('Erro ao excluir animal: ' + error.message)
-    })
-=======
   abrirConfirmacao("Deseja realmente excluir este animal?", async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/animais/${id}`, {
@@ -1230,7 +1104,6 @@ function excluirAnimal(id){
         throw new Error(errorData.error || 'Erro ao excluir animal')
       }
 
-      // Remove do localStorage também
       let animais = JSON.parse(localStorage.getItem("animais")) || []
       animais = animais.filter(animal => animal.id !== id)
       localStorage.setItem("animais", JSON.stringify(animais))
@@ -1241,7 +1114,6 @@ function excluirAnimal(id){
       console.error(error)
       alert('Falha ao excluir o animal: ' + error.message)
     }
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
   })
 }
 
@@ -1276,52 +1148,7 @@ preview.classList.add("hidden")
 }
 
 
-mostrarAnimais()
-
 function salvarEdicao(){
-<<<<<<< HEAD
-  abrirConfirmacao("Salvar alterações deste animal?", () => {
-    let novaFoto = document.getElementById("editFoto").files[0]
-
-    // Criar FormData para enviar dados e possível nova foto
-    let formData = new FormData()
-    formData.append('nome', document.getElementById("editNome").value)
-    formData.append('especie', document.getElementById("editEspecie").value)
-    formData.append('raca', document.getElementById("editRaca").value)
-    formData.append('idade_aproximada', document.getElementById("editIdade").value)
-    formData.append('sexo', document.getElementById("editSexo").value)
-    formData.append('porte', document.getElementById("editPorte").value)
-    formData.append('status', document.getElementById("editStatus").value)
-    formData.append('vacinado', document.getElementById("editVacinado").value)
-    formData.append('castrado', document.getElementById("editCastrado").value)
-    formData.append('vermifugado', document.getElementById("editVermifugado").value)
-    formData.append('data_resgate', document.getElementById("editDataResgate").value)
-    formData.append('local_resgate', document.getElementById("editLocalResgate").value)
-    formData.append('temperamento', document.getElementById("editTemperamento").value)
-    formData.append('criancas', document.getElementById("editCriancas").value)
-    formData.append('animais', document.getElementById("editAnimais").value)
-    formData.append('descricao', document.getElementById("editDescricao").value)
-
-    if(novaFoto){
-      formData.append('foto', novaFoto)
-    }
-
-    fetch(`/animais/${animalEditando}`, {
-      method: 'PUT',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Animal atualizado:', data)
-      fecharEditar()
-      mostrarAnimais()
-      mostrarSucesso("Alterações salvas com sucesso!")
-    })
-    .catch(error => {
-      console.error('Erro:', error)
-      alert('Erro ao atualizar animal: ' + error.message)
-    })
-=======
   abrirConfirmacao("Salvar alterações deste animal?", async () => {
     let animais = JSON.parse(localStorage.getItem("animais"))
     let index = animais.findIndex(a => a.id === animalEditando)
@@ -1360,7 +1187,6 @@ function salvarEdicao(){
         throw new Error(errorData.error || 'Erro ao atualizar animal')
       }
 
-      // Atualiza no localStorage também
       Object.assign(animal, animalAtualizado)
 
       let novaFoto = document.getElementById("editFoto").files[0]
@@ -1384,7 +1210,6 @@ function salvarEdicao(){
       console.error(error)
       alert('Falha ao salvar alterações: ' + error.message)
     }
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
   })
 }
 
@@ -1481,9 +1306,8 @@ function atualizarEstatisticas(animais){
   document.getElementById("totalDevolvidos").innerText = devolvidos
 }
 
-
 function abrirEditarPorId(id){
-  fetch(`/animais/${id}`)
+  fetch(`${API_BASE_URL}/animais/${id}`)
   .then(response => response.json())
   .then(animal => {
     abrirEditar(id, animal)

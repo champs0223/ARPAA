@@ -21,7 +21,7 @@ class DBLocal {
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('✅ Base de dados local inicializada');
+        console.log('⚠️ Módulo de banco local inicializado (IndexedDB pronto)');
         resolve(this.db);
       };
 

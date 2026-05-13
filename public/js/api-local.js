@@ -287,4 +287,4 @@ async function fazerUploadImagem(arquivo) {
   }
 }
 
-console.log('✅ API Local carregada - Usando banco de dados local (IndexedDB + localStorage)');
+console.log('⚠️ Módulo API Local carregado (IndexedDB + localStorage disponível)');

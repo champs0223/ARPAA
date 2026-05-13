@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { findOne, insertItem } = require('../db/localdb');
+const { pool } = require('../db/connection');
 
 // POST - Login
 router.post('/login', async (req, res) => {
@@ -11,16 +11,14 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
-<<<<<<< HEAD
-    const user = findOne('usuarios', (u) => String(u.nome) === String(usuario));
-=======
     const connection = await pool.getConnection();
     const [rows] = await connection.query(
-      'SELECT id, nome, cpf, senha FROM usuarios WHERE nome = ?',
-      [usuario]
+      'SELECT id, nome, cpf, senha FROM usuarios WHERE LOWER(nome) = LOWER(?) OR cpf = ? LIMIT 1',
+      [usuario, usuario]
     );
     connection.release();
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
+
+    const user = rows[0];
 
     if (!user || user.senha !== senha) {
       return res.status(401).json({ error: 'Usuário ou senha incorretos' });
@@ -49,43 +47,26 @@ router.post('/registro', async (req, res) => {
       return res.status(400).json({ error: 'Usuário, senha e CPF são obrigatórios' });
     }
 
-    const exists = findOne('usuarios', (u) => String(u.nome) === String(usuario));
-
-<<<<<<< HEAD
-    if (exists) {
-      return res.status(400).json({ error: 'Usuário já existe' });
-    }
-
-    const newUser = insertItem('usuarios', {
-      nome: usuario,
-      senha,
-      is_admin: 0,
-      created_at: new Date().toISOString()
-    });
-=======
-    // Verificar se usuário já existe
-    const [exists] = await connection.query(
-      'SELECT id FROM usuarios WHERE nome = ? OR cpf = ?',
+    const connection = await pool.getConnection();
+    const [existing] = await connection.query(
+      'SELECT id FROM usuarios WHERE nome = ? OR cpf = ? LIMIT 1',
       [usuario, cpf]
     );
 
-    if (exists.length > 0) {
+    if (existing.length > 0) {
       connection.release();
       return res.status(400).json({ error: 'Usuário ou CPF já existe' });
     }
 
-    // Criar novo usuário
     const [result] = await connection.query(
       'INSERT INTO usuarios (nome, cpf, senha) VALUES (?, ?, ?)',
       [usuario, cpf, senha]
     );
-
     connection.release();
->>>>>>> 4cc6fcc30f9952eb357fe306f7d99242ab0a5710
 
     res.status(201).json({
       success: true,
-      id: newUser.id,
+      id: result.insertId,
       usuario,
       cpf,
       message: 'Usuário criado com sucesso'

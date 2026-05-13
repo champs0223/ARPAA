@@ -27,7 +27,7 @@ const historicoRoutes = require('./routes/historico');
 const uploadRoutes = require('./routes/upload');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3001);
 
 // Middleware
 app.use(cors({

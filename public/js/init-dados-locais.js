@@ -4,7 +4,7 @@
  */
 
 async function inicializarDadosLocais() {
-  console.log('🔄 Inicializando dados locais...');
+  console.log('🔄 Inicializador de dados locais carregado');
   
   try {
     // Aguardar DB estar pronto

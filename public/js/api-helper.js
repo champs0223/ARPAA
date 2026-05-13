@@ -225,4 +225,4 @@ async function uploadArquivoLocal(arquivo) {
   }
 }
 
-console.log('✅ API Helper Local/Remoto carregado');
+console.log('⚠️ Módulo API Helper carregado (local/remoto)');
