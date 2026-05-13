@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/config.css">
     <script src="js/tailwindconfig.js"></script>
+    <script src="config-api.js"></script>
+    <script src="js/db-local.js"></script>
+    <script src="js/api-local.js"></script>
+    <script src="js/api-helper.js"></script>
+    <script src="js/init-dados-locais.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-900 antialiased overflow-x-hidden">
@@ -156,139 +161,14 @@
                     contato para saber mais detalhes sobre cada um.</p>
             </div>
 
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Card 1 - adaptado de Luna -->
-                <div
-                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                    <div class="relative overflow-hidden h-40">
-                        <img src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d" alt="Luna"
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute top-2 right-2">
-                            <span
-                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
-                        </div>
-                    </div>
-                    <div class="p-3 flex flex-col min-h-[300px]">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-2xl font-bold text-gray-900">Luna</h3>
-                            <span class="text-sm text-gray-500">Fêmea • 2 anos</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
-                                Pequeno</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
-                            <span
-                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>
-                        </div>
-                        <p class="text-gray-600 mb-4 flex-grow">Luna é muito carinhosa e se adapta bem a apartamentos. Adora passeios
-                            curtos e colo.</p>
-                        <div class="flex justify-between items-center mt-auto">
-                            <a href="#" onclick="abrirModal(
-   'Luna',
-    'Fêmea • 2 anos • Porte pequeno • Vacinado • Castrado',
-    'Luna é muito carinhosa e se adapta bem a apartamentos. Adora passeios curtos e colo.',
-    [
-        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
-        'https://images.unsplash.com/photo-1552053831-71594a27632d',
-        'https://images.unsplash.com/photo-1537151625747-768eb6cf92b6'
-    ]
-)" 
-class="btn-primary text-sm px-6 py-2">
-    <i class="fas fa-paw mr-2"></i> Ver detalhes
-</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2 - adaptado de Thor -->
-                <div
-                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                    <div class="relative overflow-hidden h-40">
-                        <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1" alt="Thor"
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute top-2 right-2">
-                            <span
-                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
-                        </div>
-                    </div>
-                    <div class="p-3 flex flex-col min-h-[300px]">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-2xl font-bold text-gray-900">Thor</h3>
-                            <span class="text-sm text-gray-500">Macho • 3 anos</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
-                                Médio</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
-                            <span
-                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>
-                        </div>
-                        <p class="text-gray-600 mb-4 flex-grow">Thor é enérgico e brincalhão, ideal para famílias ativas que gostam de
-                            passear e brincar ao ar livre.</p>
-                        <div class="flex justify-between items-center mt-auto">
-                            <a href="#" onclick="abrirModal(
-     'Thor',
-    'Macho • 3 anos • Porte médio • Vacinado • Castrado',
-    'Thor é enérgico, brincalhão e perfeito para famílias ativas.',
-    [
-        'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
-        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
-        'https://images.unsplash.com/photo-1517849845537-4d257902454a'
-    ]
-)" 
-class="btn-primary text-sm px-6 py-2">
-    <i class="fas fa-paw mr-2"></i> Ver detalhes
-</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3 - adaptado de Amora -->
-                <div
-                    class="group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                    <div class="relative overflow-hidden h-40">
-                        <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a" alt="Amora"
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute top-2 right-2">
-                            <span
-                                class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
-                        </div>
-                    </div>
-                    <div class="p-3 flex flex-col min-h-[300px]">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-2xl font-bold text-gray-900">Amora</h3>
-                            <span class="text-sm text-gray-500">Fêmea • Filhote</span>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte
-                                Pequeno</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>
-                        </div>
-                        <p class="text-gray-600 mb-4 flex-grow">Amora é uma filhote muito curiosa e carinhosa, perfeita para quem quer
-                            acompanhar todas as fases da vida de um pet.</p>
-                        <div class="flex justify-between items-center mt-auto">
-                            <a href="#" onclick="abrirModal(
-    'Amora',
-    'Fêmea • Filhote • Porte pequeno • Vacinado',
-    'Amora é curiosa, amorosa e perfeita para quem quer acompanhar todas as fases de um pet.',
-    [
-        'https://images.unsplash.com/photo-1517849845537-4d257902454a',
-        'https://images.unsplash.com/photo-1507149833265-60c372daea22',
-        'https://images.unsplash.com/photo-1543466835-00a7907e9de1'
-    ]
-)"  
-class="btn-primary text-sm px-6 py-2">
-    <i class="fas fa-paw mr-2"></i> Ver detalhes
-</a>
-                        </div>
-                    </div>
-                </div>
+            <div id="lista-animais-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Os animais serão carregados dinamicamente aqui -->
+            </div>
+            
+            <!-- Mensagem se não houver animais -->
+            <div id="sem-animais" class="hidden text-center py-16">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-lg">Nenhum animal disponível no momento.</p>
             </div>
         </div>
     </section>
@@ -392,6 +272,143 @@ class="btn-primary text-sm px-6 py-2">
     </footer>
 
 <script>
+
+/* ======================================================
+   CARREGAR ANIMAIS DA API
+====================================================== */
+
+let animaisCarregados = [];
+
+async function carregarAnimais() {
+    try {
+        console.log("Carregando animais da API...");
+        
+        let animais;
+        
+        if (USE_LOCAL_DB) {
+            // Usar banco de dados local
+            animais = await listarAnimais();
+        } else {
+            // Usar API remota
+            const response = await fetch(`${API_BASE_URL}/animais`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erro ao buscar animais');
+            }
+            
+            animais = await response.json();
+        }
+        
+        console.log("Animais carregados:", animais);
+        
+        animaisCarregados = animais;
+        renderizarAnimais(animais);
+        
+    } catch (error) {
+        console.error('Erro ao carregar animais:', error);
+        mostrarSemAnimais();
+    }
+}
+
+function renderizarAnimais(animais) {
+    const container = document.getElementById('lista-animais-container');
+    const semAnimaisDiv = document.getElementById('sem-animais');
+    
+    if (!animais || animais.length === 0) {
+        mostrarSemAnimais();
+        return;
+    }
+    
+    semAnimaisDiv.classList.add('hidden');
+    container.innerHTML = '';
+    
+    animais.forEach(animal => {
+        const card = criarCardAnimal(animal);
+        container.appendChild(card);
+    });
+    
+    // Re-aplicar filtros se houver algum selecionado
+    aplicarFiltros();
+}
+
+function mostrarSemAnimais() {
+    const container = document.getElementById('lista-animais-container');
+    const semAnimaisDiv = document.getElementById('sem-animais');
+    
+    container.innerHTML = '';
+    semAnimaisDiv.classList.remove('hidden');
+}
+
+function criarCardAnimal(animal) {
+    const div = document.createElement('div');
+    div.className = 'group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2';
+    
+    // Usar foto do banco de dados ou fallback
+    const imagem = animal.foto_url || 'https://images.unsplash.com/photo-1560144282-7f9d2c1e6d9f?w=400&h=300&fit=crop';
+    
+    // Montar info do animal
+    const sexoIdade = `${animal.sexo || 'Desconhecido'} • ${animal.idade_aproximada || 'Idade desconhecida'}`;
+    
+    // Badges de saúde
+    let badges = '';
+    if (animal.porte) {
+        badges += `<span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte ${animal.porte}</span>`;
+    }
+    if (animal.vacinado === 'Sim') {
+        badges += `<span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>`;
+    }
+    if (animal.castrado === 'Sim') {
+        badges += `<span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>`;
+    }
+    
+    // Descrição
+    const descricao = animal.descricao || `${animal.nome} é um ${animal.especie || 'animal'} adorável esperando por um lar.`;
+    
+    // Array com fotos (por enquanto só a principal)
+    const fotos = animal.foto_url ? [animal.foto_url] : ['https://images.unsplash.com/photo-1560144282-7f9d2c1e6d9f?w=400&h=300&fit=crop'];
+    
+    // Montar info completa para o modal
+    const infoCompleta = `${animal.especie || 'Animal'} • ${sexoIdade}${animal.porte ? ' • Porte ' + animal.porte : ''}${animal.vacinado === 'Sim' ? ' • Vacinado' : ''}${animal.castrado === 'Sim' ? ' • Castrado' : ''}`;
+    
+    div.innerHTML = `
+        <div class="relative overflow-hidden h-40">
+            <img src="${imagem}" alt="${animal.nome}"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div class="absolute top-2 right-2">
+                <span class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded-full">Disponível</span>
+            </div>
+        </div>
+        <div class="p-3 flex flex-col min-h-[300px]">
+            <div class="flex justify-between items-start mb-3">
+                <h3 class="text-2xl font-bold text-gray-900">${animal.nome}</h3>
+                <span class="text-sm text-gray-500">${sexoIdade}</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                ${badges}
+            </div>
+            <p class="text-gray-600 mb-4 flex-grow">${descricao}</p>
+            <div class="flex justify-between items-center mt-auto">
+                <a href="#" onclick="abrirModal('${animal.nome}', '${infoCompleta}', '${descricao}', ${JSON.stringify(fotos).replace(/'/g, "\\'")}); return false;"
+                class="btn-primary text-sm px-6 py-2">
+                    <i class="fas fa-paw mr-2"></i> Ver detalhes
+                </a>
+            </div>
+        </div>
+    `;
+    
+    return div;
+}
+
+// Carregar animais quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    carregarAnimais();
+});
 
 function fecharModal() {
     document.getElementById("modalPet").classList.add("hidden");
@@ -644,28 +661,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // -------------- APLICAR FILTROS --------------------
 function aplicarFiltros() {
-    const cards = document.querySelectorAll("#lista-animais .group");
+    const cards = document.querySelectorAll("#lista-animais-container .group");
+    
+    if (cards.length === 0) return; // Se não há cards, não fazer nada
+    
+    let totalVisivel = 0;
 
-    cards.forEach(card => {
-        const texto = card.innerText.toLowerCase();
+    cards.forEach((card, index) => {
+        const animal = animaisCarregados[index];
+        if (!animal) {
+            card.style.display = "none";
+            return;
+        }
+
         let mostrar = true;
 
-        for (const categoria in filtrosSelecionados) {
-            const selecionados = filtrosSelecionados[categoria];
+        // Filtro de espécie
+        if (filtrosSelecionados.especie.length > 0) {
+            const temEspecie = filtrosSelecionados.especie.some(f => 
+                animal.especie && animal.especie.toLowerCase().includes(f.toLowerCase())
+            );
+            if (!temEspecie) mostrar = false;
+        }
 
-            if (selecionados.length > 0) {
-                const ok = selecionados.some(f =>
-                    texto.includes(f.toLowerCase())
-                );
-                if (!ok) {
-                    mostrar = false;
-                    break;
-                }
-            }
+        // Filtro de porte
+        if (mostrar && filtrosSelecionados.porte.length > 0) {
+            const temPorte = filtrosSelecionados.porte.some(f => {
+                const porteNormalizado = f.replace('Porte ', '');
+                return animal.porte && animal.porte.toLowerCase() === porteNormalizado.toLowerCase();
+            });
+            if (!temPorte) mostrar = false;
+        }
+
+        // Filtro de sexo
+        if (mostrar && filtrosSelecionados.sexo.length > 0) {
+            const temSexo = filtrosSelecionados.sexo.some(f => 
+                animal.sexo && animal.sexo.toLowerCase() === f.toLowerCase()
+            );
+            if (!temSexo) mostrar = false;
+        }
+
+        // Filtro de idade
+        if (mostrar && filtrosSelecionados.idade.length > 0) {
+            const temIdade = filtrosSelecionados.idade.some(f => {
+                const idadeL = animal.idade_aproximada ? animal.idade_aproximada.toLowerCase() : '';
+                return idadeL.includes(f.toLowerCase());
+            });
+            if (!temIdade) mostrar = false;
+        }
+
+        // Filtro de saúde
+        if (mostrar && filtrosSelecionados.saude.length > 0) {
+            const temSaude = filtrosSelecionados.saude.some(f => {
+                if (f.toLowerCase() === 'vacinado') return animal.vacinado === 'Sim';
+                if (f.toLowerCase() === 'castrado') return animal.castrado === 'Sim';
+                return false;
+            });
+            if (!temSaude) mostrar = false;
         }
 
         card.style.display = mostrar ? "block" : "none";
+        if (mostrar) totalVisivel++;
     });
+    
+    // Mostrar mensagem se nenhum animal corresponde aos filtros
+    if (totalVisivel === 0) {
+        // Aqui você pode mostrar uma mensagem de "nenhum resultado"
+    }
     
     atualizarFiltrosSelecionados();
 }

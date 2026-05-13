@@ -24,6 +24,7 @@ const resgatesesRoutes = require('./routes/resgates');
 const tratamentosRoutes = require('./routes/tratamentos');
 const vacinasRoutes = require('./routes/vacinas');
 const historicoRoutes = require('./routes/historico');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos (uploads)
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Rota de teste
 app.get('/health', (req, res) => {
@@ -57,6 +62,7 @@ app.use('/', resgatesesRoutes);
 app.use('/', tratamentosRoutes);
 app.use('/', vacinasRoutes);
 app.use('/', historicoRoutes);
+app.use('/', uploadRoutes);
 
 // Tratamento de erros 404
 app.use((req, res) => {

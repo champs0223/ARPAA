@@ -32,8 +32,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   opacity: 1;
 }
 </style>
-
-
+<script src="../config-api.js"></script>
+<script src="../../public/js/db-local.js"></script>
+<script src="../../public/js/api-local.js"></script>
+<script src="../../public/js/api-helper.js"></script>
+<script src="../../public/js/init-dados-locais.js"></script>
 </head>
 
 
@@ -679,7 +682,6 @@ Fechar
 
 <script>
 
-const API_BASE_URL = 'https://arpaa-production.up.railway.app'
 let animalEditando = null
 
 function logout(){
@@ -740,10 +742,22 @@ if(!arquivo){
   return
 }
 
-let reader = new FileReader()
+// Fazer upload da foto primeiro
+const formData = new FormData()
+formData.append('foto', arquivo)
 
-reader.onload = async function(e){
-  let fotoURL = URL.createObjectURL(arquivo)
+fetch(`${API_BASE_URL}/upload`, {
+  method: 'POST',
+  body: formData
+})
+.then(response => response.json())
+.then(async uploadResult => {
+  if (!uploadResult.success) {
+    throw new Error(uploadResult.error || 'Erro ao fazer upload da foto')
+  }
+
+  // Upload bem-sucedido, agora salvar o animal
+  let fotoURL = uploadResult.foto_url
 
   let animal = {
     nome,
@@ -806,9 +820,11 @@ reader.onload = async function(e){
     console.error(error)
     alert('Falha ao salvar o animal: ' + error.message)
   }
-}
-
-reader.readAsDataURL(arquivo)
+})
+.catch(error => {
+  console.error('Erro ao fazer upload:', error)
+  alert('Erro ao fazer upload da foto: ' + error.message)
+})
 
 }
 

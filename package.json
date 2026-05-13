@@ -4,8 +4,10 @@
   "description": "ARPAA Backend API",
   "main": "admin/backend/server.js",
   "scripts": {
-    "start": "cd admin/backend && npm install && npm start",
-    "dev": "cd admin/backend && npm start"
+    "start": "node server-dual-port.js",
+    "start:backend": "cd admin/backend && npm install && npm start",
+    "dev": "node server-dual-port.js",
+    "dev:backend": "cd admin/backend && npm start"
   },
   "engines": {
     "node": "18.x"
