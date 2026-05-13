@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
+const { pool } = require('../db/connection');
 const { getAll, getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
 // GET - Listar todos os animais SEM fotos (otimizado para listagens)
@@ -36,7 +37,7 @@ router.get('/animais-simples', async (req, res) => {
 // GET - Listar todos os animais
 router.get('/animais', async (req, res) => {
   try {
-    const rows = getAll('animais');
+    const [rows] = await pool.query('SELECT * FROM animais');
     res.json(rows);
   } catch (error) {
     console.error('Erro ao listar animais:', error.message);
@@ -81,12 +82,12 @@ router.get('/animais-com-usuario', async (req, res) => {
 // POST - Criar novo animal (com foto em base64)
 router.post('/animais', upload.single('foto'), async (req, res) => {
   try {
-    let foto_base64 = null;
+    let foto_url = req.body.foto_url || null;
 
     if (req.file) {
       try {
         const fileBuffer = fs.readFileSync(req.file.path);
-        foto_base64 = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+        foto_url = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
         fs.unlinkSync(req.file.path);
       } catch (fileError) {
         console.error('Erro ao processar arquivo:', fileError);
@@ -94,23 +95,60 @@ router.post('/animais', upload.single('foto'), async (req, res) => {
       }
     }
 
-    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, status, descricao, registrado_por } = req.body;
-
-    const animal = insertItem('animais', {
+    const {
       nome,
       especie,
       raca,
-      sexo: sexo || 'desconhecido',
+      sexo,
       idade_aproximada,
-      porte: porte || 'desconhecido',
+      porte,
       data_resgate,
-      status: status || 'resgatado',
+      local_resgate,
+      status,
       descricao,
-      foto_base64,
-      registrado_por
-    });
+      registrado_por,
+      vacinado,
+      castrado,
+      vermifugado,
+      temperamento,
+      convive_criancas,
+      convive_animais
+    } = req.body;
 
-    res.status(201).json(animal);
+    const query = `
+      INSERT INTO animais (
+        nome, especie, raca, sexo, idade_aproximada, porte, data_resgate,
+        local_resgate, status, descricao, foto_url, registrado_por,
+        vacinado, castrado, vermifugado, temperamento,
+        convive_criancas, convive_animais
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const params = [
+      nome,
+      especie,
+      raca,
+      sexo || 'desconhecido',
+      idade_aproximada,
+      porte || 'desconhecido',
+      data_resgate || null,
+      local_resgate || null,
+      status || 'resgatado',
+      descricao || null,
+      foto_url,
+      registrado_por || null,
+      vacinado || '',
+      castrado || '',
+      vermifugado || '',
+      temperamento || null,
+      convive_criancas || '',
+      convive_animais || ''
+    ];
+
+    const [result] = await pool.query(query, params);
+    const [savedRows] = await pool.query('SELECT * FROM animais WHERE id = ?', [result.insertId]);
+
+    res.status(201).json(savedRows[0] || { id: result.insertId });
   } catch (error) {
     console.error('Erro ao criar animal:', error.message);
     res.status(500).json({ error: error.message });
