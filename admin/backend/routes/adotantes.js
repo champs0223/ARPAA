@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
+const { pool } = require('../db/connection');
 const { getAll, getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
 // GET - Listar todos os adotantes
@@ -38,6 +39,26 @@ router.post('/adotantes', async (req, res) => {
   } catch (error) {
     console.error('Erro ao criar adotante:', error.message);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// POST - Registrar adotante manualmente a partir do modal de adoção (MySQL)
+router.post('/admin/adotantes', async (req, res) => {
+  const { nome, endereco, email, telefone } = req.body;
+
+  if (!nome || !email) {
+    return res.status(400).json({ error: 'Nome e E-mail são obrigatórios para registrar o adotante' });
+  }
+
+  try {
+    const idUnico = crypto.randomBytes(6).toString('hex').toUpperCase();
+    const query = 'INSERT INTO adotantes (id, nome, endereco, email, telefone) VALUES (?, ?, ?, ?, ?)';
+    await pool.execute(query, [idUnico, nome, endereco, email, telefone]);
+
+    return res.status(201).json({ message: 'Adotante registrado com sucesso no MySQL!' });
+  } catch (error) {
+    console.error('❌ Erro no backend ao registrar adotante via modal:', error);
+    return res.status(500).json({ error: 'Erro interno ao salvar adotante no banco' });
   }
 });
 

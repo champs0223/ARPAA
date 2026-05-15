@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitações de Adoção - ARPAA Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/config.css">
+    <style>
+    .menu-ativo {
+      background: rgba(20,184,166,0.1);
+      border-left: 4px solid #fde047;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .menu-link {
+      color: #475569;
+      transition: all 0.3s;
+    }
+
+    .menu-link:hover {
+      color: #14b8a6;
+      font-weight: 500;
+    }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+    <script>
+        if (localStorage.getItem("adminLogado") !== "true") {
+            window.location.href = "../index.html";
+        }
+    </script>
+
+    <div class="flex min-h-screen">
+
+        <aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
+            <!-- ÍCONE ISOLADO -->
+            <div class="pt-8 pb-2 flex flex-col items-center justify-center">
+                <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+                <p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
+                    ARPAA
+                </p>
+            </div>
+
+            <nav class="flex-1 p-6">
+                <ul class="space-y-4">
+                    <li>
+                        <a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+                            <i class="fas fa-chart-line"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+                            <i class="fas fa-dog"></i>
+                            Animais
+                        </a>
+                    </li>
+                    <li>
+                        <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+                            <span class="flex gap-3">
+                                <i class="fas fa-heart"></i>
+                                Adoções
+                            </span>
+                            <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+                        </button>
+                        <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+                            <li>
+                                <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+                                    Processos
+                                </a>
+                            </li>
+                            <li>
+                                <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+                                    Adotantes
+                                </a>
+                            </li>
+                            <li>
+                                <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">
+                                    Solicitações Recebidas
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            Doações
+                        </a>
+                    </li>
+                    <li>
+                        <a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+                            <i class="fas fa-calendar"></i>
+                            Eventos
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 ml-64">
+            <div class="p-6 border-b border-teal-600 mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Solicitações de Adoção</h1>
+                <p class="text-sm text-gray-600 mt-1">Gerencie solicitações e movimente processos automaticamente.</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4 items-center">
+                    <select id="filtroStatus" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Aprovado">Aprovado</option>
+                        <option value="Rejeitado">Rejeitado</option>
+                    </select>
+                    <input type="search" id="pesquisa" placeholder="Buscar por nome do adotante..." class="px-4 py-2 border border-gray-300 rounded-lg flex-1 min-w-[280px]">
+                    <button id="btnRecarregar" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                        <i class="fas fa-sync mr-2"></i> Recarregar
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[720px]">
+                            <thead class="bg-gray-100 border-b">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Animal</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Adotante</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Contato</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Data</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                                    <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodySolicitacoes" class="divide-y bg-white">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                        <i class="fas fa-spinner fa-spin text-2xl"></i> Carregando...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="semDados" class="hidden p-8 text-center text-gray-500">
+                        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-lg">Nenhuma solicitação encontrada</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div id="modalDetalhes" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-96 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900">Detalhes da Solicitação</h3>
+                <button id="fecharModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Animal</p>
+                        <p id="modalAnimal" class="text-lg font-semibold">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Adotante</p>
+                        <p id="modalAdotante" class="text-lg font-semibold">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Email</p>
+                        <p id="modalEmail" class="text-lg">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Telefone</p>
+                        <p id="modalTelefone" class="text-lg">-</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-500 uppercase">Endereço</p>
+                    <p id="modalEndereco" class="text-lg">-</p>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-500 uppercase">Mensagem</p>
+                    <p id="modalMensagem" class="text-lg bg-gray-50 p-3 rounded">-</p>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-500 uppercase">Status</p>
+                    <p id="modalStatus" class="text-lg font-semibold">-</p>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-500 uppercase">Data da Solicitação</p>
+                    <p id="modalData" class="text-lg">-</p>
+                </div>
+
+                <div id="secaoObservacoes" class="hidden">
+                    <p class="text-xs text-gray-500 uppercase">Observações do Admin</p>
+                    <textarea id="observacoesAdmin" class="w-full px-3 py-2 border border-gray-300 rounded-lg" rows="3" placeholder="Adicionar observações..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button id="btnAprovar" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                    <i class="fas fa-check mr-2"></i> Aprovar
+                </button>
+                <button id="btnRejeitar" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold">
+                    <i class="fas fa-times mr-2"></i> Rejeitar
+                </button>
+                <button id="btnCancelar" class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/menu.js"></script>
+    <script>
+let solicitacoesCarregadas = [];
+let solicitacaoAtual = null;
+
+// Carregar solicitações
+async function carregarSolicitacoes() {
+    try {
+        const response = await fetch('http://localhost:3001/api/admin/solicitacoes?status=Pendente');
+        if (!response.ok) throw new Error('Erro ao buscar solicitações');
+
+        solicitacoesCarregadas = await response.json();
+        renderizarTabela(solicitacoesCarregadas);
+
+    } catch (error) {
+        console.error('Erro:', error);
+        document.getElementById('tbodySolicitacoes').innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-red-500">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Erro ao carregar solicitações
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Renderizar tabela
+function renderizarTabela(solicitacoes) {
+    const tbody = document.getElementById('tbodySolicitacoes');
+    const semDados = document.getElementById('semDados');
+
+    if (solicitacoes.length === 0) {
+        tbody.innerHTML = '';
+        semDados.classList.remove('hidden');
+        return;
+    }
+
+    semDados.classList.add('hidden');
+    tbody.innerHTML = solicitacoes.map(s => `
+        <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4">
+                <div>
+                    <p class="font-semibold text-gray-900">${s.nome_animal || '-'}</p>
+                    <p class="text-sm text-gray-500">${s.especie || '-'}</p>
+                </div>
+            </td>
+            <td class="px-6 py-4">
+                <p class="font-semibold text-gray-900">${s.nome_adotante}</p>
+            </td>
+            <td class="px-6 py-4">
+                <p class="text-sm text-gray-700">${s.email}</p>
+                <p class="text-sm text-gray-700">${s.telefone}</p>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+                ${new Date(s.created_at).toLocaleDateString('pt-BR')}
+            </td>
+            <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-sm font-semibold ${
+                    s.status === 'Aprovado' ? 'bg-green-100 text-green-800' :
+                    s.status === 'Rejeitado' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                }">
+                    ${s.status}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+                <div class="inline-flex items-center justify-center gap-2">
+                    <button onclick="abrirDetalhes(${s.id})" class="text-teal-600 hover:text-teal-700 font-semibold">
+                        <i class="fas fa-eye mr-1"></i> Ver
+                    </button>
+                    ${s.status === 'Rejeitado' ? `
+                        <button onclick="deletarSolicitacao(${s.id})" class="text-white bg-red-600 hover:bg-red-700 rounded-full p-2 transition" title="Excluir solicitação">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Abrir modal de detalhes
+async function abrirDetalhes(id) {
+    try {
+        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${id}`);
+        if (!response.ok) throw new Error('Erro ao buscar detalhes');
+
+        solicitacaoAtual = await response.json();
+
+        document.getElementById('modalAnimal').textContent = solicitacaoAtual.nome_animal || '-';
+        document.getElementById('modalAdotante').textContent = solicitacaoAtual.nome_adotante;
+        document.getElementById('modalEmail').textContent = solicitacaoAtual.email;
+        document.getElementById('modalTelefone').textContent = solicitacaoAtual.telefone;
+        document.getElementById('modalEndereco').textContent = solicitacaoAtual.endereco;
+        document.getElementById('modalMensagem').textContent = solicitacaoAtual.mensagem;
+        document.getElementById('modalStatus').textContent = solicitacaoAtual.status;
+        document.getElementById('modalData').textContent = new Date(solicitacaoAtual.created_at).toLocaleDateString('pt-BR');
+
+        document.getElementById('modalDetalhes').classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao carregar detalhes da solicitação');
+    }
+}
+
+async function deletarSolicitacao(id) {
+    if (!confirm('Deseja excluir permanentemente esta solicitação?')) return;
+
+    try {
+        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('Erro ao excluir solicitação');
+
+        alert('Solicitação excluída com sucesso.');
+        fecharModal();
+        carregarSolicitacoes();
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao excluir solicitação');
+    }
+}
+
+// Aprovar solicitação
+document.getElementById('btnAprovar').addEventListener('click', async () => {
+    if (!solicitacaoAtual) return;
+
+    if (confirm('Tem certeza que deseja APROVAR esta solicitação?')) {
+        try {
+            const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}/iniciar`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) throw new Error('Erro ao iniciar o processo');
+
+            alert('✅ Solicitação aprovada e processo de adoção iniciado! O animal foi marcado como adotado.');
+            fecharModal();
+            carregarSolicitacoes();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao aprovar solicitação');
+        }
+    }
+});
+
+// Rejeitar solicitação
+document.getElementById('btnRejeitar').addEventListener('click', async () => {
+    if (!solicitacaoAtual) return;
+
+    if (confirm('Tem certeza que deseja REJEITAR esta solicitação?')) {
+        try {
+            const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    status: 'Rejeitado',
+                    observacoes: document.getElementById('observacoesAdmin').value
+                })
+            });
+
+            if (!response.ok) throw new Error('Erro ao atualizar');
+
+            alert('❌ Solicitação rejeitada.');
+            fecharModal();
+            carregarSolicitacoes();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao rejeitar solicitação');
+        }
+    }
+});
+
+// Fechar modal
+function fecharModal() {
+    document.getElementById('modalDetalhes').classList.add('hidden');
+    solicitacaoAtual = null;
+}
+
+document.getElementById('fecharModal').addEventListener('click', fecharModal);
+document.getElementById('btnCancelar').addEventListener('click', fecharModal);
+
+// Filtro de status
+document.getElementById('filtroStatus').addEventListener('change', () => {
+    aplicarFiltros();
+});
+
+// Pesquisa
+document.getElementById('pesquisa').addEventListener('input', () => {
+    aplicarFiltros();
+});
+
+// Aplicar filtros
+function aplicarFiltros() {
+    const status = document.getElementById('filtroStatus').value;
+    const pesquisa = document.getElementById('pesquisa').value.toLowerCase();
+
+    const filtradas = solicitacoesCarregadas.filter(s =>
+        (!status || s.status === status) &&
+        (s.nome_adotante.toLowerCase().includes(pesquisa) || s.email.toLowerCase().includes(pesquisa))
+    );
+
+    renderizarTabela(filtradas);
+}
+
+// Recarregar
+document.getElementById('btnRecarregar').addEventListener('click', carregarSolicitacoes);
+
+// Carregar ao iniciar
+document.addEventListener('DOMContentLoaded', carregarSolicitacoes);
+</script>
+
+</body>
+
+</html>

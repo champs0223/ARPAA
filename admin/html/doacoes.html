@@ -9,10 +9,20 @@
 
 <style>
 .menu-ativo {
-  background: rgba(255,255,255,0.15);
+  background: rgba(20,184,166,0.1);
   border-left: 4px solid #fde047;
   border-radius: 8px;
   padding: 8px;
+}
+
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
 }
 </style>
 
@@ -59,19 +69,14 @@ if(localStorage.getItem("adminLogado") !== "true"){
 <div class="flex min-h-screen">
 
     <!-- MENU LATERAL -->
-<aside class="w-64 bg-teal-700 text-white flex flex-col">
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
 
-<div class="p-6 border-b border-teal-600">
-
-<h1 class="text-2xl font-bold flex items-center gap-2">
-<i class="fas fa-paw"></i>
+<!-- ÍCONE ISOLADO -->
+<div class="pt-8 pb-2 flex flex-col items-center justify-center">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
-</h1>
-
-<p class="text-sm text-teal-200">
-Painel Administrativo
 </p>
-
 </div>
 
 
@@ -80,14 +85,14 @@ Painel Administrativo
 <ul class="space-y-4">
 
 <li>
-<a id="menuDashboard" href="html/dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-chart-line"></i>
 Dashboard
 </a>
 </li>
 
 <li>
-<a id="menuAnimais" href="html/animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
 <i class="fas fa-dog"></i>
 Animais
 </a>
@@ -105,13 +110,18 @@ Animais
   
   <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
     <li>
-      <a id="menuProcessos" href="html/adocoes.html" class="menu-link block hover:text-yellow-300">
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
         Processos
       </a>
     </li>
     <li>
       <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
         Adotantes
+      </a>
+    </li>
+    <li>
+      <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">
+        Solicitações Recebidas
       </a>
     </li>
   </ul>
@@ -147,7 +157,7 @@ Sair
 </aside>
 
 <!-- MAIN -->
-<main class="flex-1 p-10 space-y-10">
+<main class="flex-1 p-10 space-y-10 ml-64">
 
   <h1 class="text-3xl font-bold mb-4">Doações</h1>
 
@@ -572,6 +582,6 @@ atualizarCards();
 renderDoacoes();
 </script>
 
-<script src="menu.js"></script>
+<script src="../js/menu.js"></script>
 </body>
 </html>

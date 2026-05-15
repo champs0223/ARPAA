@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/config.css">
     <script src="js/tailwindconfig.js"></script>
     <script src="config-api.js"></script>
+    <script src="js/api-animais-publicos.js"></script>
     <script src="js/db-local.js"></script>
     <script src="js/api-local.js"></script>
     <script src="js/api-helper.js"></script>
@@ -173,6 +174,125 @@
         </div>
     </section>
 
+    <!-- ======================= MODAL DE DETALHES + FORMULÁRIO DE ADOÇÃO ======================= -->
+    <div id="modalAdocao" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-end sm:items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div id="modalOverlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <!-- Modal content -->
+            <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <!-- Fechar botão -->
+                <button id="fecharModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+
+                <!-- Conteúdo do Modal -->
+                <div id="modalContent" class="p-6 sm:p-8">
+                    <!-- SEÇÃO 1: Detalhes do Animal -->
+                    <div id="secaoDetalhesAnimal" class="space-y-4">
+                        <div id="modalFoto" class="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden mb-4">
+                            <img id="modalImagemAnimal" src="" alt="Animal" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <div>
+                            <h2 id="modalNomeAnimal" class="text-3xl font-bold text-gray-900 mb-2"></h2>
+                            <p id="modalInfoAnimal" class="text-gray-600 text-sm"></p>
+                        </div>
+
+                        <div id="modalBadgesAnimal" class="flex flex-wrap gap-2"></div>
+
+                        <div class="grid grid-cols-2 gap-4 py-4 border-y border-gray-200">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Temperamento</p>
+                                <p id="modalTemperamento" class="text-lg font-semibold text-gray-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Convive com Crianças</p>
+                                <p id="modalConviveCriancas" class="text-lg font-semibold text-gray-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Convive com Animais</p>
+                                <p id="modalConviveAnimais" class="text-lg font-semibold text-gray-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider">Status</p>
+                                <p id="modalStatusAnimal" class="text-lg font-semibold text-gray-900">-</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-gray-700 mb-2">Observações</p>
+                            <p id="modalObservacoes" class="text-gray-600 text-sm"></p>
+                        </div>
+
+                        <div class="pt-4">
+                            <button id="btnQueroAdotar" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg transition">
+                                <i class="fas fa-heart mr-2"></i> QUERO ADOTAR
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 2: Formulário de Adoção -->
+                    <div id="secaoFormularioAdotante" class="hidden space-y-4">
+                        <button id="voltarDetalhes" class="text-teal-600 hover:text-teal-700 font-semibold mb-4">
+                            <i class="fas fa-arrow-left mr-2"></i> Voltar
+                        </button>
+
+                        <div id="compactoAnimal" class="bg-teal-50 p-4 rounded-lg mb-4 border-l-4 border-teal-600">
+                            <p class="text-sm font-semibold text-teal-900">
+                                <span id="compactoNome"></span> • <span id="compactoIdade"></span>
+                            </p>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Dados do Adotante</h3>
+
+                        <form id="formAdotante" class="space-y-4">
+                            <input type="hidden" id="animalIdHidden" name="animal_id">
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nome Completo *</label>
+                                <input type="text" id="nomeAdotante" name="nome" required placeholder="Seu nome completo" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">E-mail *</label>
+                                <input type="email" id="emailAdotante" name="email" required placeholder="seu@email.com"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Telefone *</label>
+                                <input type="tel" id="telefoneSemArmadilha" name="telefone" required placeholder="(11) 99999-9999"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Endereço *</label>
+                                <input type="text" id="enderecoAdotante" name="endereco" required placeholder="Rua, nº, bairro"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Por que quer adotar? *</label>
+                                <textarea id="mensagemAdotante" name="mensagem" required rows="4" placeholder="Conte-nos sobre sua motivação para adotar este animal..."
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"></textarea>
+                            </div>
+
+                            <div id="msgErroFormulario" class="hidden p-3 bg-red-100 text-red-800 rounded-lg text-sm"></div>
+                            <div id="msgSucessoFormulario" class="hidden p-3 bg-green-100 text-green-800 rounded-lg text-sm"></div>
+
+                            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg transition">
+                                <i class="fas fa-check mr-2"></i> ENVIAR SOLICITAÇÃO
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER simples, mantendo conteúdo -->
     <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -281,15 +401,23 @@ let animaisCarregados = [];
 
 async function carregarAnimais() {
     try {
-        console.log("Carregando animais da API...");
+        console.log("🔄 Carregando animais disponíveis para adoção...");
         
         let animais;
         
-        if (USE_LOCAL_DB) {
+        // Tentar buscar do backend MySQL primeiro
+        if (!USE_LOCAL_DB && typeof buscarAnimaisDisponiveisDoBackend === 'function') {
+            console.log("📡 Usando integração com backend MySQL...");
+            animais = await buscarAnimaisDisponiveisDoBackend();
+        } else if (USE_LOCAL_DB && typeof listarAnimais === 'function') {
+            console.log("💾 Usando banco de dados local...");
             // Usar banco de dados local
             animais = await listarAnimais();
+            // Filtrar apenas disponíveis
+            animais = animais.filter(a => a.status && a.status.toLowerCase() === 'disponível');
         } else {
-            // Usar API remota
+            // Fallback: requisição HTTP direta
+            console.log("🔗 Tentando acesso HTTP direto...");
             const response = await fetch(`${API_BASE_URL}/animais`, {
                 method: 'GET',
                 headers: {
@@ -301,16 +429,18 @@ async function carregarAnimais() {
                 throw new Error('Erro ao buscar animais');
             }
             
-            animais = await response.json();
+            const todosAnimais = await response.json();
+            // Filtrar apenas disponíveis
+            animais = todosAnimais.filter(a => a.status && a.status.toLowerCase() === 'disponível');
         }
         
-        console.log("Animais carregados:", animais);
+        console.log(`✅ ${animais.length} animal(is) carregado(s) para exibição`);
         
         animaisCarregados = animais;
         renderizarAnimais(animais);
         
     } catch (error) {
-        console.error('Erro ao carregar animais:', error);
+        console.error('❌ Erro ao carregar animais:', error);
         mostrarSemAnimais();
     }
 }
@@ -349,7 +479,7 @@ function criarCardAnimal(animal) {
     div.className = 'group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2';
     
     // Usar foto do banco de dados ou fallback
-    const imagem = animal.foto_url || 'https://images.unsplash.com/photo-1560144282-7f9d2c1e6d9f?w=400&h=300&fit=crop';
+    const imagem = animal.foto_url ? (animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url) : 'assets/img/placeholder.svg';
     
     // Montar info do animal
     const sexoIdade = `${animal.sexo || 'Desconhecido'} • ${animal.idade_aproximada || 'Idade desconhecida'}`;
@@ -370,14 +500,14 @@ function criarCardAnimal(animal) {
     const descricao = animal.descricao || `${animal.nome} é um ${animal.especie || 'animal'} adorável esperando por um lar.`;
     
     // Array com fotos (por enquanto só a principal)
-    const fotos = animal.foto_url ? [animal.foto_url] : ['https://images.unsplash.com/photo-1560144282-7f9d2c1e6d9f?w=400&h=300&fit=crop'];
+    const fotos = animal.foto_url ? [(animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url)] : ['assets/img/placeholder.svg'];
     
     // Montar info completa para o modal
     const infoCompleta = `${animal.especie || 'Animal'} • ${sexoIdade}${animal.porte ? ' • Porte ' + animal.porte : ''}${animal.vacinado === 'Sim' ? ' • Vacinado' : ''}${animal.castrado === 'Sim' ? ' • Castrado' : ''}`;
     
     div.innerHTML = `
         <div class="relative overflow-hidden h-40">
-            <img src="${imagem}" alt="${animal.nome}"
+            <img src="${imagem}" alt="${animal.nome}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div class="absolute top-2 right-2">
@@ -426,7 +556,7 @@ function fecharModal() {
 
         <!-- GALERIA -->
         <div class="relative mb-4">
-            <img id="modalImgPrincipal" src="" class="w-full h-56 object-cover rounded-xl">
+            <img id="modalImgPrincipal" src="" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';" class="w-full h-56 object-cover rounded-xl">
 
             <!-- Botões de navegação -->
             <button onclick="fotoAnterior()" 
@@ -507,8 +637,9 @@ function abrirModal(nome, info, descricao, imagens) {
     // Miniaturas
     let miniaturas = "";
     imagens.forEach((img, i) => {
+        const urlProcessada = img.startsWith('http') ? img : 'http://localhost:3001' + img;
         miniaturas += `
-            <img src="${img}" onclick="irParaFoto(${i})"
+            <img src="${urlProcessada}" onclick="irParaFoto(${i})" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';"
             class="w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${i==0?"border-teal-600":"border-transparent"}">
         `;
     });
@@ -789,6 +920,180 @@ document.querySelectorAll(".menu-categoria").forEach(botao => {
 });
 </script>
 
+<!-- NOVO SCRIPT DO MODAL DE ADOÇÃO INTEGRADO COM API -->
+<script>
+/* ======================================================
+   SISTEMA DE MODAL DE ADOÇÃO COM API
+====================================================== */
+
+let animalSelecionadoParaAdocao = null;
+
+// Abrir modal com detalhes do animal
+function abrirModalAdocao(animal) {
+    animalSelecionadoParaAdocao = animal;
+    
+    // Preencher detalhes do animal
+    document.getElementById('modalImagemAnimal').src = animal.foto_url 
+        ? (animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url)
+        : 'assets/img/placeholder.svg';
+    
+    document.getElementById('modalNomeAnimal').textContent = animal.nome || 'Animal';
+    document.getElementById('modalInfoAnimal').textContent = `${animal.especie || 'Animal'} • ${animal.sexo || 'Sexo desconhecido'} • ${animal.idade_aproximada || 'Idade desconhecida'}`;
+    
+    // Badges
+    const badgesContainer = document.getElementById('modalBadgesAnimal');
+    badgesContainer.innerHTML = '';
+    if (animal.porte) {
+        badgesContainer.innerHTML += `<span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">Porte ${animal.porte}</span>`;
+    }
+    if (animal.vacinado === 'Sim') {
+        badgesContainer.innerHTML += `<span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Vacinado</span>`;
+    }
+    if (animal.castrado === 'Sim') {
+        badgesContainer.innerHTML += `<span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Castrado</span>`;
+    }
+    
+    // Informações detalhadas
+    document.getElementById('modalTemperamento').textContent = animal.temperamento || '-';
+    document.getElementById('modalConviveCriancas').textContent = animal.convive_criancas || '-';
+    document.getElementById('modalConviveAnimais').textContent = animal.convive_animais || '-';
+    document.getElementById('modalStatusAnimal').textContent = animal.status || '-';
+    document.getElementById('modalObservacoes').textContent = animal.descricao || 'Sem observações adicionais.';
+    
+    // Mostrar modal
+    document.getElementById('modalAdocao').classList.remove('hidden');
+    document.getElementById('secaoDetalhesAnimal').classList.remove('hidden');
+    document.getElementById('secaoFormularioAdotante').classList.add('hidden');
+    
+    // Limpar formulário
+    document.getElementById('formAdotante').reset();
+    document.getElementById('msgErroFormulario').classList.add('hidden');
+    document.getElementById('msgSucessoFormulario').classList.add('hidden');
+}
+
+// Fechar modal
+document.getElementById('fecharModal').addEventListener('click', () => {
+    document.getElementById('modalAdocao').classList.add('hidden');
+    animalSelecionadoParaAdocao = null;
+});
+
+// Fechar ao clicar no overlay
+document.getElementById('modalOverlay').addEventListener('click', () => {
+    document.getElementById('modalAdocao').classList.add('hidden');
+    animalSelecionadoParaAdocao = null;
+});
+
+// Botão "QUERO ADOTAR" - mostrar formulário
+document.getElementById('btnQueroAdotar').addEventListener('click', () => {
+    if (!animalSelecionadoParaAdocao) return;
+    
+    document.getElementById('secaoDetalhesAnimal').classList.add('hidden');
+    document.getElementById('secaoFormularioAdotante').classList.remove('hidden');
+    
+    // Preencher dados compactos
+    document.getElementById('compactoNome').textContent = animalSelecionadoParaAdocao.nome;
+    document.getElementById('compactoIdade').textContent = animalSelecionadoParaAdocao.idade_aproximada || 'Idade desconhecida';
+    
+    // Preencher ID do animal
+    document.getElementById('animalIdHidden').value = animalSelecionadoParaAdocao.id;
+});
+
+// Botão "Voltar"
+document.getElementById('voltarDetalhes').addEventListener('click', () => {
+    document.getElementById('secaoFormularioAdotante').classList.add('hidden');
+    document.getElementById('secaoDetalhesAnimal').classList.remove('hidden');
+});
+
+// Enviar formulário
+document.getElementById('formAdotante').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const msgErro = document.getElementById('msgErroFormulario');
+    const msgSucesso = document.getElementById('msgSucessoFormulario');
+    msgErro.classList.add('hidden');
+    msgSucesso.classList.add('hidden');
+    
+    if (!animalSelecionadoParaAdocao) {
+        msgErro.textContent = 'Erro: Animal não selecionado';
+        msgErro.classList.remove('hidden');
+        return;
+    }
+    
+    const dados = {
+        animal_id: document.getElementById('animalIdHidden').value,
+        nome: document.getElementById('nomeAdotante').value.trim(),
+        email: document.getElementById('emailAdotante').value.trim(),
+        telefone: document.getElementById('telefoneSemArmadilha').value.trim(),
+        endereco: document.getElementById('enderecoAdotante').value.trim(),
+        mensagem: document.getElementById('mensagemAdotante').value.trim()
+    };
+    
+    // Validações básicas
+    if (!dados.nome || !dados.email || !dados.telefone || !dados.endereco || !dados.mensagem) {
+        msgErro.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+        msgErro.classList.remove('hidden');
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://localhost:3001/api/public/solicitacoes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erro ao enviar solicitação');
+        }
+        
+        msgSucesso.textContent = '✅ Solicitação enviada com sucesso! Entraremos em contato em breve.';
+        msgSucesso.classList.remove('hidden');
+        
+        setTimeout(() => {
+            document.getElementById('modalAdocao').classList.add('hidden');
+            document.getElementById('formAdotante').reset();
+            animalSelecionadoParaAdocao = null;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        msgErro.textContent = `Erro ao enviar solicitação: ${error.message}`;
+        msgErro.classList.remove('hidden');
+    }
+});
+
+// Modificar a função criarCardAnimal para adicionar clique no card
+function adicionarEventoCliqueCard() {
+    const container = document.getElementById('lista-animais-container');
+    container.addEventListener('click', (e) => {
+        const card = e.target.closest('.group');
+        if (!card) return;
+        
+        // Encontrar o animal correspondente
+        const nome = card.querySelector('h3').textContent;
+        const animal = animaisCarregados.find(a => a.nome === nome);
+        
+        if (animal) {
+            abrirModalAdocao(animal);
+        }
+    });
+}
+
+// Executar ao carregar animais
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(adicionarEventoCliqueCard, 500);
+});
+
+// Re-executar ao renderizar animais
+const originalRenderizarAnimais = renderizarAnimais;
+renderizarAnimais = function(animais) {
+    originalRenderizarAnimais(animais);
+    adicionarEventoCliqueCard();
+};
+</script>
 
 </body>
 

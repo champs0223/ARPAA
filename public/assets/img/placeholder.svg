@@ -1,0 +1,38 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo -->
+  <rect width="300" height="200" fill="#E5E7EB"/>
+  
+  <!-- Ícone de animal quebrado -->
+  <g transform="translate(150, 100)">
+    <!-- Cabeça do cão -->
+    <circle cx="0" cy="-20" r="18" fill="#9CA3AF" stroke="#6B7280" stroke-width="2"/>
+    
+    <!-- Orelhas -->
+    <circle cx="-12" cy="-35" r="8" fill="#9CA3AF" stroke="#6B7280" stroke-width="2"/>
+    <circle cx="12" cy="-35" r="8" fill="#9CA3AF" stroke="#6B7280" stroke-width="2"/>
+    
+    <!-- Olhos X -->
+    <line x1="-8" y1="-25" x2="-4" y2="-21" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-4" y1="-25" x2="-8" y2="-21" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+    
+    <line x1="4" y1="-25" x2="8" y2="-21" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8" y1="-25" x2="4" y2="-21" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Nariz -->
+    <circle cx="0" cy="-12" r="3" fill="#6B7280"/>
+    
+    <!-- Corpo -->
+    <rect x="-12" y="0" width="24" height="30" fill="#9CA3AF" stroke="#6B7280" stroke-width="2" rx="6"/>
+    
+    <!-- Patas -->
+    <rect x="-16" y="28" width="6" height="12" fill="#9CA3AF" stroke="#6B7280" stroke-width="2" rx="2"/>
+    <rect x="-4" y="28" width="6" height="12" fill="#9CA3AF" stroke="#6B7280" stroke-width="2" rx="2"/>
+    <rect x="8" y="28" width="6" height="12" fill="#9CA3AF" stroke="#6B7280" stroke-width="2" rx="2"/>
+    <rect x="16" y="28" width="6" height="12" fill="#9CA3AF" stroke="#6B7280" stroke-width="2" rx="2"/>
+  </g>
+  
+  <!-- Texto -->
+  <text x="150" y="185" font-size="14" font-family="Arial" fill="#6B7280" text-anchor="middle" font-weight="bold">
+    Imagem não disponível
+  </text>
+</svg>

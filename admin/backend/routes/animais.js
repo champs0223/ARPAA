@@ -1,10 +1,51 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db/connection');
 const { getAll, getById, insertItem, updateItem, deleteById } = require('../db/localdb');
+
+// ✨ CONFIGURAR MULTER PARA SALVAR ARQUIVOS LOCALMENTE EM /public/uploads/
+const uploadDir = path.join(__dirname, '../../public/uploads');
+
+// Criar pasta se não existir
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  console.log('✅ Pasta /public/uploads/ criada');
+}
+
+// Configurar storage do multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Gerar nome único baseado em timestamp + random
+    const timestamp = Date.now();
+    const randomString = Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    const filename = `${name}-${timestamp}-${randomString}${ext}`;
+    cb(null, filename);
+  }
+});
+
+// Configurar upload com validações
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas (JPEG, PNG, GIF, WebP)'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB máximo
+  }
+});
 
 // GET - Listar todos os animais SEM fotos (otimizado para listagens)
 router.get('/animais-simples', async (req, res) => {
@@ -79,20 +120,16 @@ router.get('/animais-com-usuario', async (req, res) => {
   }
 });
 
-// POST - Criar novo animal (com foto em base64)
+// POST - Criar novo animal (salvar foto como arquivo local)
 router.post('/animais', upload.single('foto'), async (req, res) => {
   try {
     let foto_url = req.body.foto_url || null;
 
+    // ✨ NOVO: Salvar arquivo localmente em vez de Base64
     if (req.file) {
-      try {
-        const fileBuffer = fs.readFileSync(req.file.path);
-        foto_url = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
-        fs.unlinkSync(req.file.path);
-      } catch (fileError) {
-        console.error('Erro ao processar arquivo:', fileError);
-        return res.status(500).json({ error: 'Erro ao processar foto' });
-      }
+      // Usar a URL relativa do arquivo salvo
+      foto_url = `/uploads/${req.file.filename}`;
+      console.log(`✅ Imagem salva localmente: ${foto_url}`);
     }
 
     const {
@@ -155,42 +192,80 @@ router.post('/animais', upload.single('foto'), async (req, res) => {
   }
 });
 
-// PUT - Atualizar animal
+// PUT - Atualizar animal (salvar foto como arquivo local)
 router.put('/animais/:id', upload.single('foto'), async (req, res) => {
   try {
-    let foto_base64 = req.body.foto_base64 || null;
+    // Obter animal atual para manter foto anterior se não houver novo upload
+    const [animalAtual] = await pool.query('SELECT foto_url FROM animais WHERE id = ?', [req.params.id]);
+    let foto_url = animalAtual && animalAtual[0] ? animalAtual[0].foto_url : null;
 
+    // ✨ NOVO: Salvar arquivo localmente em vez de Base64
     if (req.file) {
-      try {
-        const fileBuffer = fs.readFileSync(req.file.path);
-        foto_base64 = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
-        fs.unlinkSync(req.file.path);
-      } catch (fileError) {
-        console.error('Erro ao processar arquivo:', fileError);
-        return res.status(500).json({ error: 'Erro ao processar foto' });
-      }
+      // Se há uma foto anterior que era Base64, ela será substituída
+      foto_url = `/uploads/${req.file.filename}`;
+      console.log(`✅ Imagem atualizada localmente: ${foto_url}`);
     }
 
-    const { nome, especie, raca, sexo, idade_aproximada, porte, data_resgate, status, descricao, registrado_por } = req.body;
-    const updated = updateItem('animais', req.params.id, {
-      nome,
-      especie,
-      raca,
-      sexo: sexo || 'desconhecido',
-      idade_aproximada,
-      porte: porte || 'desconhecido',
-      data_resgate,
-      status: status || 'resgatado',
-      descricao,
-      foto_base64,
-      registrado_por
-    });
+    const { 
+      nome, 
+      especie, 
+      raca, 
+      sexo, 
+      idade_aproximada, 
+      porte, 
+      data_resgate, 
+      local_resgate,
+      status, 
+      descricao, 
+      registrado_por,
+      vacinado,
+      castrado,
+      vermifugado,
+      temperamento,
+      convive_criancas,
+      convive_animais
+    } = req.body;
 
-    if (!updated) {
+    const query = `
+      UPDATE animais 
+      SET nome = ?, especie = ?, raca = ?, sexo = ?, idade_aproximada = ?, 
+          porte = ?, data_resgate = ?, local_resgate = ?, status = ?, 
+          descricao = ?, foto_url = ?, registrado_por = ?,
+          vacinado = ?, castrado = ?, vermifugado = ?, temperamento = ?,
+          convive_criancas = ?, convive_animais = ?
+      WHERE id = ?
+    `;
+
+    const params = [
+      nome || null,
+      especie || null,
+      raca || null,
+      sexo || 'desconhecido',
+      idade_aproximada || null,
+      porte || 'desconhecido',
+      data_resgate || null,
+      local_resgate || null,
+      status || 'resgatado',
+      descricao || null,
+      foto_url,
+      registrado_por || null,
+      vacinado || '',
+      castrado || '',
+      vermifugado || '',
+      temperamento || null,
+      convive_criancas || '',
+      convive_animais || '',
+      req.params.id
+    ];
+
+    const [result] = await pool.query(query, params);
+
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Animal não encontrado' });
     }
 
-    res.json(updated);
+    const [updatedRows] = await pool.query('SELECT * FROM animais WHERE id = ?', [req.params.id]);
+    res.json(updatedRows[0] || { id: req.params.id });
   } catch (error) {
     console.error('Erro ao atualizar animal:', error.message);
     res.status(500).json({ error: error.message });

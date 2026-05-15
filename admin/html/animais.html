@@ -15,10 +15,20 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
 <style>
 .menu-ativo {
-  background: rgba(255,255,255,0.15);
+  background: rgba(20,184,166,0.1);
   border-left: 4px solid #fde047;
   border-radius: 8px;
   padding: 8px;
+}
+
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
 }
 
 .modal-box {
@@ -31,8 +41,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   transform: scale(1);
   opacity: 1;
 }
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
 </style>
-<script src="../config-api.js"></script>
+<script src="../js/config-api.js"></script>
 <script src="../../public/js/db-local.js"></script>
 <script src="../../public/js/api-local.js"></script>
 <script src="../../public/js/api-helper.js"></script>
@@ -53,19 +71,14 @@ window.location.href = "../index.html"
 <div class="flex min-h-screen">
 
 <!-- MENU LATERAL -->
-<aside class="w-64 bg-teal-700 text-white flex flex-col">
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
 
-<div class="p-6 border-b border-teal-600">
-
-<h1 class="text-2xl font-bold flex items-center gap-2">
-<i class="fas fa-paw"></i>
+<!-- ÍCONE ISOLADO -->
+<div class="pt-8 pb-2 flex flex-col items-center justify-center">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
-</h1>
-
-<p class="text-sm text-teal-200">
-Painel Administrativo
 </p>
-
 </div>
 
 
@@ -107,6 +120,11 @@ Animais
         Adotantes
       </a>
     </li>
+    <li>
+      <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">
+        Solicitações Recebidas
+      </a>
+    </li>
   </ul>
 </li>
 
@@ -141,193 +159,14 @@ Sair
 
 
 <!-- CONTEÚDO -->
-<main class="flex-1 p-10">
+<main class="flex-1 p-10 ml-64">
 
 
 <h1 class="text-3xl font-bold mb-6">
 Gerenciar Animais
 </h1>
 
-
-<!-- FORMULÁRIO -->
-<form onsubmit="cadastrarAnimal(); return false;"
-class="space-y-8 bg-white p-6 rounded-xl shadow mb-10">
-
-<!-- DADOS DO ANIMAL -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-paw text-teal-600"></i>
-Dados do Animal
-</h2>
-
-<div class="grid md:grid-cols-2 gap-4">
-
-<input id="nome" placeholder="Nome do animal" class="border p-3 rounded">
-
-<select id="especie" class="border p-3 rounded">
-<option value="">Espécie</option>
-<option>Cachorro</option>
-<option>Gato</option>
-<option>Outro</option>
-</select>
-
-<input id="raca" placeholder="Raça" class="border p-3 rounded">
-
-<input id="idade" placeholder="Idade" class="border p-3 rounded">
-
-<select id="sexo" class="border p-3 rounded">
-<option value="">Sexo</option>
-<option>Macho</option>
-<option>Fêmea</option>
-</select>
-
-<select id="porte" class="border p-3 rounded">
-<option value="">Porte</option>
-<option>Pequeno</option>
-<option>Médio</option>
-<option>Grande</option>
-</select>
-
-</div>
-
-</div>
-
-
-<!-- SAÚDE -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-heartbeat text-red-500"></i>
-Saúde
-</h2>
-
-<div class="grid md:grid-cols-3 gap-4">
-
-<select id="vacinado" class="border p-3 rounded">
-<option value="">Vacinado?</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-
-<select id="castrado" class="border p-3 rounded">
-<option value="">Castrado?</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-
-<select id="vermifugado" class="border p-3 rounded">
-<option value="">Vermifugado?</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-
-</div>
-
-</div>
-
-
-<!-- RESGATE -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-map-marker-alt text-yellow-500"></i>
-Informações do Resgate
-</h2>
-
-<div class="grid md:grid-cols-2 gap-4">
-
-<input type="date" id="dataResgate" class="border p-3 rounded">
-
-<input id="localResgate" placeholder="Local do resgate" class="border p-3 rounded">
-
-</div>
-
-</div>
-
-
-<!-- COMPORTAMENTO -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-brain text-purple-500"></i>
-Comportamento
-</h2>
-
-<div class="grid md:grid-cols-3 gap-4">
-
-<select id="temperamento" class="border p-3 rounded">
-<option value="">Temperamento</option>
-<option>Dócil</option>
-<option>Brincalhão</option>
-<option>Tímido</option>
-<option>Agitado</option>
-</select>
-
-<select id="criancas" class="border p-3 rounded">
-<option value="">Convive com crianças?</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-
-<select id="animais" class="border p-3 rounded">
-<option value="">Convive com outros animais?</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-
-</div>
-
-</div>
-
-
-<!-- OBSERVAÇÕES -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-file-alt text-gray-500"></i>
-Observações
-</h2>
-
-<textarea id="descricao"
-placeholder="Descrição do animal"
-class="border p-3 rounded w-full h-32"></textarea>
-
-</div>
-
-
-<!-- FOTO -->
-<div>
-
-<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-<i class="fas fa-camera text-teal-600"></i>
-Foto do Animal
-</h2>
-
-<input type="file"
-id="foto"
-accept="image/*"
-onchange="previewFoto(event)"
-class="border p-3 rounded w-full">
-
-<img id="preview"
-class="mt-4 w-40 rounded hidden border">
-
-</div>
-
-<button type="submit"
-class="bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
-Salvar animal
-</button>
-
-</form>
-
-
-<h2 class="text-2xl font-semibold mb-4">
-Animais cadastrados
-</h2>
-
-<div class="grid md:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
 
 <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
 
@@ -340,7 +179,6 @@ Animais cadastrados
 
 </div>
 
-
 <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
 
 <i class="fas fa-heart text-green-500 text-xl"></i>
@@ -352,7 +190,6 @@ Animais cadastrados
 
 </div>
 
-
 <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
 
 <i class="fas fa-heart text-red-500 text-xl"></i>
@@ -363,7 +200,6 @@ Animais cadastrados
 </div>
 
 </div>
-
 
 <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
 
@@ -387,6 +223,16 @@ Animais cadastrados
 
 </div>
 
+</div>
+
+<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+  <h2 class="text-2xl font-semibold">
+    Animais Cadastrados
+  </h2>
+  <a href="cadastrar-animal.html"
+     class="inline-flex items-center gap-2 bg-teal-600 text-white px-5 py-3 rounded-xl hover:bg-teal-700 transition">
+    + Cadastrar Novo Animal
+  </a>
 </div>
 
 <div class="bg-white p-4 rounded-xl shadow mb-6 grid md:grid-cols-5 gap-4">
@@ -691,139 +537,6 @@ window.location.href="../index.html"
 
 }
 
-function previewFoto(event){
-
-let arquivo = event.target.files[0]
-
-if(!arquivo) return
-
-let reader = new FileReader()
-
-reader.onload = function(e){
-
-let preview = document.getElementById("preview")
-
-preview.src = e.target.result
-preview.classList.remove("hidden")
-
-}
-
-reader.readAsDataURL(arquivo)
-
-}
-
-
-function cadastrarAnimal(){
-  let nome = document.getElementById("nome").value
-  let especie = document.getElementById("especie").value
-  let raca = document.getElementById("raca").value
-  let idade = document.getElementById("idade").value
-  let sexo = document.getElementById("sexo").value
-  let porte = document.getElementById("porte").value
-
-  let vacinado = document.getElementById("vacinado").value
-  let castrado = document.getElementById("castrado").value
-  let vermifugado = document.getElementById("vermifugado").value
-
-  let dataResgate = document.getElementById("dataResgate").value
-  let localResgate = document.getElementById("localResgate").value
-
-  let temperamento = document.getElementById("temperamento").value
-  let criancas = document.getElementById("criancas").value
-  let conviveAnimais = document.getElementById("animais").value
-
-  let descricao = document.getElementById("descricao").value
-
-  let arquivo = document.getElementById("foto").files[0]
-
-  if(!arquivo){
-    alert("Selecione uma foto do animal")
-    return
-  }
-
-  const uploadData = new FormData()
-  uploadData.append('foto', arquivo)
-
-  fetch(`${API_BASE_URL}/upload`, {
-    method: 'POST',
-    body: uploadData
-  })
-  .then(response => response.json())
-  .then(async uploadResult => {
-    if (!uploadResult.success) {
-      throw new Error(uploadResult.error || 'Erro ao fazer upload da foto')
-    }
-
-    const fotoURL = uploadResult.foto_url || ''
-
-    let animal = {
-      nome,
-      especie,
-      raca,
-      sexo,
-      idade_aproximada: idade,
-      porte,
-      status: "Disponível",
-      data_resgate: dataResgate,
-      local_resgate: localResgate,
-      descricao,
-      foto_url: fotoURL,
-      registrado_por: localStorage.getItem("usuarioId") || null,
-      vacinado,
-      castrado,
-      vermifugado,
-      temperamento,
-      convive_criancas: criancas,
-      convive_animais: conviveAnimais
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/animais`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(animal)
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao enviar animal para o servidor')
-      }
-
-      const savedAnimal = await response.json()
-
-      let animais = JSON.parse(localStorage.getItem("animais")) || []
-
-      if (animalEditando !== null) {
-        let index = animais.findIndex(a => a.id === animalEditando)
-        if (index !== -1) {
-          animal.id = animalEditando
-          animais[index] = animal
-        }
-        animalEditando = null
-      } else {
-        animal.id = savedAnimal.id || Date.now()
-        animais.push(animal)
-      }
-
-      localStorage.setItem("animais", JSON.stringify(animais))
-
-      mostrarAnimais()
-      limparFormulario()
-      mostrarSucesso("Animal cadastrado com sucesso!")
-      console.log("Animal salvo no servidor:", savedAnimal)
-    } catch (error) {
-      console.error(error)
-      alert('Falha ao salvar o animal: ' + error.message)
-    }
-  })
-  .catch(error => {
-    console.error('Erro ao fazer upload:', error)
-    alert('Erro ao fazer upload da foto: ' + error.message)
-  })
-}
-
 function badgeStatus(status){
 
   if(status === "Reservado"){
@@ -847,7 +560,7 @@ return ""
 
 async function carregarAnimaisDaAPI(){
   try {
-    const response = await fetch(`${API_BASE_URL}/animais`)
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais`)
     if (!response.ok) {
       throw new Error('Erro ao carregar animais da API')
     }
@@ -892,7 +605,7 @@ function mostrarAnimais(){
         <div onclick='verAnimal(${JSON.stringify(animal)})'
         class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
-        <img src="${animal.foto_url || animal.foto || 'https://via.placeholder.com/300x200?text=Sem+Foto'}"
+        <img src="${animal.foto_url ? (animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url) : '../../assets/img/placeholder.svg'}" onerror="this.onerror=null; this.src='../../assets/img/placeholder.svg';"
         class="w-full h-28 object-cover">
 
         <div class="p-4">
@@ -1095,7 +808,7 @@ function abrirEditar(id, animal = null){
 function excluirAnimal(id){
   abrirConfirmacao("Deseja realmente excluir este animal?", async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/animais/${id}`, {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais/${id}`, {
         method: 'DELETE'
       })
 
@@ -1116,37 +829,6 @@ function excluirAnimal(id){
     }
   })
 }
-
-function limparFormulario(){
-
-document.getElementById("nome").value=""
-document.getElementById("especie").value=""
-document.getElementById("raca").value=""
-document.getElementById("idade").value=""
-document.getElementById("sexo").value=""
-document.getElementById("porte").value=""
-
-document.getElementById("vacinado").value=""
-document.getElementById("castrado").value=""
-document.getElementById("vermifugado").value=""
-
-document.getElementById("dataResgate").value=""
-document.getElementById("localResgate").value=""
-
-document.getElementById("temperamento").value=""
-document.getElementById("criancas").value=""
-document.getElementById("animais").value=""
-
-document.getElementById("descricao").value=""
-
-document.getElementById("foto").value=""
-
-let preview = document.getElementById("preview")
-preview.src = ""
-preview.classList.add("hidden")
-
-}
-
 
 function salvarEdicao(){
   abrirConfirmacao("Salvar alterações deste animal?", async () => {
@@ -1174,7 +856,7 @@ function salvarEdicao(){
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/animais/${animalEditando}`, {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais/${animalEditando}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -1307,7 +989,7 @@ function atualizarEstatisticas(animais){
 }
 
 function abrirEditarPorId(id){
-  fetch(`${API_BASE_URL}/animais/${id}`)
+  fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais/${id}`)
   .then(response => response.json())
   .then(animal => {
     abrirEditar(id, animal)
@@ -1359,9 +1041,7 @@ function mostrarSucesso(msg){
 
   modal.classList.remove("hidden")
 
-  setTimeout(() => {
-    box.classList.add("ativo")
-  }, 10)
+  box.classList.add("ativo")
 }
 
 // Carrega animais da API quando a página carrega
@@ -1371,7 +1051,7 @@ window.addEventListener('load', () => {
 
 </script>
 
-<script src="../menu.js"></script>
+<script src="../js/menu.js"></script>
 
 </body>
 </html>

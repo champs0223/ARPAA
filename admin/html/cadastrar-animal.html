@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cadastrar Animal - ARPAA</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.menu-ativo {
+  background: rgba(20,184,166,0.1);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
+}
+
+.modal-box {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.modal-box.ativo {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+</style>
+<script src="../js/config-api.js"></script>
+<script src="../../public/js/db-local.js"></script>
+<script src="../../public/js/api-local.js"></script>
+<script src="../../public/js/api-helper.js"></script>
+<script src="../../public/js/init-dados-locais.js"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- PROTEÇÃO DE LOGIN -->
+<script>
+if(localStorage.getItem("adminLogado") !== "true"){
+window.location.href = "../index.html"
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<!-- MENU LATERAL -->
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
+
+<div class="pt-8 pb-2 flex flex-col items-center justify-center">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
+ARPAA
+</p>
+</div>
+
+<nav class="flex-1 p-6">
+<ul class="space-y-4">
+<li>
+<a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-chart-line"></i>
+Dashboard
+</a>
+</li>
+
+<li>
+<a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-dog"></i>
+Animais
+</a>
+</li>
+
+<li>
+  <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+    <span class="flex gap-3">
+      <i class="fas fa-heart"></i>
+      Adoções
+    </span>
+    <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+  </button>
+
+  <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+    <li>
+      <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">
+        Processos
+      </a>
+    </li>
+    <li>
+      <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
+        Adotantes
+      </a>
+    </li>
+    <li>
+      <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">
+        Solicitações Recebidas
+      </a>
+    </li>
+  </ul>
+</li>
+
+<li>
+<a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-hand-holding-heart"></i>
+Doações
+</a>
+</li>
+
+<li>
+<a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+<i class="fas fa-calendar"></i>
+Eventos
+</a>
+</li>
+
+</ul>
+
+</nav>
+
+<div class="p-6 border-t border-teal-600">
+<button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+<i class="fas fa-sign-out-alt"></i>
+Sair
+</button>
+</div>
+
+</aside>
+
+<main class="flex-1 p-10 ml-64">
+
+<div class="flex items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-3xl font-bold">Cadastrar Animal</h1>
+    <p class="text-sm text-gray-500">Preencha os dados do animal para registrar no sistema.</p>
+  </div>
+  <a href="animais.html" class="inline-flex items-center gap-2 text-teal-600 border border-teal-600 px-4 py-2 rounded hover:bg-teal-50 transition">
+    <i class="fas fa-arrow-left"></i>
+    Voltar para listagem
+  </a>
+</div>
+
+<form id="formCadastro" onsubmit="cadastrarAnimal(); return false;" class="space-y-8 bg-white p-6 rounded-xl shadow">
+
+<!-- DADOS DO ANIMAL -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-paw text-teal-600"></i>
+Dados do Animal
+</h2>
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<div class="flex flex-col gap-1">
+<label for="nome" class="text-sm font-medium text-gray-700">Nome do animal</label>
+<input id="nome" class="border p-3 rounded">
+</div>
+
+<div class="flex flex-col gap-1">
+<label for="especie" class="text-sm font-medium text-gray-700">Espécie</label>
+<select id="especie" class="border p-3 rounded">
+<option value="">Selecione...</option>
+<option>Cachorro</option>
+<option>Gato</option>
+<option>Outro</option>
+</select>
+</div>
+
+<div class="flex flex-col gap-1">
+<label for="raca" class="text-sm font-medium text-gray-700">Raça</label>
+<input id="raca" class="border p-3 rounded">
+</div>
+
+<div class="flex flex-col gap-1">
+<label for="idade" class="text-sm font-medium text-gray-700">Idade</label>
+<input id="idade" class="border p-3 rounded">
+</div>
+
+<div class="flex flex-col gap-1">
+<label for="sexo" class="text-sm font-medium text-gray-700">Sexo</label>
+<select id="sexo" class="border p-3 rounded">
+<option value="">Selecione...</option>
+<option>Macho</option>
+<option>Fêmea</option>
+</select>
+</div>
+
+<div class="flex flex-col gap-1">
+<label for="porte" class="text-sm font-medium text-gray-700">Porte</label>
+<select id="porte" class="border p-3 rounded">
+<option value="">Selecione...</option>
+<option>Pequeno</option>
+<option>Médio</option>
+<option>Grande</option>
+</select>
+</div>
+
+</div>
+</div>
+
+<!-- SAÚDE -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-heartbeat text-red-500"></i>
+Saúde
+</h2>
+
+<div class="grid md:grid-cols-3 gap-4">
+<div>
+  <label for="vacinado" class="form-label">Vacinado?</label>
+  <select id="vacinado" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+</div>
+
+<div>
+  <label for="castrado" class="form-label">Castrado?</label>
+  <select id="castrado" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+</div>
+
+<div>
+  <label for="vermifugado" class="form-label">Vermifugado?</label>
+  <select id="vermifugado" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+</div>
+</div>
+</div>
+
+<!-- RESGATE -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-map-marker-alt text-yellow-500"></i>
+Informações do Resgate
+</h2>
+
+<div class="grid md:grid-cols-2 gap-4">
+<div>
+  <label for="dataResgate" class="form-label">Data do Resgate</label>
+  <input type="date" id="dataResgate" class="border p-3 rounded w-full">
+</div>
+
+<div>
+  <label for="localResgate" class="form-label">Local do Resgate</label>
+  <input id="localResgate" class="border p-3 rounded w-full">
+</div>
+</div>
+</div>
+
+<!-- COMPORTAMENTO -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-brain text-purple-500"></i>
+Comportamento
+</h2>
+
+<div class="grid md:grid-cols-3 gap-4">
+<div>
+  <label for="temperamento" class="form-label">Temperamento</label>
+  <select id="temperamento" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Dócil</option>
+    <option>Brincalhão</option>
+    <option>Tímido</option>
+    <option>Agitado</option>
+  </select>
+</div>
+
+<div>
+  <label for="criancas" class="form-label">Convive com crianças?</label>
+  <select id="criancas" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+</div>
+
+<div>
+  <label for="animais" class="form-label">Convive com outros animais?</label>
+  <select id="animais" class="border p-3 rounded w-full">
+    <option value="">Selecione</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+</div>
+</div>
+</div>
+
+<!-- OBSERVAÇÕES -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-file-alt text-gray-500"></i>
+Observações
+</h2>
+<label for="descricao" class="form-label">Observações</label>
+<textarea id="descricao" class="border p-3 rounded w-full h-32"></textarea>
+</div>
+
+<!-- FOTO -->
+<div>
+<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+<i class="fas fa-camera text-teal-600"></i>
+Foto do Animal
+</h2>
+<input type="file" id="foto" accept="image/*" onchange="previewFoto(event)" class="border p-3 rounded w-full">
+<img id="preview" class="mt-4 w-40 rounded hidden border">
+</div>
+
+<button type="submit" class="bg-teal-600 text-white px-6 py-3 rounded hover:bg-teal-700">
+Salvar animal
+</button>
+</form>
+
+<div id="modalSucesso" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
+    <i class="fas fa-check-circle text-green-500 text-4xl mb-3"></i>
+    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
+    <p class="text-gray-600 mb-6">Animal cadastrado com sucesso!</p>
+  </div>
+</div>
+
+<div id="modalDecisao" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-96 text-center">
+    <h2 class="text-xl font-bold mb-4">Deseja cadastrar um novo animal?</h2>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <button id="btnNaoCadastrar" type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded w-full">
+        Não
+      </button>
+      <button id="btnSimCadastrar" type="button" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded w-full">
+        Sim
+      </button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function logout(){
+  localStorage.removeItem("adminLogado")
+  window.location.href="../index.html"
+}
+
+function previewFoto(event){
+  let arquivo = event.target.files[0]
+  if(!arquivo) return
+  let reader = new FileReader()
+  reader.onload = function(e){
+    let preview = document.getElementById("preview")
+    preview.src = e.target.result
+    preview.classList.remove("hidden")
+  }
+  reader.readAsDataURL(arquivo)
+}
+
+function abrirModalSucesso(){
+  const modal = document.getElementById('modalSucesso')
+  modal.classList.remove('hidden')
+  const box = modal.querySelector('.modal-box')
+  setTimeout(() => {
+    box.classList.remove('ativo')
+    modal.classList.add('hidden')
+    abrirModalDecisao()
+  }, 1000)
+  setTimeout(() => {
+    box.classList.add('ativo')
+  }, 10)
+}
+
+function abrirModalDecisao(){
+  const modal = document.getElementById('modalDecisao')
+  modal.classList.remove('hidden')
+  const box = modal.querySelector('.modal-box')
+  setTimeout(() => box.classList.add('ativo'), 10)
+  document.getElementById('btnNaoCadastrar').onclick = () => {
+    window.location.href = 'animais.html'
+  }
+  document.getElementById('btnSimCadastrar').onclick = () => {
+    modal.classList.add('hidden')
+    box.classList.remove('ativo')
+    const form = document.getElementById('formCadastro')
+    form.reset()
+    document.getElementById('preview').classList.add('hidden')
+  }
+}
+
+function cadastrarAnimal(){
+  let nome = document.getElementById("nome").value
+  let especie = document.getElementById("especie").value
+  let raca = document.getElementById("raca").value
+  let idade = document.getElementById("idade").value
+  let sexo = document.getElementById("sexo").value
+  let porte = document.getElementById("porte").value
+
+  let vacinado = document.getElementById("vacinado").value
+  let castrado = document.getElementById("castrado").value
+  let vermifugado = document.getElementById("vermifugado").value
+
+  let dataResgate = document.getElementById("dataResgate").value
+  let localResgate = document.getElementById("localResgate").value
+
+  let temperamento = document.getElementById("temperamento").value
+  let criancas = document.getElementById("criancas").value
+  let conviveAnimais = document.getElementById("animais").value
+
+  let descricao = document.getElementById("descricao").value
+  let arquivo = document.getElementById("foto").files[0]
+
+  if(!arquivo){
+    alert("Selecione uma foto do animal")
+    return
+  }
+
+  const uploadData = new FormData()
+  uploadData.append('foto', arquivo)
+
+  fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/upload`, {
+    method: 'POST',
+    body: uploadData
+  })
+  .then(response => response.json())
+  .then(async uploadResult => {
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || 'Erro ao fazer upload da foto')
+    }
+
+    const fotoURL = uploadResult.foto_url || ''
+
+    let animal = {
+      nome,
+      especie,
+      raca,
+      sexo,
+      idade_aproximada: idade,
+      porte,
+      status: "Disponível",
+      data_resgate: dataResgate,
+      local_resgate: localResgate,
+      descricao,
+      foto_url: fotoURL,
+      registrado_por: localStorage.getItem("usuarioId") || null,
+      vacinado,
+      castrado,
+      vermifugado,
+      temperamento,
+      convive_criancas: criancas,
+      convive_animais: conviveAnimais
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(animal)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao enviar animal para o servidor')
+      }
+
+      const savedAnimal = await response.json()
+      let animais = JSON.parse(localStorage.getItem("animais")) || []
+      animal.id = savedAnimal.id || Date.now()
+      animais.push(animal)
+      localStorage.setItem("animais", JSON.stringify(animais))
+
+      abrirModalSucesso()
+    } catch (error) {
+      console.error(error)
+      alert('Falha ao salvar o animal: ' + error.message)
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao fazer upload:', error)
+    alert('Erro ao fazer upload da foto: ' + error.message)
+  })
+}
+</script>
+
+<script src="../js/menu.js"></script>
+
+</body>
+</html>

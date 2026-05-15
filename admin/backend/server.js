@@ -25,6 +25,8 @@ const tratamentosRoutes = require('./routes/tratamentos');
 const vacinasRoutes = require('./routes/vacinas');
 const historicoRoutes = require('./routes/historico');
 const uploadRoutes = require('./routes/upload');
+const eventosRoutes = require('./routes/eventos');
+const solicitacoesRoutes = require('./routes/solicitacoes');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3001);
@@ -53,16 +55,18 @@ app.get('/health', (req, res) => {
 });
 
 // Rotas da API
-app.use('/', authRoutes);
-app.use('/', usuariosRoutes);
-app.use('/', animaisRoutes);
-app.use('/', adotantesRoutes);
-app.use('/', adocoesRoutes);
-app.use('/', resgatesesRoutes);
-app.use('/', tratamentosRoutes);
-app.use('/', vacinasRoutes);
-app.use('/', historicoRoutes);
-app.use('/', uploadRoutes);
+app.use('/api', authRoutes);
+app.use('/api', usuariosRoutes);
+app.use('/api', animaisRoutes);
+app.use('/api', adotantesRoutes);
+app.use('/api', adocoesRoutes);
+app.use('/api', resgatesesRoutes);
+app.use('/api', tratamentosRoutes);
+app.use('/api', vacinasRoutes);
+app.use('/api', historicoRoutes);
+app.use('/api', uploadRoutes);
+app.use('/api', eventosRoutes);
+app.use('/api', solicitacoesRoutes);
 
 // Tratamento de erros 404
 app.use((req, res) => {

@@ -12,13 +12,9 @@
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<link rel="stylesheet" href="css/config.css">
-<script src="js/tailwindconfig.js"></script>
-<script src="config-api.js"></script>
-<script src="../public/js/db-local.js"></script>
-<script src="../public/js/api-local.js"></script>
-<script src="../public/js/api-helper.js"></script>
-<script src="../public/js/init-dados-locais.js"></script>
+<link rel="stylesheet" href="../css/config.css">
+<script src="../js/tailwindconfig.js"></script>
+<script src="../js/config-api.js"></script>
 
 </head>
 
@@ -31,10 +27,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 
 <div class="flex justify-between items-center h-20 max-w-7xl mx-auto">
 
-<a href="../public/index.html" class="flex items-center space-x-2">
+<a href="../../public/index.html" class="flex items-center space-x-3">
 
-<div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
-<i class="fas fa-paw text-white text-xl"></i>
+<div class="bg-slate-100 rounded-lg p-3 border border-gray-200">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="h-10 w-10 object-contain">
 </div>
 
 <span class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">
@@ -141,7 +137,7 @@ async function login(){
       dados = await fazerLogin(usuario, senha);
     } else {
       // Usar API remota
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -155,7 +151,7 @@ async function login(){
         erro.textContent = dados.error || "Erro ao fazer login"
         erro.classList.remove("hidden")
         return
-      }
+      }[1]
 
       // Login bem-sucedido
       localStorage.setItem("adminLogado", "true")
@@ -165,7 +161,7 @@ async function login(){
     }
 
     // Se chegou aqui, login foi bem-sucedido
-    window.location.href="html/dashboard.html"
+    window.location.href="dashboard.html"
 
   } catch (error) {
     console.error('Erro:', error)

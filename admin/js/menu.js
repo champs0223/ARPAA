@@ -15,7 +15,7 @@ function toggleMenu(){
   seta.classList.toggle("rotate-180")
 }
 
-if(paginaAtual === "adocoes.html" || paginaAtual === "adotantes.html"){
+if(paginaAtual === "adocoes.html" || paginaAtual === "adotantes.html" || paginaAtual === "solicitacoes.html"){
   document.getElementById("submenuAdocoes").classList.remove("hidden")
   document.getElementById("iconeSeta").classList.add("rotate-180")
 }

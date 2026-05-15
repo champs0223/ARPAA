@@ -10,10 +10,20 @@
 
 <style>
 .menu-ativo {
-  background: rgba(255,255,255,0.15);
+  background: rgba(20,184,166,0.1);
   border-left: 4px solid #fde047;
   border-radius: 8px;
   padding: 8px;
+}
+
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
 }
 
 .modal-box {
@@ -28,11 +38,7 @@
 }
 
 </style>
-<script src="../config-api.js"></script>
-<script src="../../public/js/db-local.js"></script>
-<script src="../../public/js/api-local.js"></script>
-<script src="../../public/js/api-helper.js"></script>
-<script src="../../public/js/init-dados-locais.js"></script>
+<script src="../js/config-api.js"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -46,19 +52,14 @@ if(localStorage.getItem("adminLogado") !== "true"){
 <div class="flex min-h-screen">
 
     <!-- MENU LATERAL -->
-<aside class="w-64 bg-teal-700 text-white flex flex-col">
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
 
-<div class="p-6 border-b border-teal-600">
-
-<h1 class="text-2xl font-bold flex items-center gap-2">
-<i class="fas fa-paw"></i>
+<!-- ÍCONE ISOLADO -->
+<div class="pt-8 pb-2 flex flex-col items-center justify-center">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
-</h1>
-
-<p class="text-sm text-teal-200">
-Painel Administrativo
 </p>
-
 </div>
 
 
@@ -101,6 +102,11 @@ Animais
         Adotantes
       </a>
     </li>
+    <li>
+      <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">
+        Solicitações Recebidas
+      </a>
+    </li>
   </ul>
 </li>
 
@@ -135,42 +141,42 @@ Sair
 
 
 <!-- CONTEÚDO -->
-<main class="flex-1 p-10">
+<main class="flex-1 p-10 ml-64">
 
 <h1 class="text-3xl font-bold text-gray-800 mb-8">Processos de Adoção</h1>
 
 <!-- CARDS -->
 <div class="grid md:grid-cols-3 gap-6 mb-10">
 
-  <!-- Pendentes -->
+  <!-- Em Andamento -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
     <div class="flex-shrink-0">
       <i class="fas fa-clock text-yellow-500 text-3xl"></i>
     </div>
     <div>
-      <p class="text-gray-500">Pendentes</p>
+      <p class="text-gray-500">Em Andamento</p>
       <p id="pendentes" class="text-2xl font-bold text-yellow-500">0</p>
     </div>
   </div>
 
-  <!-- Aprovadas -->
+  <!-- Concluídas -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
     <div class="flex-shrink-0">
       <i class="fas fa-check-circle text-green-600 text-3xl"></i>
     </div>
     <div>
-      <p class="text-gray-500">Aprovadas</p>
+      <p class="text-gray-500">Concluídas</p>
       <p id="aprovadas" class="text-2xl font-bold text-green-600">0</p>
     </div>
   </div>
 
-  <!-- Recusadas -->
+  <!-- Reprovadas -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4">
     <div class="flex-shrink-0">
       <i class="fas fa-times-circle text-red-600 text-3xl"></i>
     </div>
     <div>
-      <p class="text-gray-500">Recusadas</p>
+      <p class="text-gray-500">Reprovadas</p>
       <p id="recusadas" class="text-2xl font-bold text-red-600">0</p>
     </div>
   </div>
@@ -195,10 +201,13 @@ Sair
 
     <!-- FILTRO -->
     <select id="filtro" class="border p-2 rounded-lg">
-      <option value="todos">Todos</option>
-      <option value="pendente">Pendentes</option>
-      <option value="aprovado">Aprovadas</option>
-      <option value="recusado">Recusadas</option>
+      <option value="todos">Todos os Processos</option>
+      <option value="triagem">Triagem</option>
+      <option value="entrevista">Entrevista</option>
+      <option value="visita">Visita</option>
+      <option value="termo">Termo</option>
+      <option value="concluído">Concluídos</option>
+      <option value="reprovado">Reprovados</option>
     </select>
 
 <button 
@@ -229,7 +238,6 @@ Sair
     <th class="px-4 py-3 text-left">Telefone</th>
     <th class="px-4 py-3 text-left">Data</th>
     <th class="px-4 py-3 text-center">Status</th>
-    <th class="px-4 py-3 text-center">Ações</th>
   </tr>
 </thead>
     <tbody id="listaAdocoes"></tbody>
@@ -328,6 +336,76 @@ Sair
   </div>
 </div>
 
+<!-- MODAL DE ETAPAS -->
+<div id="modalEtapas" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+  <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">Gerenciar Processo de Adoção</h2>
+      <button onclick="fecharModalEtapas()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Informações do Processo -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">Solicitante</p>
+          <p id="modalNomeSolicitante" class="font-semibold text-gray-800"></p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Animal</p>
+          <p id="modalNomeAnimal" class="font-semibold text-gray-800"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha do Tempo das Etapas -->
+    <div class="mb-8">
+      <h3 class="text-lg font-semibold mb-4">Progresso do Processo</h3>
+      <div class="flex items-center justify-between">
+        <div id="etapa1" class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-yellow-500 text-white flex items-center justify-center mb-2">
+            <i class="fas fa-search"></i>
+          </div>
+          <p class="text-sm font-medium">Triagem</p>
+        </div>
+        <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+        <div id="etapa2" class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mb-2">
+            <i class="fas fa-user-friends"></i>
+          </div>
+          <p class="text-sm font-medium">Entrevista</p>
+        </div>
+        <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+        <div id="etapa3" class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mb-2">
+            <i class="fas fa-home"></i>
+          </div>
+          <p class="text-sm font-medium">Visita</p>
+        </div>
+        <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+        <div id="etapa4" class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mb-2">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <p class="text-sm font-medium">Termo</p>
+        </div>
+        <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+        <div id="etapa5" class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mb-2">
+            <i class="fas fa-check"></i>
+          </div>
+          <p class="text-sm font-medium">Concluído</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div id="modalAcoesFooter" class="flex justify-between items-center"></div>
+  </div>
+</div>
+
 <script>
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
@@ -405,45 +483,47 @@ let adotanteId = salvarAdotante(nome, telefone)
 }
 
 
-function alterarStatus(index, status){
-  // Atualiza o status da adoção
-  adocoes[index].status = status
-
-  // Pega a lista de animais do localStorage
-  let animais = JSON.parse(localStorage.getItem("animais")) || []
-  let animal = animais.find(a => a.id == adocoes[index].animalId)
-
-  if(!animal) return // se não encontrar o animal, sai da função
-
-  if(status === "pendente"){
-    // processo em análise → animal reservado
-    animal.status = "Reservado"
-  } else if(status === "aprovado"){
-    // adoção aprovada → animal adotado
-    animal.status = "Adotado"
-  } else if(status === "recusado"){
-    // se não houver outra adoção pendente ou aprovada para esse animal
-    let existePendenteOuAprovada = adocoes.some(a => 
-      a.animalId == animal.id && (a.status === "pendente" || a.status === "aprovado")
-    )
-    if(!existePendenteOuAprovada){
-      animal.status = "Disponível"
-    }
+async function alterarStatus(index, status){
+  const adocao = adocoes[index];
+  
+  try {
+    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocao.id}/etapa`
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: status })
+    })
+    
+    if (!response.ok) throw new Error('Erro ao alterar status')
+    
+    mostrarSucesso(`Status alterado para ${status}!`)
+    
+    // Recarregar dados
+    await carregarProcessosDoBanco()
+    
+  } catch (error) {
+    console.error('Erro ao alterar status:', error)
+    alert('Erro ao alterar status do processo')
   }
-
-  // Salva as alterações no localStorage
-  localStorage.setItem("animais", JSON.stringify(animais))
-  salvar()
-  render()
 }
 
-function excluir(index){
-  abrirConfirmacao("Deseja excluir essa adoção?", () => {
-    adocoes.splice(index, 1)
-    salvar()
-    render()
-    mostrarSucesso("Adoção excluída com sucesso!")
-  })
+async function excluir(index){
+  const adocao = adocoes[index];
+  if (!confirm("Tem certeza que deseja excluir permanentemente este processo de adoção?")) return;
+
+  try {
+    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes/${adocao.id}`;
+    const response = await fetch(url, { method: 'DELETE' });
+
+    if (!response.ok) throw new Error('Falha ao deletar o processo no servidor');
+
+    // Recarrega a listagem limpa direto do MySQL para atualizar a tela e os contadores do topo
+    await carregarProcessosDoBanco();
+    mostrarSucesso("Processo de adoção excluído com sucesso!");
+  } catch (error) {
+    console.error("❌ Erro ao excluir adoção:", error);
+    alert("Erro ao excluir processo de adoção do servidor.");
+  }
 }
 
 function render(){
@@ -459,27 +539,40 @@ function render(){
 
   let p=0,a=0,r=0
 
+  adocoes.forEach(adocao => {
+    if (!adocao.data && adocao.data_adocao) {
+      adocao.data = adocao.data_adocao
+    }
+  })
   adocoes.sort((a,b)=> new Date(b.data) - new Date(a.data))
   adocoes.forEach((adocao, i)=>{
-    if(adocao.status === "pendente") p++
-    if(adocao.status === "aprovado") a++
-    if(adocao.status === "recusado") r++
+    if (!adocao.status) adocao.status = 'Triagem';
+    if (!adocao.animalNome) adocao.animalNome = adocao.animal_nome || 'Não informado';
+    if (!adocao.nome) adocao.nome = adocao.adotante_nome || 'Não informado';
+    if (!adocao.animalId) adocao.animalId = adocao.animal_id || adocao.animalId;
 
-    if(filtro !== "todos" && adocao.status !== filtro) return
+    const statusMinusculo = adocao.status.toLowerCase();
+
+    // Contadores ajustados: Pendentes são Triagem, Entrevista, Visita, Termo
+    if (['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) p++;
+    if (statusMinusculo === "concluído") a++;
+    if (statusMinusculo === "reprovado") r++;
+
+    if(filtro !== "todos" && !statusMinusculo.includes(filtro.toLowerCase())) return
     if(!adocao.animalNome.toLowerCase().includes(termoBusca)) return
 
     let cor = "gray"
-if(adocao.status === "pendente") cor = "yellow"
-else if(adocao.status === "aprovado") cor = "green"
-else if(adocao.status === "recusado") cor = "red"
-else if(adocao.status === "devolvido") cor = "blue"
+    if(['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) cor = "yellow"
+    else if(adocao.status === "Concluído") cor = "green"
+    else if(adocao.status === "Reprovado") cor = "red"
+    else if(adocao.status === "devolvido") cor = "blue"
 
     lista.innerHTML += `
-<tr class="border-t hover:bg-gray-50">
+<tr class="border-t hover:bg-gray-50 cursor-pointer transition" onclick="abrirModalEtapas('${adocao.id}')">
 
   <td class="px-4 py-4">
   <span 
-    onclick="verAnimal(${adocao.animalId})"
+    onclick="event.stopPropagation(); verAnimal(${adocao.animalId})"
     class="text-teal-600 hover:underline cursor-pointer font-medium"
   >
     ${adocao.animalNome}
@@ -500,9 +593,9 @@ else if(adocao.status === "devolvido") cor = "blue"
   <td class="px-4 py-4 text-center">
     <span class="bg-${cor}-100 text-${cor}-700 px-3 py-1 rounded-full text-sm inline-flex items-center gap-1">
       ${
-        adocao.status === "pendente"
+        ['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)
           ? '<i class="fas fa-clock"></i>'
-          : adocao.status === "aprovado"
+          : adocao.status === "Concluído"
           ? '<i class="fas fa-check"></i>'
           : '<i class="fas fa-times"></i>'
       }
@@ -510,18 +603,6 @@ else if(adocao.status === "devolvido") cor = "blue"
     </span>
   </td>
 
-  <td class="px-4 py-4 text-center space-x-2">
-    <button onclick="alterarStatus(${i}, 'aprovado')" class="text-green-600"><i class="fas fa-check"></i></button>
-    <button onclick="alterarStatus(${i}, 'recusado')" class="text-red-600"><i class="fas fa-times"></i></button>
-    <button onclick="editar(${i})" class="text-blue-500 hover:text-blue-700"><i class="fas fa-pen"></i></button>
-    <button onclick="excluir(${i})" class="text-gray-500 hover:text-black"><i class="fas fa-trash"></i></button>
-    <button 
-  onclick="marcarContato(${i})" 
-  title="${adocao.contato ? 'Contato realizado' : 'Marcar como contatado'}"
-  class="${adocao.contato ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-teal-600'}">
-  <i class="fas fa-phone"></i>
-</button>
-  </td>
 </tr>`
   })
 
@@ -756,16 +837,211 @@ function fecharModalSucesso(){
   }, 200)
 }
 
-render()
-carregarAnimais()
+async function carregarProcessosDoBanco() {
+  try {
+    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Erro ao carregar processos da API')
+
+    const dados = await response.json()
+    adocoes = dados
+    localStorage.setItem("adocoes", JSON.stringify(adocoes))
+  } catch (error) {
+    console.error("❌ Erro ao buscar processos do MySQL:", error)
+  } finally {
+    render()
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  carregarProcessosDoBanco()
+  carregarAnimais()
+})
 
 function logout(){
   localStorage.removeItem("adminLogado")
   window.location.href="../index.html"
 }
 
+// ===== MODAL DE ETAPAS =====
+let adocaoAtualId = null
+
+async function abrirModalEtapas(adocaoId) {
+  adocaoAtualId = adocaoId
+  
+  // Buscar dados da adoção
+  const adocao = adocoes.find(a => a.id == adocaoId)
+  if (!adocao) return
+  
+  // Preencher informações
+  document.getElementById("modalNomeSolicitante").innerText = adocao.adotante_nome || 'Não informado'
+  document.getElementById("modalNomeAnimal").innerText = adocao.animal_nome || 'Não informado'
+  
+  renderizarAcoesModal(adocao)
+  atualizarLinhaTempo(adocao.status)
+  
+  // Mostrar modal
+  document.getElementById("modalEtapas").classList.remove("hidden")
+  document.getElementById("modalEtapas").classList.add("flex")
+}
+
+function fecharModalEtapas() {
+  document.getElementById("modalEtapas").classList.add("hidden")
+  document.getElementById("modalEtapas").classList.remove("flex")
+  adocaoAtualId = null
+}
+
+function atualizarLinhaTempo(statusAtual) {
+  const etapas = ['Triagem', 'Entrevista', 'Visita', 'Termo', 'Concluído']
+  const statusAtualNormalizado = statusAtual || 'Triagem'
+  const statusIndex = etapas.indexOf(statusAtualNormalizado) >= 0 ? etapas.indexOf(statusAtualNormalizado) : 0
+  
+  for (let i = 1; i <= 5; i++) {
+    const etapaDiv = document.getElementById(`etapa${i}`)
+    const circulo = etapaDiv.querySelector('div')
+    
+    if (i - 1 <= statusIndex) {
+      circulo.className = 'w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center mb-2'
+    } else if (i - 1 === statusIndex + 1) {
+      circulo.className = 'w-12 h-12 rounded-full bg-yellow-500 text-white flex items-center justify-center mb-2'
+    } else {
+      circulo.className = 'w-12 h-12 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mb-2'
+    }
+  }
+  
+  // Atualizar texto do botão
+  const btnAvancar = document.getElementById("btnAvancar")
+  if (statusAtual === 'Triagem') {
+    btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Entrevista'
+  } else if (statusAtual === 'Entrevista') {
+    btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Visita Local'
+  } else if (statusAtual === 'Visita') {
+    btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Assinatura do Termo'
+  } else if (statusAtual === 'Termo') {
+    btnAvancar.innerHTML = '<i class="fas fa-check mr-2"></i>Concluir e Finalizar Adoção'
+  } else {
+    btnAvancar.style.display = 'none'
+    return
+  }
+  btnAvancar.style.display = 'inline-flex'
+}
+
+function renderizarAcoesModal(adocao) {
+  const rodape = document.getElementById('modalAcoesFooter')
+  const textoBotao = {
+    Triagem: 'Avançar para Entrevista',
+    Entrevista: 'Avançar para Visita Local',
+    Visita: 'Avançar para Assinatura do Termo',
+    Termo: 'Concluir e Finalizar Adoção'
+  }[adocao.status] || 'Avançar para Próxima Etapa'
+
+  rodape.innerHTML = `
+    <button id="btnRegistrarAdotante" class="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+      <i class="fas fa-user-plus mr-2"></i>Registrar como Adotante
+    </button>
+    <button id="btnAvancar" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+      <i class="fas fa-arrow-right mr-2"></i>${textoBotao}
+    </button>
+    <button id="btnReprovar" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+      <i class="fas fa-times-circle mr-2"></i>Reprovar Processo
+    </button>
+  `
+
+  document.getElementById('btnRegistrarAdotante').addEventListener('click', async () => {
+    const nome = adocao.adotante_nome || ''
+    const endereco = adocao.endereco || ''
+    const email = adocao.email || ''
+    const telefone = adocao.telefone || ''
+
+    if (!nome || !email) {
+      return alert('Nome e e-mail são obrigatórios para registrar o adotante.')
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adotantes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, endereco, email, telefone })
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Erro ao registrar adotante')
+      }
+
+      alert('Adotante registrado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao registrar adotante:', error)
+      alert('Erro ao registrar adotante no sistema')
+    }
+  })
+
+  document.getElementById('btnAvancar').addEventListener('click', avancarEtapa)
+  document.getElementById('btnReprovar').addEventListener('click', reprovarAdocao)
+}
+
+async function avancarEtapa() {
+  if (!adocaoAtualId) return
+  
+  const adocao = adocoes.find(a => a.id == adocaoAtualId)
+  if (!adocao) return
+  
+  let novoStatus = ''
+  if (adocao.status === 'Triagem') novoStatus = 'Entrevista'
+  else if (adocao.status === 'Entrevista') novoStatus = 'Visita'
+  else if (adocao.status === 'Visita') novoStatus = 'Termo'
+  else if (adocao.status === 'Termo') novoStatus = 'Concluído'
+  else return
+  
+  try {
+    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: novoStatus })
+    })
+    
+    if (!response.ok) throw new Error('Erro ao avançar etapa')
+    
+    mostrarSucesso(`Processo avançado para ${novoStatus}!`)
+    fecharModalEtapas()
+    
+    // Recarregar dados
+    await carregarProcessosDoBanco()
+    
+  } catch (error) {
+    console.error('Erro ao avançar etapa:', error)
+    alert('Erro ao avançar etapa do processo')
+  }
+}
+
+async function reprovarAdocao() {
+  if (!confirm('Tem certeza que deseja reprovar esta adoção? Esta ação não pode ser desfeita.')) return
+  
+  try {
+    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'Reprovado' })
+    })
+    
+    if (!response.ok) throw new Error('Erro ao reprovar adoção')
+    
+    mostrarSucesso('Adoção reprovada com sucesso!')
+    fecharModalEtapas()
+    
+    // Recarregar dados
+    await carregarProcessosDoBanco()
+    
+  } catch (error) {
+    console.error('Erro ao reprovar adoção:', error)
+    alert('Erro ao reprovar adoção')
+  }
+}
+
 </script>
 
-<script src="../menu.js"></script>
+<script src="../js/menu.js"></script>
 
 </html>
