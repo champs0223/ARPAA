@@ -4,6 +4,7 @@ const { pool } = require('../db/connection');
 
 // POST - Login
 router.post('/login', async (req, res) => {
+  let connection;
   try {
     const { usuario, senha } = req.body;
 
@@ -11,12 +12,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Usuário e senha são obrigatórios' });
     }
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     const [rows] = await connection.query(
       'SELECT id, nome, cpf, senha FROM usuarios WHERE LOWER(nome) = LOWER(?) OR cpf = ? LIMIT 1',
       [usuario, usuario]
     );
-    connection.release();
 
     const user = rows[0];
 
@@ -24,7 +24,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Usuário ou senha incorretos' });
     }
 
-    res.json({
+    return res.json({
       success: true,
       id: user.id,
       nome: user.nome,
@@ -34,7 +34,12 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao fazer login:', error.message);
-    res.status(500).json({ error: error.message });
+    console.error(error.stack);
+    return res.status(500).json({ error: 'Erro interno ao efetuar login. Verifique o servidor.' });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 });
 

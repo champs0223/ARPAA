@@ -21,6 +21,26 @@ const API_URL = getApiUrl();
 
 console.log('📡 Conectando à API em:', API_URL);
 
+function uiShowError(message) {
+  const toast = document.createElement('div');
+  toast.className = 'fixed bottom-6 right-6 z-50 max-w-sm bg-red-600 text-white p-4 rounded-2xl shadow-xl ring-1 ring-black/20 transition-opacity duration-300 opacity-90';
+  const title = document.createElement('div');
+  title.className = 'font-semibold text-white';
+  title.textContent = 'Erro';
+
+  const content = document.createElement('div');
+  content.className = 'mt-1 text-sm text-white';
+  content.textContent = message;
+
+  toast.appendChild(title);
+  toast.appendChild(content);
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 4200);
+}
+
 /**
  * Buscar todos os animais da API (versão simplificada SEM fotos)
  */
@@ -303,7 +323,7 @@ async function verDetalhesAnimal(id) {
 
     document.body.appendChild(modal);
   } catch (error) {
-    alert('Erro ao carregar detalhes do animal: ' + error.message);
+    uiShowError('Erro ao carregar detalhes do animal: ' + error.message);
   }
 }
 

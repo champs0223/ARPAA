@@ -9,6 +9,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
+<link rel="icon" type="image/png" href="../../icones/logo.png">
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -64,10 +65,12 @@ Painel Administrativo
 Login do Administrador
 </h2>
 
-<div class="space-y-5">
+<form id="loginForm" class="space-y-5" onsubmit="login(event)">
 
 <input
 id="usuario"
+name="usuario"
+autocomplete="username"
 type="text"
 placeholder="Usuário"
 class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
@@ -77,6 +80,8 @@ class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:rin
 
 <input
 id="senha"
+name="senha"
+autocomplete="current-password"
 type="password"
 placeholder="Senha"
 class="w-full border border-gray-300 p-3 rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-teal-500">
@@ -94,7 +99,7 @@ class="absolute right-3 top-3 text-gray-500 hover:text-gray-700">
 
 
 <button
-onclick="login()"
+type="submit"
 class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold p-3 rounded-lg transition duration-200 shadow-md">
 
 Entrar
@@ -106,7 +111,7 @@ Entrar
 Usuário ou senha incorretos
 </p>
 
-</div>
+</form>
 
 </div>
 
@@ -117,7 +122,9 @@ Usuário ou senha incorretos
 
 <script>
 
-async function login(){
+async function login(event){
+  event.preventDefault()
+
   let usuario = document.getElementById("usuario").value
   let senha = document.getElementById("senha").value
   let erro = document.getElementById("erroLogin")
@@ -151,7 +158,7 @@ async function login(){
         erro.textContent = dados.error || "Erro ao fazer login"
         erro.classList.remove("hidden")
         return
-      }[1]
+      }
 
       // Login bem-sucedido
       localStorage.setItem("adminLogado", "true")

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARPAA - Proteção Animal</title>
-    <link rel="icon" href="/icones/logo.png">
+    <link rel="icon" href="../icones/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/config.css">
@@ -23,8 +23,12 @@
     <header class="fixed w-full top-0 z-50 transition-all duration-300 bg-white shadow-md" id="navbar">
         <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20 max-w-7xl mx-auto">
-                <a href="index.html" class="flex items-center">
-                    <img src="/icones/logonome.png" alt="ARPAA" class="h-12 w-auto" />
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="../icones/logo.png" alt="Logo ARPAA" class="h-12 w-12 object-contain" />
+                    <div class="flex flex-col leading-none">
+                        <div class="text-2xl font-black tracking-normal"><span class="text-[#0A9396]">A</span><span class="text-[#4A5568]">R</span><span class="text-[#EE9B00]">P</span><span class="text-[#0A9396]">A</span><span class="text-[#4A5568]">A</span></div>
+                        <span class="text-[10px] font-bold tracking-tight text-slate-500 uppercase block leading-none">ASSOCIAÇÃO DE RESGATE PROTEÇÃO E AMPARO ANIMAL</span>
+                    </div>
                 </a>
 
                 <nav class="hidden md:flex items-center space-x-8">
@@ -673,7 +677,7 @@ function atualizarMiniaturas() {
             img.classList.remove('border-transparent');
             img.classList.add('border-teal-600');
         } else {
-            img.classList.remove('border-teal-600');qu
+            img.classList.remove('border-teal-600');
             img.classList.add('border-transparent');
         }
     });
@@ -699,13 +703,30 @@ function fecharFormAdocao() {
     document.getElementById("modalAdocao").classList.remove("flex");
 }
 
+function mostrarAviso(mensagem) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-6 right-6 z-50 max-w-sm bg-white border border-teal-600 text-teal-900 p-4 rounded-2xl shadow-xl ring-1 ring-black/10 transition-opacity duration-300 opacity-90';
+    const title = document.createElement('div');
+    title.className = 'font-semibold';
+    title.textContent = 'Aviso';
+
+    const content = document.createElement('div');
+    content.className = 'mt-1 text-sm';
+    content.textContent = mensagem;
+
+    toast.appendChild(title);
+    toast.appendChild(content);
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4200);
+}
+
 function enviarAdocao() {
     let nome = document.getElementById("nomeAdocao").value.trim();
     let tel = document.getElementById("telefoneAdocao").value.trim();
     let msg = document.getElementById("msgAdocao").value.trim();
 
     if (!nome || !tel) {
-        alert("Preencha nome e telefone.");
+        mostrarAviso("Preencha nome e telefone.");
         return;
     }
 
