@@ -12,6 +12,7 @@
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
 
 <style>
 .menu-ativo {
@@ -54,11 +55,9 @@ window.location.href = "../index.html"
 <aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
 
 <!-- ÍCONE ISOLADO -->
-<div class="pt-8 pb-2 flex flex-col items-center justify-center">
-<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
-<p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
-ARPAA
-</p>
+  <div class="pt-8 pb-4 flex flex-col items-center justify-center">
+  <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
+  <p class="text-sm font-bold tracking-wider text-slate-500 text-center uppercase">ARPAA</p>
 </div>
 
 
@@ -137,7 +136,7 @@ Sair
 
 </aside>
 
-<main class="flex-1 p-8 space-y-8 ml-64">
+<main class="flex-1 p-8 space-y-8 ml-64 page-transition">
 
 <!-- HEADER -->
 <div class="flex justify-between items-center">
@@ -175,36 +174,36 @@ Sair
 <!-- CARDS PRINCIPAIS -->
 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-  <div class="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-teal-500 hover:shadow-xl transition">
+  <div class="bg-white p-4 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-teal-500 hover:shadow-xl transition">
     <div>
       <p class="text-gray-500 text-sm">Animais</p>
-      <p id="totalAnimais" class="text-4xl font-extrabold text-teal-600">0</p>
+      <p id="totalAnimais" class="text-3xl font-extrabold text-teal-600">0</p>
     </div>
-    <i class="fas fa-dog text-4xl text-teal-500"></i>
+    <i class="fas fa-dog text-3xl text-teal-500"></i>
   </div>
 
-  <div class="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-red-500 hover:shadow-xl transition">
+  <div class="bg-white p-4 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-red-500 hover:shadow-xl transition">
     <div>
       <p class="text-gray-500 text-sm">Adoções</p>
-      <p id="totalAdocoes" class="text-4xl font-extrabold text-red-500">0</p>
+      <p id="totalAdocoes" class="text-3xl font-extrabold text-red-500">0</p>
     </div>
-    <i class="fas fa-heart text-4xl text-red-400"></i>
+    <i class="fas fa-heart text-3xl text-red-400"></i>
   </div>
 
-  <div class="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-yellow-500 hover:shadow-xl transition">
+  <div class="bg-white p-4 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-yellow-500 hover:shadow-xl transition">
     <div>
       <p class="text-gray-500 text-sm">Doações</p>
-      <p id="totalDoacoes" class="text-4xl font-extrabold text-yellow-500">0</p>
+      <p id="totalDoacoes" class="text-3xl font-extrabold text-yellow-500">0</p>
     </div>
-    <i class="fas fa-hand-holding-heart text-4xl text-yellow-500"></i>
+    <i class="fas fa-hand-holding-heart text-3xl text-yellow-500"></i>
   </div>
 
-  <div class="bg-white p-6 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-blue-500 hover:shadow-xl transition">
+  <div class="bg-white p-4 rounded-2xl shadow-md flex justify-between items-center border-l-4 border-blue-500 hover:shadow-xl transition">
     <div>
       <p class="text-gray-500 text-sm">Eventos</p>
-      <p id="totalEventos" class="text-4xl font-extrabold text-blue-500">0</p>
+      <p id="totalEventos" class="text-3xl font-extrabold text-blue-500">0</p>
     </div>
-    <i class="fas fa-calendar text-4xl text-blue-500"></i>
+    <i class="fas fa-calendar text-3xl text-blue-500"></i>
   </div>
 
 </div>
@@ -213,55 +212,31 @@ Sair
 <div class="grid md:grid-cols-3 gap-6 mt-6">
 
   <!-- Total de Registros -->
-  <div class="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-gray-500 hover:shadow-xl transition">
-    <i class="fas fa-list text-gray-500 text-3xl"></i>
+  <div class="bg-white p-4 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-gray-500 hover:shadow-xl transition">
+    <i class="fas fa-list text-gray-500 text-2xl"></i>
     <div>
       <p class="text-gray-500 text-sm">Total de Registros</p>
-      <p id="totalDoacoesDetalhe" class="text-2xl font-extrabold text-gray-800">0</p>
+      <p id="totalDoacoesDetalhe" class="text-xl font-extrabold text-gray-800">0</p>
     </div>
   </div>
 
   <!-- Doações em Dinheiro -->
-  <div class="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-green-500 hover:shadow-xl transition">
-    <i class="fas fa-dollar-sign text-green-500 text-3xl"></i>
+  <div class="bg-white p-4 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-green-500 hover:shadow-xl transition">
+    <i class="fas fa-dollar-sign text-green-500 text-2xl"></i>
     <div>
       <p class="text-gray-500 text-sm">Dinheiro</p>
-      <p id="totalDinheiroDash" class="text-2xl font-extrabold text-green-600">0</p>
+      <p id="totalDinheiroDash" class="text-xl font-extrabold text-green-600">0</p>
     </div>
   </div>
 
   <!-- Doações em Itens -->
-  <div class="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-yellow-500 hover:shadow-xl transition">
-    <i class="fas fa-box-open text-yellow-500 text-3xl"></i>
+  <div class="bg-white p-4 rounded-2xl shadow-md flex items-center gap-4 border-l-4 border-yellow-500 hover:shadow-xl transition">
+    <i class="fas fa-box-open text-yellow-500 text-2xl"></i>
     <div>
       <p class="text-gray-500 text-sm">Itens</p>
-      <p id="totalItensDash" class="text-2xl font-extrabold text-yellow-600">0</p>
+      <p id="totalItensDash" class="text-xl font-extrabold text-yellow-600">0</p>
     </div>
   </div>
-
-</div>
-
-<div class="flex gap-4 flex-wrap mt-6">
-
-  <a href="animais.html" class="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition shadow-md hover:shadow-lg flex items-center gap-2">
-    <i class="fas fa-plus"></i>
-    Cadastrar Animal
-  </a>
-
-  <a href="adocoes.html" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition shadow-md hover:shadow-lg flex items-center gap-2">
-    <i class="fas fa-heart"></i>
-    Registrar Adoção
-  </a>
-
-  <a href="doacoes.html" class="bg-yellow-400 text-gray-800 px-6 py-3 rounded-lg hover:bg-yellow-300 transition shadow-md hover:shadow-lg flex items-center gap-2">
-    <i class="fas fa-hand-holding-heart"></i>
-    Registrar Doação
-  </a>
-
-  <a href="eventos.html" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition shadow-md hover:shadow-lg flex items-center gap-2">
-    <i class="fas fa-calendar-plus"></i>
-    Criar Evento
-  </a>
 
 </div>
 
@@ -269,19 +244,19 @@ Sair
 <div class="grid lg:grid-cols-2 gap-6">
 
   <!-- STATUS COM BARRAS ANIMADAS -->
-  <div class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="font-semibold text-gray-700 text-lg mb-6">Status das Adoções</h2>
+  <div class="bg-white p-4 rounded-2xl shadow-md">
+    <h2 class="font-semibold text-gray-700 text-base mb-4">Status das Adoções</h2>
 
-    <div class="space-y-4">
+    <div class="space-y-3">
 
       <!-- Pendentes -->
-      <div class="bg-yellow-50 p-4 rounded-xl border-l-4 border-yellow-400 shadow-sm hover:shadow-md transition">
+      <div class="bg-yellow-50 p-3 rounded-xl border-l-4 border-yellow-400 shadow-sm hover:shadow-md transition">
         <div class="flex justify-between items-center mb-2">
           <div class="flex items-center gap-2">
             <i class="fas fa-hourglass-half text-yellow-500"></i>
             <span class="font-medium text-yellow-700">Pendentes</span>
           </div>
-          <span id="pendentes" class="font-bold text-yellow-900">0</span>
+          <span id="pendentes" class="font-bold text-yellow-900 text-base">0</span>
         </div>
         <div class="w-full bg-yellow-200 h-2 rounded-full">
           <div id="barraPendentes" class="bg-yellow-400 h-2 rounded-full" style="width:0%; transition: width 0.5s ease-in-out;"></div>
@@ -289,13 +264,13 @@ Sair
       </div>
 
       <!-- Aprovadas -->
-      <div class="bg-green-50 p-4 rounded-xl border-l-4 border-green-400 shadow-sm hover:shadow-md transition">
+      <div class="bg-green-50 p-3 rounded-xl border-l-4 border-green-400 shadow-sm hover:shadow-md transition">
         <div class="flex justify-between items-center mb-2">
           <div class="flex items-center gap-2">
             <i class="fas fa-check-circle text-green-500"></i>
             <span class="font-medium text-green-700">Aprovadas</span>
           </div>
-          <span id="aprovadas" class="font-bold text-green-900">0</span>
+          <span id="aprovadas" class="font-bold text-green-900 text-base">0</span>
         </div>
         <div class="w-full bg-green-200 h-2 rounded-full">
           <div id="barraAprovadas" class="bg-green-500 h-2 rounded-full" style="width:0%; transition: width 0.5s ease-in-out;"></div>
@@ -303,13 +278,13 @@ Sair
       </div>
 
       <!-- Recusadas -->
-      <div class="bg-red-50 p-4 rounded-xl border-l-4 border-red-400 shadow-sm hover:shadow-md transition">
+      <div class="bg-red-50 p-3 rounded-xl border-l-4 border-red-400 shadow-sm hover:shadow-md transition">
         <div class="flex justify-between items-center mb-2">
           <div class="flex items-center gap-2">
             <i class="fas fa-times-circle text-red-500"></i>
             <span class="font-medium text-red-700">Recusadas</span>
           </div>
-          <span id="recusadas" class="font-bold text-red-900">0</span>
+          <span id="recusadas" class="font-bold text-red-900 text-base">0</span>
         </div>
         <div class="w-full bg-red-200 h-2 rounded-full">
           <div id="barraRecusadas" class="bg-red-500 h-2 rounded-full" style="width:0%; transition: width 0.5s ease-in-out;"></div>
@@ -322,11 +297,11 @@ Sair
   <!-- GRÁFICO -->
   <div class="bg-white p-6 rounded-2xl shadow-md">
     <h2 class="font-semibold text-gray-700 text-lg mb-4">Distribuição dos Animais na Ong</h2>
-    <div class="flex flex-col lg:flex-row gap-6">
-      <div class="flex-1 flex justify-center items-center" style="min-height:300px;">
-        <canvas id="graficoAnimais"></canvas>
+    <div class="flex flex-col lg:flex-row items-center gap-6">
+      <div class="w-1/2 max-w-[180px] flex justify-center items-center" style="min-height:220px;">
+        <canvas id="graficoAnimais" class="w-full h-full"></canvas>
       </div>
-      <div class="flex-1 grid gap-3 self-center text-sm text-gray-600">
+      <div class="w-1/2 grid gap-3 self-center text-sm text-gray-600">
         <div class="flex items-center gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50">
           <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
           <span class="font-medium">Disponíveis:</span>
@@ -434,6 +409,7 @@ animarNumero(document.getElementById("totalEventos"), eventos.length);
         }]
       },
       options: {
+        responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: { 

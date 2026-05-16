@@ -4,9 +4,18 @@ const router = express.Router();
 const { pool } = require('../db/connection');
 const { getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
-// GET - Listar todas as adoções em andamento (não concluídas ou reprovadas)
+// GET - Listar adoções por status: ativas por padrão, concluídas ou reprovadas dependendo do filtro
 router.get('/adocoes', async (req, res) => {
   try {
+    const statusQuery = (req.query.status || 'ativos').toLowerCase();
+
+    let whereClause = "WHERE LOWER(a.status) NOT IN ('concluído', 'reprovado')";
+    if (statusQuery === 'concluído' || statusQuery === 'concluido') {
+      whereClause = "WHERE LOWER(a.status) = 'concluído'";
+    } else if (statusQuery === 'reprovado') {
+      whereClause = "WHERE LOWER(a.status) = 'reprovado'";
+    }
+
     const query = `
       SELECT
         a.id,
@@ -22,7 +31,7 @@ router.get('/adocoes', async (req, res) => {
       FROM adocoes a
       LEFT JOIN animais an ON a.animal_id = an.id
       LEFT JOIN adotantes ad ON a.adotante_id = ad.id
-      WHERE LOWER(a.status) NOT IN ('concluído', 'reprovado')
+      ${whereClause}
     `;
 
     const [rows] = await pool.execute(query);
@@ -160,6 +169,56 @@ router.put('/admin/adocoes/:id/etapa', async (req, res) => {
     await connection.rollback();
     console.error('❌ Erro ao avançar etapa:', error);
     return res.status(500).json({ error: 'Erro interno ao avançar etapa' });
+  } finally {
+    connection.release();
+  }
+});
+
+// PUT - Retroceder etapa do processo de adoção
+router.put('/admin/adocoes/:id/retroceder', async (req, res) => {
+  const { id } = req.params;
+  const etapas = ['Triagem', 'Entrevista', 'Visita', 'Termo', 'Concluído'];
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      'SELECT status FROM adocoes WHERE id = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Processo de adoção não encontrado' });
+    }
+
+    const statusAtual = rows[0].status || 'Triagem';
+    const indiceAtual = etapas.indexOf(statusAtual);
+
+    if (indiceAtual <= 0 || indiceAtual === etapas.length - 1) {
+      await connection.rollback();
+      return res.status(400).json({ error: 'Não é possível retroceder a etapa deste processo' });
+    }
+
+    const novoStatus = etapas[indiceAtual - 1];
+
+    const [updateResult] = await connection.execute(
+      'UPDATE adocoes SET status = ? WHERE id = ?',
+      [novoStatus, id]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Processo de adoção não encontrado' });
+    }
+
+    await connection.commit();
+    return res.status(200).json({ message: 'Etapa retrocedida com sucesso', status: novoStatus });
+  } catch (error) {
+    await connection.rollback();
+    console.error('❌ Erro ao retroceder etapa:', error);
+    return res.status(500).json({ error: 'Erro interno ao retroceder etapa' });
   } finally {
     connection.release();
   }

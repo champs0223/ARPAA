@@ -7,6 +7,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
 
 <style>
 .menu-ativo {
@@ -45,7 +46,7 @@ if(localStorage.getItem("adminLogado") !== "true"){
 
 <!-- ÍCONE ISOLADO -->
 <div class="pt-8 pb-2 flex flex-col items-center justify-center">
-<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
 <p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
 </p>
@@ -129,7 +130,7 @@ Sair
 </aside>
 
 <!-- CONTEÚDO -->
-<main class="flex-1 p-10 ml-64">
+<main class="flex-1 p-10 ml-64 page-transition">
 
 <h1 class="text-3xl font-bold text-gray-800 mb-8">Eventos</h1>
 
@@ -287,7 +288,7 @@ async function carregarEventos() {
     render();
   } catch (error) {
     console.error('Erro:', error);
-    alert('Erro ao carregar eventos do servidor');
+    uiShowError('Erro ao carregar eventos do servidor');
   }
 }
 
@@ -315,7 +316,7 @@ async function salvarEvento() {
   const descricao = document.getElementById("descricaoEvento").value;
 
   if (!nome || !data || !local) {
-    alert("Preencha os campos obrigatórios");
+    uiShowError('Preencha os campos obrigatórios');
     return;
   }
 
@@ -334,7 +335,7 @@ async function salvarEvento() {
     carregarEventos();
   } catch (error) {
     console.error('Erro:', error);
-    alert('Erro ao salvar evento');
+    uiShowError('Erro ao salvar evento');
   }
 }
 
@@ -386,7 +387,7 @@ async function salvarEdicao(id) {
   const descricao = document.getElementById("descricaoEvento").value;
 
   if (!nome || !data || !local) {
-    alert("Preencha os campos obrigatórios: Nome, Data e Local");
+    uiShowError('Preencha os campos obrigatórios: Nome, Data e Local');
     return;
   }
 
@@ -411,7 +412,7 @@ async function salvarEdicao(id) {
     render();
     mostrarSucesso("Evento atualizado com sucesso!");
   } catch (error) {
-    alert('Erro ao salvar alterações: ' + error.message);
+    uiShowError('Erro ao salvar alterações: ' + error.message);
   }
 }
 
@@ -446,7 +447,7 @@ async function salvarEdicao(id) {
   const descricao = document.getElementById("descricaoEvento").value;
 
   if (!nome || !data || !local) {
-    alert("Preencha os campos obrigatórios: Nome, Data e Local");
+    uiShowError('Preencha os campos obrigatórios: Nome, Data e Local');
     return;
   }
 
@@ -471,24 +472,24 @@ async function salvarEdicao(id) {
     render();
     mostrarSucesso("Evento atualizado com sucesso!");
   } catch (error) {
-    alert('Erro ao salvar alterações: ' + error.message);
+    uiShowError('Erro ao salvar alterações: ' + error.message);
   }
 }
 
 async function excluirEvento(id) {
-  if (!confirm("Deseja excluir este evento?")) return;
+  uiConfirm('Deseja excluir este evento?', async () => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
 
-  try {
-    const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-    
-    if (!response.ok) throw new Error('Erro ao excluir evento');
+      if (!response.ok) throw new Error('Erro ao excluir evento');
 
-    mostrarSucesso("Evento excluído com sucesso!");
-    carregarEventos();
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao excluir evento');
-  }
+      mostrarSucesso("Evento excluído com sucesso!");
+      carregarEventos();
+    } catch (error) {
+      console.error('Erro:', error);
+      uiShowError('Erro ao excluir evento');
+    }
+  });
 }
 
 function isProximo(dataEvento) {

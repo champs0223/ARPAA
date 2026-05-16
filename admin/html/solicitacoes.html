@@ -40,7 +40,7 @@
         <aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
             <!-- ÍCONE ISOLADO -->
             <div class="pt-8 pb-2 flex flex-col items-center justify-center">
-                <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+                <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
                 <p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
                     ARPAA
                 </p>
@@ -102,7 +102,7 @@
             </nav>
         </aside>
 
-        <main class="flex-1 p-6 ml-64">
+        <main class="flex-1 p-6 ml-64 page-transition">
             <div class="p-6 border-b border-teal-600 mb-6">
                 <h1 class="text-3xl font-bold text-gray-900">Solicitações de Adoção</h1>
                 <p class="text-sm text-gray-600 mt-1">Gerencie solicitações e movimente processos automaticamente.</p>
@@ -328,34 +328,34 @@ async function abrirDetalhes(id) {
 
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao carregar detalhes da solicitação');
+        uiShowError('Erro ao carregar detalhes da solicitação');
     }
 }
 
 async function deletarSolicitacao(id) {
-    if (!confirm('Deseja excluir permanentemente esta solicitação?')) return;
-
-    try {
-        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${id}`, {
-            method: 'DELETE'
-        });
+    uiConfirm('Deseja excluir permanentemente esta solicitação?', async () => {
+        try {
+            const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${id}`, {
+                method: 'DELETE'
+            });
 
         if (!response.ok) throw new Error('Erro ao excluir solicitação');
 
-        alert('Solicitação excluída com sucesso.');
+        uiShowSuccess('Solicitação excluída com sucesso.');
         fecharModal();
         carregarSolicitacoes();
     } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao excluir solicitação');
+        uiShowError('Erro ao excluir solicitação');
     }
+});
 }
 
 // Aprovar solicitação
 document.getElementById('btnAprovar').addEventListener('click', async () => {
     if (!solicitacaoAtual) return;
 
-    if (confirm('Tem certeza que deseja APROVAR esta solicitação?')) {
+    uiConfirm('Tem certeza que deseja APROVAR esta solicitação?', async () => {
         try {
             const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}/iniciar`, {
                 method: 'POST'
@@ -363,22 +363,22 @@ document.getElementById('btnAprovar').addEventListener('click', async () => {
 
             if (!response.ok) throw new Error('Erro ao iniciar o processo');
 
-            alert('✅ Solicitação aprovada e processo de adoção iniciado! O animal foi marcado como adotado.');
+            uiShowSuccess('✅ Solicitação aprovada e processo de adoção iniciado! O animal foi marcado como adotado.');
             fecharModal();
             carregarSolicitacoes();
 
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao aprovar solicitação');
+            uiShowError('Erro ao aprovar solicitação');
         }
-    }
+    });
 });
 
 // Rejeitar solicitação
 document.getElementById('btnRejeitar').addEventListener('click', async () => {
     if (!solicitacaoAtual) return;
 
-    if (confirm('Tem certeza que deseja REJEITAR esta solicitação?')) {
+    uiConfirm('Tem certeza que deseja REJEITAR esta solicitação?', async () => {
         try {
             const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}`, {
                 method: 'PUT',
@@ -391,15 +391,15 @@ document.getElementById('btnRejeitar').addEventListener('click', async () => {
 
             if (!response.ok) throw new Error('Erro ao atualizar');
 
-            alert('❌ Solicitação rejeitada.');
+            uiShowSuccess('Solicitação rejeitada.');
             fecharModal();
             carregarSolicitacoes();
 
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao rejeitar solicitação');
+            uiShowError('Erro ao rejeitar solicitação');
         }
-    }
+    });
 });
 
 // Fechar modal

@@ -12,6 +12,7 @@
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
 
 <style>
 .menu-ativo {
@@ -75,7 +76,7 @@ window.location.href = "../index.html"
 
 <!-- ÍCONE ISOLADO -->
 <div class="pt-8 pb-2 flex flex-col items-center justify-center">
-<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
 <p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
 </p>
@@ -159,7 +160,7 @@ Sair
 
 
 <!-- CONTEÚDO -->
-<main class="flex-1 p-10 ml-64">
+<main class="flex-1 p-10 ml-64 page-transition">
 
 
 <h1 class="text-3xl font-bold mb-6">
@@ -326,39 +327,60 @@ Editar Animal
 
 <div class="grid md:grid-cols-2 gap-4">
 
-<input id="editNome" placeholder="Nome" class="border p-3 rounded">
+  <div class="flex flex-col gap-1">
+    <label for="editNome" class="text-sm font-medium text-gray-700">Nome</label>
+    <input id="editNome" placeholder="Nome" class="border p-3 rounded">
+  </div>
 
-<select id="editEspecie" class="border p-3 rounded">
-<option value="">Espécie</option>
-<option>Cachorro</option>
-<option>Gato</option>
-<option>Outro</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editEspecie" class="text-sm font-medium text-gray-700">Espécie</label>
+    <select id="editEspecie" class="border p-3 rounded">
+      <option value="">Espécie</option>
+      <option>Cachorro</option>
+      <option>Gato</option>
+      <option>Outro</option>
+    </select>
+  </div>
 
-<input id="editRaca" placeholder="Raça" class="border p-3 rounded">
+  <div class="flex flex-col gap-1">
+    <label for="editRaca" class="text-sm font-medium text-gray-700">Raça</label>
+    <input id="editRaca" placeholder="Raça" class="border p-3 rounded">
+  </div>
 
-<input id="editIdade" placeholder="Idade" class="border p-3 rounded">
+  <div class="flex flex-col gap-1">
+    <label for="editIdade" class="text-sm font-medium text-gray-700">Idade</label>
+    <input id="editIdade" placeholder="Idade" class="border p-3 rounded">
+  </div>
 
-<select id="editSexo" class="border p-3 rounded">
-<option value="">Sexo</option>
-<option>Macho</option>
-<option>Fêmea</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editSexo" class="text-sm font-medium text-gray-700">Sexo</label>
+    <select id="editSexo" class="border p-3 rounded">
+      <option value="">Sexo</option>
+      <option>Macho</option>
+      <option>Fêmea</option>
+    </select>
+  </div>
 
-<select id="editPorte" class="border p-3 rounded">
-<option value="">Porte</option>
-<option>Pequeno</option>
-<option>Médio</option>
-<option>Grande</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editPorte" class="text-sm font-medium text-gray-700">Porte</label>
+    <select id="editPorte" class="border p-3 rounded">
+      <option value="">Porte</option>
+      <option>Pequeno</option>
+      <option>Médio</option>
+      <option>Grande</option>
+    </select>
+  </div>
 
-<select id="editStatus" class="border p-3 rounded">
-<option value="Disponível">Disponível</option>
-<option value="Reservado">Reservado</option>
-<option value="Adotado">Adotado</option>
-<option value="Em tratamento">Em tratamento</option>
-<option value="Devolvido">Devolvido</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editStatus" class="text-sm font-medium text-gray-700">Status</label>
+    <select id="editStatus" class="border p-3 rounded">
+      <option value="Disponível">Disponível</option>
+      <option value="Reservado">Reservado</option>
+      <option value="Adotado">Adotado</option>
+      <option value="Em tratamento">Em tratamento</option>
+      <option value="Devolvido">Devolvido</option>
+    </select>
+  </div>
 
 </div>
 
@@ -366,23 +388,32 @@ Editar Animal
 
 <div class="grid md:grid-cols-3 gap-4">
 
-<select id="editVacinado" class="border p-3 rounded">
-<option value="">Vacinado</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editVacinado" class="text-sm font-medium text-gray-700">Vacinado</label>
+    <select id="editVacinado" class="border p-3 rounded">
+      <option value="">Vacinado</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+  </div>
 
-<select id="editCastrado" class="border p-3 rounded">
-<option value="">Castrado</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editCastrado" class="text-sm font-medium text-gray-700">Castrado</label>
+    <select id="editCastrado" class="border p-3 rounded">
+      <option value="">Castrado</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+  </div>
 
-<select id="editVermifugado" class="border p-3 rounded">
-<option value="">Vermifugado</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editVermifugado" class="text-sm font-medium text-gray-700">Vermifugado</label>
+    <select id="editVermifugado" class="border p-3 rounded">
+      <option value="">Vermifugado</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+  </div>
 
 </div>
 
@@ -390,9 +421,15 @@ Editar Animal
 
 <div class="grid md:grid-cols-2 gap-4">
 
-<input type="date" id="editDataResgate" class="border p-3 rounded">
+  <div class="flex flex-col gap-1">
+    <label for="editDataResgate" class="text-sm font-medium text-gray-700">Data do Resgate</label>
+    <input type="date" id="editDataResgate" class="border p-3 rounded">
+  </div>
 
-<input id="editLocalResgate" placeholder="Local do resgate" class="border p-3 rounded">
+  <div class="flex flex-col gap-1">
+    <label for="editLocalResgate" class="text-sm font-medium text-gray-700">Local do resgate</label>
+    <input id="editLocalResgate" placeholder="Local do resgate" class="border p-3 rounded">
+  </div>
 
 </div>
 
@@ -400,46 +437,52 @@ Editar Animal
 
 <div class="grid md:grid-cols-3 gap-4">
 
-<select id="editTemperamento" class="border p-3 rounded">
-<option value="">Temperamento</option>
-<option>Dócil</option>
-<option>Brincalhão</option>
-<option>Tímido</option>
-<option>Agitado</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editTemperamento" class="text-sm font-medium text-gray-700">Temperamento</label>
+    <select id="editTemperamento" class="border p-3 rounded">
+      <option value="">Temperamento</option>
+      <option>Dócil</option>
+      <option>Brincalhão</option>
+      <option>Tímido</option>
+      <option>Agitado</option>
+    </select>
+  </div>
 
-<select id="editCriancas" class="border p-3 rounded">
-<option value="">Convive com crianças</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editCriancas" class="text-sm font-medium text-gray-700">Convive com crianças</label>
+    <select id="editCriancas" class="border p-3 rounded">
+      <option value="">Convive com crianças</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+  </div>
 
-<select id="editAnimais" class="border p-3 rounded">
-<option value="">Convive com animais</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
+  <div class="flex flex-col gap-1">
+    <label for="editAnimais" class="text-sm font-medium text-gray-700">Convive com animais</label>
+    <select id="editAnimais" class="border p-3 rounded">
+      <option value="">Convive com animais</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+  </div>
 
 </div>
 
 <h3 class="font-semibold mt-6 mb-3">Descrição</h3>
 
-<textarea id="editDescricao"
-class="border p-3 rounded w-full h-24"
-placeholder="Descrição do animal"></textarea>
-
+<div class="flex flex-col gap-1">
+  <label for="editDescricao" class="text-sm font-medium text-gray-700">Descrição</label>
+  <textarea id="editDescricao" class="border p-3 rounded w-full h-24" placeholder="Descrição do animal"></textarea>
+</div>
 
 <h3 class="font-semibold mt-6 mb-3">Foto do Animal</h3>
 
-<img id="editPreview"
-class="w-40 h-40 object-cover rounded mb-3 hidden">
+<img id="editPreview" class="w-40 h-40 object-cover rounded mb-3 hidden">
 
-<input type="file"
-id="editFoto"
-accept="image/*"
-onchange="previewFotoEditar(event)"
-class="border p-3 rounded w-full">
-
+<div class="flex flex-col gap-1">
+  <label for="editFoto" class="text-sm font-medium text-gray-700">Foto do animal</label>
+  <input type="file" id="editFoto" accept="image/*" onchange="previewFotoEditar(event)" class="border p-3 rounded w-full">
+</div>
 
 <div class="flex justify-end gap-3 mt-6">
 
@@ -825,7 +868,7 @@ function excluirAnimal(id){
       mostrarSucesso("Animal excluído com sucesso!")
     } catch (error) {
       console.error(error)
-      alert('Falha ao excluir o animal: ' + error.message)
+      uiShowError('Falha ao excluir o animal: ' + error.message)
     }
   })
 }
@@ -890,7 +933,7 @@ function salvarEdicao(){
       }
     } catch (error) {
       console.error(error)
-      alert('Falha ao salvar alterações: ' + error.message)
+      uiShowError('Falha ao salvar alterações: ' + error.message)
     }
   })
 }
@@ -996,7 +1039,7 @@ function abrirEditarPorId(id){
   })
   .catch(error => {
     console.error('Erro ao buscar animal:', error)
-    alert('Erro ao carregar dados do animal: ' + error.message)
+    uiShowError('Erro ao carregar dados do animal: ' + error.message)
   })
 }
 

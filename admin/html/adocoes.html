@@ -7,6 +7,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
 
 <style>
 .menu-ativo {
@@ -56,7 +57,7 @@ if(localStorage.getItem("adminLogado") !== "true"){
 
 <!-- ÍCONE ISOLADO -->
 <div class="pt-8 pb-2 flex flex-col items-center justify-center">
-<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-16 h-16 mx-auto mb-4 block object-contain">
+<img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
 <p class="text-xs font-semibold tracking-wider text-slate-500 text-center uppercase">
 ARPAA
 </p>
@@ -141,7 +142,7 @@ Sair
 
 
 <!-- CONTEÚDO -->
-<main class="flex-1 p-10 ml-64">
+<main class="flex-1 p-10 ml-64 page-transition">
 
 <h1 class="text-3xl font-bold text-gray-800 mb-8">Processos de Adoção</h1>
 
@@ -206,8 +207,8 @@ Sair
       <option value="entrevista">Entrevista</option>
       <option value="visita">Visita</option>
       <option value="termo">Termo</option>
-      <option value="concluído">Concluídos</option>
-      <option value="reprovado">Reprovados</option>
+      <option value="concluído">Histórico de Adoções</option>
+      <option value="reprovado">Processos Reprovados</option>
     </select>
 
 <button 
@@ -338,7 +339,7 @@ Sair
 
 <!-- MODAL DE ETAPAS -->
 <div id="modalEtapas" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
-  <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
+  <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-5xl">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-gray-800">Gerenciar Processo de Adoção</h2>
       <button onclick="fecharModalEtapas()" class="text-gray-400 hover:text-gray-600">
@@ -402,7 +403,7 @@ Sair
     </div>
 
     <!-- Botões de Ação -->
-    <div id="modalAcoesFooter" class="flex justify-between items-center"></div>
+    <div id="modalAcoesFooter" class="flex flex-row items-center justify-end gap-3 mt-8 w-full"></div>
   </div>
 </div>
 
@@ -503,16 +504,15 @@ async function alterarStatus(index, status){
     
   } catch (error) {
     console.error('Erro ao alterar status:', error)
-    alert('Erro ao alterar status do processo')
+    uiShowError('Erro ao alterar status do processo')
   }
 }
 
 async function excluir(index){
   const adocao = adocoes[index];
-  if (!confirm("Tem certeza que deseja excluir permanentemente este processo de adoção?")) return;
-
-  try {
-    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes/${adocao.id}`;
+  uiConfirm('Tem certeza que deseja excluir permanentemente este processo de adoção?', async () => {
+    try {
+      const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes/${adocao.id}`;
     const response = await fetch(url, { method: 'DELETE' });
 
     if (!response.ok) throw new Error('Falha ao deletar o processo no servidor');
@@ -522,8 +522,9 @@ async function excluir(index){
     mostrarSucesso("Processo de adoção excluído com sucesso!");
   } catch (error) {
     console.error("❌ Erro ao excluir adoção:", error);
-    alert("Erro ao excluir processo de adoção do servidor.");
+    uiShowError("Erro ao excluir processo de adoção do servidor.");
   }
+});
 }
 
 function render(){
@@ -610,8 +611,6 @@ function render(){
   document.getElementById("aprovadas").innerText = a
   document.getElementById("recusadas").innerText = r
 }
-
-document.getElementById("filtro").addEventListener("change", render)
 
 let indexEditando = null
 
@@ -707,7 +706,7 @@ function verAnimal(animalId){
   let animal = animais.find(a => a.id == animalId)
 
   if(!animal){
-    alert("Animal não encontrado")
+    uiShowError("Animal não encontrado")
     return
   }
 
@@ -837,9 +836,13 @@ function fecharModalSucesso(){
   }, 200)
 }
 
-async function carregarProcessosDoBanco() {
+async function carregarProcessosDoBanco(statusFilter = 'ativos') {
   try {
-    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes`
+    let url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes`
+    if (statusFilter !== 'ativos') {
+      url += `?status=${encodeURIComponent(statusFilter)}`
+    }
+
     const response = await fetch(url)
     if (!response.ok) throw new Error('Erro ao carregar processos da API')
 
@@ -856,6 +859,16 @@ async function carregarProcessosDoBanco() {
 document.addEventListener("DOMContentLoaded", () => {
   carregarProcessosDoBanco()
   carregarAnimais()
+})
+
+const filtroElement = document.getElementById("filtro")
+filtroElement.addEventListener("change", async (e) => {
+  const value = e.target.value
+  if (value === 'concluído' || value === 'reprovado') {
+    await carregarProcessosDoBanco(value)
+  } else {
+    await carregarProcessosDoBanco('ativos')
+  }
 })
 
 function logout(){
@@ -911,19 +924,41 @@ function atualizarLinhaTempo(statusAtual) {
   
   // Atualizar texto do botão
   const btnAvancar = document.getElementById("btnAvancar")
+  const btnRetroceder = document.getElementById("btnRetroceder")
+  const btnReprovar = document.getElementById("btnReprovar")
+  const statusFinal = ['Concluído', 'Reprovado']
+
   if (statusAtual === 'Triagem') {
     btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Entrevista'
+    btnRetroceder.disabled = true
+    btnRetroceder.style.display = 'inline-flex'
   } else if (statusAtual === 'Entrevista') {
     btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Visita Local'
+    btnRetroceder.disabled = false
+    btnRetroceder.style.display = 'inline-flex'
   } else if (statusAtual === 'Visita') {
     btnAvancar.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Avançar para Assinatura do Termo'
+    btnRetroceder.disabled = false
+    btnRetroceder.style.display = 'inline-flex'
   } else if (statusAtual === 'Termo') {
     btnAvancar.innerHTML = '<i class="fas fa-check mr-2"></i>Concluir e Finalizar Adoção'
+    btnRetroceder.disabled = false
+    btnRetroceder.style.display = 'inline-flex'
+  } else if (statusFinal.includes(statusAtual)) {
+    btnAvancar.style.display = 'none'
+    btnRetroceder.style.display = 'none'
+    btnReprovar.style.display = 'none'
+    return
   } else {
     btnAvancar.style.display = 'none'
-    return
+    btnRetroceder.disabled = true
+    btnRetroceder.style.display = 'inline-flex'
   }
+
   btnAvancar.style.display = 'inline-flex'
+  if (!statusFinal.includes(statusAtual)) {
+    btnReprovar.style.display = 'inline-flex'
+  }
 }
 
 function renderizarAcoesModal(adocao) {
@@ -936,13 +971,16 @@ function renderizarAcoesModal(adocao) {
   }[adocao.status] || 'Avançar para Próxima Etapa'
 
   rodape.innerHTML = `
-    <button id="btnRegistrarAdotante" class="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+    <button id="btnRetroceder" class="h-12 px-4 text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+      <i class="fas fa-arrow-left mr-2"></i>Voltar Etapa
+    </button>
+    <button id="btnRegistrarAdotante" class="h-12 px-4 text-sm font-medium bg-[#0A9396] hover:bg-[#087779] text-white rounded-lg transition flex items-center justify-center gap-2">
       <i class="fas fa-user-plus mr-2"></i>Registrar como Adotante
     </button>
-    <button id="btnAvancar" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+    <button id="btnAvancar" class="h-12 px-4 text-sm font-medium bg-[#0A9396] hover:bg-[#087779] text-white rounded-lg transition flex items-center justify-center gap-2">
       <i class="fas fa-arrow-right mr-2"></i>${textoBotao}
     </button>
-    <button id="btnReprovar" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2">
+    <button id="btnReprovar" class="h-12 px-4 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center justify-center gap-2">
       <i class="fas fa-times-circle mr-2"></i>Reprovar Processo
     </button>
   `
@@ -954,7 +992,8 @@ function renderizarAcoesModal(adocao) {
     const telefone = adocao.telefone || ''
 
     if (!nome || !email) {
-      return alert('Nome e e-mail são obrigatórios para registrar o adotante.')
+      uiShowError('Nome e e-mail são obrigatórios para registrar o adotante.')
+      return
     }
 
     try {
@@ -969,15 +1008,52 @@ function renderizarAcoesModal(adocao) {
         throw new Error(data.error || 'Erro ao registrar adotante')
       }
 
-      alert('Adotante registrado com sucesso!')
+      mostrarSucesso('Adotante registrado com sucesso!')
     } catch (error) {
       console.error('Erro ao registrar adotante:', error)
-      alert('Erro ao registrar adotante no sistema')
+      uiShowError('Erro ao registrar adotante no sistema')
     }
   })
 
+  document.getElementById('btnRetroceder').addEventListener('click', retrocederEtapa)
   document.getElementById('btnAvancar').addEventListener('click', avancarEtapa)
   document.getElementById('btnReprovar').addEventListener('click', reprovarAdocao)
+}
+
+async function retrocederEtapa() {
+  if (!adocaoAtualId) return
+
+  const adocao = adocoes.find(a => a.id == adocaoAtualId)
+  if (!adocao) return
+
+  const etapas = ['Triagem', 'Entrevista', 'Visita', 'Termo', 'Concluído']
+  const indexAtual = etapas.indexOf(adocao.status)
+  if (indexAtual <= 0 || indexAtual === etapas.length - 1) return
+
+  const novoStatus = etapas[indexAtual - 1]
+
+  abrirConfirmacao(
+    'Tem certeza que deseja retroceder o processo para a etapa anterior?',
+    async () => {
+      try {
+        const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/retroceder`
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: novoStatus })
+        })
+
+        if (!response.ok) throw new Error('Erro ao retroceder etapa')
+
+        mostrarSucesso(`Processo retrocedido para ${novoStatus}!`)
+        fecharModalEtapas()
+        await carregarProcessosDoBanco()
+      } catch (error) {
+        console.error('Erro ao retroceder etapa:', error)
+        uiShowError('Erro ao retroceder etapa do processo')
+      }
+    }
+  )
 }
 
 async function avancarEtapa() {
@@ -1011,15 +1087,14 @@ async function avancarEtapa() {
     
   } catch (error) {
     console.error('Erro ao avançar etapa:', error)
-    alert('Erro ao avançar etapa do processo')
+    uiShowError('Erro ao avançar etapa do processo')
   }
 }
 
 async function reprovarAdocao() {
-  if (!confirm('Tem certeza que deseja reprovar esta adoção? Esta ação não pode ser desfeita.')) return
-  
-  try {
-    const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
+  uiConfirm('Tem certeza que deseja reprovar esta adoção? Esta ação não pode ser desfeita.', async () => {
+    try {
+      const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
     const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -1036,8 +1111,9 @@ async function reprovarAdocao() {
     
   } catch (error) {
     console.error('Erro ao reprovar adoção:', error)
-    alert('Erro ao reprovar adoção')
+    uiShowError('Erro ao reprovar adoção')
   }
+})
 }
 
 </script>
