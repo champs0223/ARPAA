@@ -1,13 +1,15 @@
 const express = require('express');
 const crypto = require('crypto');
-const router = express.Router();
 const { pool } = require('../db/connection');
 
-/**
- * POST /api/public/solicitacoes
- * Rota pública para criar nova solicitação de adoção
- */
-router.post('/public/solicitacoes', async (req, res) => {
+module.exports = (io) => {
+  const router = express.Router();
+
+  /**
+   * POST /api/public/solicitacoes
+   * Rota pública para criar nova solicitação de adoção
+   */
+  router.post('/public/solicitacoes', async (req, res) => {
   try {
     const { animal_id, nome, email, telefone, endereco, mensagem } = req.body;
 
@@ -28,7 +30,7 @@ router.post('/public/solicitacoes', async (req, res) => {
       [animal_id, nome, email, telefone, endereco, mensagem, 'Pendente']
     );
 
-    res.status(201).json({
+    const novaSolicitacao = {
       id: result.insertId,
       animal_id,
       nome,
@@ -37,8 +39,13 @@ router.post('/public/solicitacoes', async (req, res) => {
       endereco,
       mensagem,
       status: 'Pendente',
+      nome_animal: animal[0].nome,
       created_at: new Date().toISOString()
-    });
+    };
+
+    io.emit('novaSolicitacao', novaSolicitacao);
+
+    res.status(201).json(novaSolicitacao);
 
   } catch (error) {
     console.error('Erro ao criar solicitação de adoção:', error);
@@ -279,7 +286,7 @@ router.post('/admin/solicitacoes/:id/iniciar', async (req, res) => {
 
     await connection.execute(
       'UPDATE animais SET status = ? WHERE id = ?',
-      ['Adotado', solicita.animal_id]
+      ['Reservado', solicita.animal_id]
     );
 
     await connection.commit();
@@ -302,4 +309,5 @@ router.post('/admin/solicitacoes/:id/iniciar', async (req, res) => {
   }
 });
 
-module.exports = router;
+  return router;
+};

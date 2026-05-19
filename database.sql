@@ -89,7 +89,29 @@ CREATE TABLE IF NOT EXISTS `adocoes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
--- TABELA 5: VACINAS
+-- TABELA 5: ENTREVISTAS DE ADOÇÃO
+-- ========================================
+CREATE TABLE IF NOT EXISTS `entrevistas_adocao` (
+  `id` CHAR(12) NOT NULL,
+  `adocao_id` CHAR(12) NOT NULL,
+  `adotante_id` CHAR(12) NOT NULL,
+  `motivo_adesao` TEXT NOT NULL,
+  `concordancia_familia` TEXT NOT NULL,
+  `rotas_fuga` TEXT NOT NULL,
+  `tempo_sozinho` TEXT NOT NULL,
+  `condicao_financeira` TEXT NOT NULL,
+  `plano_viagem` TEXT NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_entrevistas_adocao_adocao_id` (`adocao_id`),
+  KEY `idx_entrevistas_adocao_adotante_id` (`adotante_id`),
+  CONSTRAINT `fk_entrevistas_adocao_adocoes` FOREIGN KEY (`adocao_id`) REFERENCES `adocoes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_entrevistas_adocao_adotantes` FOREIGN KEY (`adotante_id`) REFERENCES `adotantes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- TABELA 6: VACINAS
 -- ========================================
 CREATE TABLE IF NOT EXISTS `vacinas` (
   `id` CHAR(12) NOT NULL,

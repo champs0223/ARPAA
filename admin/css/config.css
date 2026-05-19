@@ -109,3 +109,59 @@ body {
 .page-transition {
     animation: fadeIn 0.4s ease-out forwards;
 }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 1.5rem;
+    z-index: 1000;
+}
+
+#modalSucesso {
+    z-index: 1100;
+}
+
+#modalEtapas {
+    z-index: 900;
+}
+
+.modal-card {
+    width: min(90%, 600px);
+    max-width: 600px;
+    max-height: 80vh;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-card-body {
+    overflow-y: auto;
+    max-height: calc(80vh - 9rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-right: 0.5rem;
+}
+
+.modal-card-footer {
+    margin-top: 1rem;
+}
+
+#modal,
+#modalAnimal {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+#modal > div,
+#modalAnimal > div {
+    margin: 0;
+}

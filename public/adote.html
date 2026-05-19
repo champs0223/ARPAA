@@ -409,6 +409,7 @@ async function carregarAnimais() {
         // Tentar buscar do backend MySQL primeiro
         if (!USE_LOCAL_DB && typeof buscarAnimaisDisponiveisDoBackend === 'function') {
             console.log("📡 Usando integração com backend MySQL...");
+            localStorage.removeItem('animais');
             animais = await buscarAnimaisDisponiveisDoBackend();
         } else if (USE_LOCAL_DB && typeof listarAnimais === 'function') {
             console.log("💾 Usando banco de dados local...");
@@ -419,7 +420,8 @@ async function carregarAnimais() {
         } else {
             // Fallback: requisição HTTP direta
             console.log("🔗 Tentando acesso HTTP direto...");
-            const response = await fetch(`${API_BASE_URL}/animais`, {
+            localStorage.removeItem('animais');
+            const response = await fetch(`${API_BASE_URL}/api/animais`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -480,7 +482,7 @@ function criarCardAnimal(animal) {
     div.className = 'group bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2';
     
     // Usar foto do banco de dados ou fallback
-    const imagem = animal.foto_url ? (animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url) : 'assets/img/placeholder.svg';
+    const imagem = animal.foto_url ? normalizeAnimalImageUrl(animal.foto_url) : '/icones/logo.png';
     
     // Montar info do animal
     const sexoIdade = `${animal.sexo || 'Desconhecido'} • ${animal.idade_aproximada || 'Idade desconhecida'}`;
@@ -501,14 +503,14 @@ function criarCardAnimal(animal) {
     const descricao = animal.descricao || `${animal.nome} é um ${animal.especie || 'animal'} adorável esperando por um lar.`;
     
     // Array com fotos (por enquanto só a principal)
-    const fotos = animal.foto_url ? [(animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url)] : ['assets/img/placeholder.svg'];
+    const fotos = animal.foto_url ? [normalizeAnimalImageUrl(animal.foto_url)] : ['/icones/logo.png'];
     
     // Montar info completa para o modal
     const infoCompleta = `${animal.especie || 'Animal'} • ${sexoIdade}${animal.porte ? ' • Porte ' + animal.porte : ''}${animal.vacinado === 'Sim' ? ' • Vacinado' : ''}${animal.castrado === 'Sim' ? ' • Castrado' : ''}`;
     
     div.innerHTML = `
         <div class="relative overflow-hidden h-40">
-            <img src="${imagem}" alt="${animal.nome}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';"
+            <img src="${imagem}" alt="${animal.nome}" onerror="this.onerror=null; this.src='/icones/logo.png';"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div class="absolute top-2 right-2">
@@ -557,7 +559,7 @@ function fecharModal() {
 
         <!-- GALERIA -->
         <div class="relative mb-4">
-            <img id="modalImgPrincipal" src="" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';" class="w-full h-56 object-cover rounded-xl">
+            <img id="modalImgPrincipal" src="" onerror="this.onerror=null; this.src='/icones/logo.png';" class="w-full h-56 object-cover rounded-xl">
 
             <!-- Botões de navegação -->
             <button onclick="fotoAnterior()" 
@@ -638,9 +640,9 @@ function abrirModal(nome, info, descricao, imagens) {
     // Miniaturas
     let miniaturas = "";
     imagens.forEach((img, i) => {
-        const urlProcessada = img.startsWith('http') ? img : 'http://localhost:3001' + img;
+        const urlProcessada = normalizeAnimalImageUrl(img);
         miniaturas += `
-            <img src="${urlProcessada}" onclick="irParaFoto(${i})" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';"
+            <img src="${urlProcessada}" onclick="irParaFoto(${i})" onerror="this.onerror=null; this.src='/icones/logo.png';"
             class="w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${i==0?"border-teal-600":"border-transparent"}">
         `;
     });
@@ -952,8 +954,8 @@ function abrirModalAdocao(animal) {
     
     // Preencher detalhes do animal
     document.getElementById('modalImagemAnimal').src = animal.foto_url 
-        ? (animal.foto_url.startsWith('http') ? animal.foto_url : 'http://localhost:3001' + animal.foto_url)
-        : 'assets/img/placeholder.svg';
+        ? normalizeAnimalImageUrl(animal.foto_url)
+        : '/icones/logo.png';
     
     document.getElementById('modalNomeAnimal').textContent = animal.nome || 'Animal';
     document.getElementById('modalInfoAnimal').textContent = `${animal.especie || 'Animal'} • ${animal.sexo || 'Sexo desconhecido'} • ${animal.idade_aproximada || 'Idade desconhecida'}`;
@@ -1054,7 +1056,7 @@ document.getElementById('formAdotante').addEventListener('submit', async (e) => 
     }
     
     try {
-        const response = await fetch('http://localhost:3001/api/public/solicitacoes', {
+            const response = await fetch(`${API_BASE_URL}/api/public/solicitacoes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

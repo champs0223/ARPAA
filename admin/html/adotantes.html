@@ -349,21 +349,40 @@ document.getElementById("busca").addEventListener("input", (e)=>{
   render()
 })
 
+function normalizarTexto(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
+
+function statusCombinaComFiltro(status, filtro) {
+  const statusNormalizado = normalizarTexto(status)
+  const filtroNormalizado = normalizarTexto(filtro)
+
+  if (filtroNormalizado === "aprovado") return statusNormalizado.includes("conclu")
+  if (filtroNormalizado === "recusado") return statusNormalizado.includes("reprov")
+  if (filtroNormalizado === "pendente") return !statusNormalizado.includes("conclu") && !statusNormalizado.includes("reprov")
+
+  return statusNormalizado.includes(filtroNormalizado)
+}
+
 function agruparAdotantes(){
 
   let mapa = {}
 
   adocoes.forEach(a => {
+    const nomeAdotante = a.adotante_nome || a.nome || "Não informado"
 
-    if(!mapa[a.nome]){
-      mapa[a.nome] = {
-        nome: a.nome,
-        telefone: a.telefone,
+    if(!mapa[nomeAdotante]){
+      mapa[nomeAdotante] = {
+        nome: nomeAdotante,
+        telefone: a.telefone || "",
         historico: []
       }
     }
 
-    mapa[a.nome].historico.push(a)
+    mapa[nomeAdotante].historico.push(a)
   })
 
   return Object.values(mapa)
@@ -382,10 +401,10 @@ function render(){
 
   adotantes.forEach((a)=>{
 
-    let historico = adocoes.filter(ad => ad.nome === a.nome)
+    let historico = adocoes.filter(ad => normalizarTexto(ad.adotante_nome || ad.nome) === normalizarTexto(a.nome))
 
-let apro = historico.filter(h => h.status === "aprovado").length
-let rec = historico.filter(h => h.status === "recusado").length
+let apro = historico.filter(h => statusCombinaComFiltro(h.status, "aprovado")).length
+let rec = historico.filter(h => statusCombinaComFiltro(h.status, "recusado")).length
 let statusGeral = "Novo"
 
 if(apro > 0){
@@ -398,7 +417,7 @@ if(apro > 0){
     recusadas += rec
 
 if(filtroStatus !== "todos"){
-  let temStatus = historico.some(h => h.status === filtroStatus)
+  let temStatus = historico.some(h => statusCombinaComFiltro(h.status, filtroStatus))
   if(!temStatus) return
 }
 

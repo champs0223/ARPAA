@@ -98,7 +98,18 @@ router.put('/admin/adocoes/:id/etapa', async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // Atualizar status na tabela adocoes
+    // Se avançando de Entrevista para Visita, garantimos que a entrevista já está salva
+    if (status === 'Visita') {
+      const [entrevistas] = await connection.execute(
+        'SELECT id FROM entrevistas_adocao WHERE adocao_id = ?',
+        [id]
+      );
+      if (entrevistas.length === 0) {
+        await connection.rollback();
+        return res.status(400).json({ error: 'A entrevista precisa ser salva antes de avançar para Visita' });
+      }
+    }
+
     const [updateResult] = await connection.execute(
       'UPDATE adocoes SET status = ? WHERE id = ?',
       [status, id]
@@ -169,6 +180,105 @@ router.put('/admin/adocoes/:id/etapa', async (req, res) => {
     await connection.rollback();
     console.error('❌ Erro ao avançar etapa:', error);
     return res.status(500).json({ error: 'Erro interno ao avançar etapa' });
+  } finally {
+    connection.release();
+  }
+});
+
+// GET - Buscar entrevista por processo de adoção
+router.get('/admin/adocoes/:id/entrevista', async (req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT e.*, a.nome AS adotante_nome, a.email, a.telefone, a.endereco
+       FROM entrevistas_adocao e
+       LEFT JOIN adotantes a ON e.adotante_id = a.id
+       WHERE e.adocao_id = ?`,
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Entrevista não encontrada' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('❌ Erro ao buscar entrevista:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar entrevista' });
+  }
+});
+
+// POST - Salvar ou atualizar entrevista do processo de adoção
+router.post('/admin/adocoes/:id/entrevista', async (req, res) => {
+  const { id } = req.params;
+  const {
+    adotante_id,
+    motivo_adesao,
+    concordancia_familia,
+    rotas_fuga,
+    tempo_sozinho,
+    condicao_financeira,
+    plano_viagem
+  } = req.body;
+
+  if (!adotante_id || !motivo_adesao || !concordancia_familia || !rotas_fuga || !tempo_sozinho || !condicao_financeira || !plano_viagem) {
+    return res.status(400).json({ error: 'Todos os campos do formulário de entrevista são obrigatórios' });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [processoRows] = await connection.execute(
+      'SELECT id, status FROM adocoes WHERE id = ?',
+      [id]
+    );
+
+    if (processoRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Processo de adoção não encontrado' });
+    }
+
+    const processo = processoRows[0];
+    if (processo.status !== 'Entrevista') {
+      await connection.rollback();
+      return res.status(400).json({ error: 'A entrevista só pode ser salva na etapa de Entrevista' });
+    }
+
+    const [existing] = await connection.execute(
+      'SELECT id FROM entrevistas_adocao WHERE adocao_id = ?',
+      [id]
+    );
+
+    if (existing.length > 0) {
+      await connection.execute(
+        `UPDATE entrevistas_adocao SET
+          adotante_id = ?,
+          motivo_adesao = ?,
+          concordancia_familia = ?,
+          rotas_fuga = ?,
+          tempo_sozinho = ?,
+          condicao_financeira = ?,
+          plano_viagem = ?,
+          updated_at = NOW()
+         WHERE adocao_id = ?`,
+        [adotante_id, motivo_adesao, concordancia_familia, rotas_fuga, tempo_sozinho, condicao_financeira, plano_viagem, id]
+      );
+    } else {
+      const entrevistaId = crypto.randomBytes(6).toString('hex').toUpperCase();
+      await connection.execute(
+        `INSERT INTO entrevistas_adocao
+          (id, adocao_id, adotante_id, motivo_adesao, concordancia_familia, rotas_fuga, tempo_sozinho, condicao_financeira, plano_viagem, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [entrevistaId, id, adotante_id, motivo_adesao, concordancia_familia, rotas_fuga, tempo_sozinho, condicao_financeira, plano_viagem]
+      );
+    }
+
+    await connection.commit();
+    res.status(200).json({ message: 'Entrevista salva com sucesso' });
+  } catch (error) {
+    await connection.rollback();
+    console.error('❌ Erro ao salvar entrevista:', error);
+    res.status(500).json({ error: 'Erro interno ao salvar entrevista' });
   } finally {
     connection.release();
   }

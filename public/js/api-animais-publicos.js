@@ -13,6 +13,31 @@ const API_ANIMAIS_URL = typeof API_BASE_URL !== 'undefined' && API_BASE_URL !== 
 console.log('🔗 API de animais configurada em:', API_ANIMAIS_URL);
 
 /**
+ * Normaliza URLs de imagem retornadas pelo banco de dados.
+ * Substitui localhost ou 127.0.0.1 pelo API_BASE_URL fixo.
+ */
+function normalizeAnimalImageUrl(url) {
+  if (!url) return url;
+
+  const localHostPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)$/i;
+  if (localHostPattern.test(url)) {
+    return url.replace(localHostPattern, `${API_BASE_URL}$3`);
+  }
+
+  let normalizedUrl = url.replace(/\\/g, '/');
+
+  if (!normalizedUrl.startsWith('http')) {
+    normalizedUrl = normalizedUrl.replace(/^\/+/, '');
+    if (!normalizedUrl.startsWith('uploads/')) {
+      normalizedUrl = `uploads/${normalizedUrl}`;
+    }
+    return `${API_BASE_URL}/${normalizedUrl}`;
+  }
+
+  return normalizedUrl;
+}
+
+/**
  * Busca animais disponíveis para adoção do backend MySQL
  * @returns {Promise<Array>} Array de animais com status 'disponivel'
  */

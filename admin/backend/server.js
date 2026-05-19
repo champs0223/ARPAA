@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 require('dotenv').config();
 
 // Debug: show environment
@@ -29,7 +32,16 @@ const eventosRoutes = require('./routes/eventos');
 const solicitacoesRoutes = require('./routes/solicitacoes');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = Number(process.env.PORT || 3001);
+
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }
+});
 
 // Middleware
 app.use(cors({
@@ -42,8 +54,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir arquivos estáticos (uploads)
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (filePath.endsWith('.gif')) {
+      res.setHeader('Content-Type', 'image/gif');
+    }
+  }
+}));
 
 // Rota de teste
 app.get('/health', (req, res) => {
@@ -66,7 +87,15 @@ app.use('/api', vacinasRoutes);
 app.use('/api', historicoRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', eventosRoutes);
-app.use('/api', solicitacoesRoutes);
+app.use('/api', solicitacoesRoutes(io));
+
+io.on('connection', (socket) => {
+  console.log('📡 Admin socket connected:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('📴 Admin socket disconnected:', socket.id);
+  });
+});
 
 // Tratamento de erros 404
 app.use((req, res) => {
@@ -94,8 +123,9 @@ const startServer = async () => {
       console.warn('⚠ Aviso de DB:', dbError.message);
     }
 
-    const server = app.listen(PORT, '0.0.0.0', () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`\n✓ Servidor ARPAA rodando em http://0.0.0.0:${PORT}`);
+      console.log(`✓ Socket.IO habilitado`);
       console.log(`✓ CORS habilitado para todas as origens`);
       console.log(`✓ Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`✓ Banco de dados: ${process.env.DB_NAME} @ ${process.env.DB_HOST}\n`);

@@ -99,6 +99,11 @@ Animais
       </a>
     </li>
     <li>
+      <a id="menuProcessosConcluidos" href="adocoes.html?status=concluido" class="menu-link block hover:text-yellow-300">
+        Processos Concluídos
+      </a>
+    </li>
+    <li>
       <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">
         Adotantes
       </a>
@@ -202,12 +207,12 @@ Sair
 
     <!-- FILTRO -->
     <select id="filtro" class="border p-2 rounded-lg">
-      <option value="todos">Todos os Processos</option>
+      <option value="todos">Processos em Andamento</option>
       <option value="triagem">Triagem</option>
       <option value="entrevista">Entrevista</option>
       <option value="visita">Visita</option>
       <option value="termo">Termo</option>
-      <option value="concluído">Histórico de Adoções</option>
+      <option value="concluído">Processos Concluídos</option>
       <option value="reprovado">Processos Reprovados</option>
     </select>
 
@@ -249,29 +254,33 @@ Sair
 </div>
 
 <!-- MODAL -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-  <div class="bg-white p-6 rounded-xl w-full max-w-md">
-    <h2 class="text-xl font-bold mb-4">Nova Adoção</h2>
+<div id="modal" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <h2 class="text-xl font-bold mb-4">Nova Adoção</h2>
+    </div>
 
-    <!-- Animal primeiro -->
-    <select id="animalSelect" class="w-full border p-2 rounded mb-3">
-      <option value="">Selecione o animal</option>
-    </select>
+    <div class="modal-card-body">
+      <!-- Animal primeiro -->
+      <select id="animalSelect" class="w-full border p-2 rounded mb-3">
+        <option value="">Selecione o animal</option>
+      </select>
 
-    <!-- Nome do adotante depois -->
-    <input id="nome" placeholder="Nome do adotante" class="w-full border p-2 rounded mb-3">
+      <!-- Nome do adotante depois -->
+      <input id="nome" placeholder="Nome do adotante" class="w-full border p-2 rounded mb-3">
 
-    <input id="telefone" placeholder="(xx) xxxxx-xxxx" class="w-full border p-2 rounded mb-3"/>
+      <input id="telefone" placeholder="(xx) xxxxx-xxxx" class="w-full border p-2 rounded mb-3"/>
 
-<!-- Status da adoção -->
-    <select id="statusAdocao" class="w-full border p-2 rounded mb-3">
-  <option value="">Status da Adoção</option>
-  <option value="pendente">Pendente</option>
-  <option value="aprovado">Aprovado</option>
-  <option value="recusado">Recusado</option>
-</select>
+      <!-- Status da adoção -->
+      <select id="statusAdocao" class="w-full border p-2 rounded mb-3">
+        <option value="">Status da Adoção</option>
+        <option value="pendente">Pendente</option>
+        <option value="aprovado">Aprovado</option>
+        <option value="recusado">Recusado</option>
+      </select>
+    </div>
 
-    <div class="flex justify-end gap-2">
+    <div class="modal-card-footer flex justify-end gap-2">
       <button onclick="fecharModal()" class="px-4 py-2 bg-gray-300 rounded">Cancelar</button>
       <button onclick="salvarAdocao()" class="px-4 py-2 bg-teal-600 text-white rounded">Salvar</button>
     </div>
@@ -407,6 +416,56 @@ Sair
   </div>
 </div>
 
+<!-- MODAL DE ENTREVISTA -->
+<div id="modalEntrevista" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <div>
+        <h3 class="text-2xl font-bold text-gray-900">Formulário de Entrevista</h3>
+        <p class="text-sm text-gray-500 mt-1">Responda todas as perguntas para avançar ao próximo estágio.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="entrevistaSalvaBadge" class="hidden text-sm font-semibold text-emerald-600">Entrevista salva</span>
+        <button id="fecharModalEntrevista" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+    </div>
+    <div class="modal-card-body">
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-semibold text-gray-700">Qual o motivo da adoção e quem será o responsável principal pelo animal?</label>
+          <textarea id="entrevista-motivo" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-700">Todos na casa estão de acordo com a chegada do animal? Há crianças ou idosos?</label>
+          <textarea id="entrevista-concordancia" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-700">A residência possui rotas de fuga? (Casa murada, portões fechados ou apartamento telado?)</label>
+          <textarea id="entrevista-rotas" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-700">O animal passará quanto tempo sozinho por dia e onde ele irá dormir/ficar?</label>
+          <textarea id="entrevista-tempo" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-700">O adotante possui condições financeiras para arcar com ração, vacinas anuais e imprevistos veterinários?</label>
+          <textarea id="entrevista-financeira" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-gray-700">Em caso de viagem ou mudança, o que acontecerá com o animal?</label>
+          <textarea id="entrevista-plano" rows="3" class="w-full border border-gray-300 rounded-lg p-3"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-card-footer">
+      <button id="btnCancelarEntrevista" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">Fechar formulário</button>
+      <button id="btnSalvarEntrevista" class="px-4 py-2 bg-[#0A9396] text-white rounded-lg hover:bg-[#087779] transition">Salvar Entrevista</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
@@ -527,6 +586,13 @@ async function excluir(index){
 });
 }
 
+function normalizarTexto(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[ C0-\u036f]/g, "")
+    .toLowerCase()
+}
+
 function render(){
   adocoes.forEach(a => {
   if(a.contato === undefined){
@@ -552,21 +618,21 @@ function render(){
     if (!adocao.nome) adocao.nome = adocao.adotante_nome || 'Não informado';
     if (!adocao.animalId) adocao.animalId = adocao.animal_id || adocao.animalId;
 
-    const statusMinusculo = adocao.status.toLowerCase();
+    const statusMinusculo = normalizarTexto(adocao.status)
 
     // Contadores ajustados: Pendentes são Triagem, Entrevista, Visita, Termo
     if (['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) p++;
-    if (statusMinusculo === "concluído") a++;
-    if (statusMinusculo === "reprovado") r++;
+    if (statusMinusculo.includes("conclu")) a++;
+    if (statusMinusculo.includes("reprov")) r++;
 
-    if(filtro !== "todos" && !statusMinusculo.includes(filtro.toLowerCase())) return
+    if(filtro !== "todos" && !statusMinusculo.includes(normalizarTexto(filtro))) return
     if(!adocao.animalNome.toLowerCase().includes(termoBusca)) return
 
     let cor = "gray"
     if(['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) cor = "yellow"
-    else if(adocao.status === "Concluído") cor = "green"
-    else if(adocao.status === "Reprovado") cor = "red"
-    else if(adocao.status === "devolvido") cor = "blue"
+    else if(statusMinusculo.includes("conclu")) cor = "green"
+    else if(statusMinusculo.includes("reprov")) cor = "red"
+    else if(statusMinusculo.includes("devolv")) cor = "blue"
 
     lista.innerHTML += `
 <tr class="border-t hover:bg-gray-50 cursor-pointer transition" onclick="abrirModalEtapas('${adocao.id}')">
@@ -837,6 +903,9 @@ function fecharModalSucesso(){
 }
 
 async function carregarProcessosDoBanco(statusFilter = 'ativos') {
+  adocoes = []
+  localStorage.removeItem("adocoes")
+
   try {
     let url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes`
     if (statusFilter !== 'ativos') {
@@ -847,27 +916,42 @@ async function carregarProcessosDoBanco(statusFilter = 'ativos') {
     if (!response.ok) throw new Error('Erro ao carregar processos da API')
 
     const dados = await response.json()
-    adocoes = dados
+    adocoes = dados || []
     localStorage.setItem("adocoes", JSON.stringify(adocoes))
   } catch (error) {
     console.error("❌ Erro ao buscar processos do MySQL:", error)
+    adocoes = []
   } finally {
     render()
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  carregarProcessosDoBanco()
-  carregarAnimais()
-})
+function getQueryParam(name) {
+  const params = new URLSearchParams(window.location.search)
+  return params.get(name)
+}
 
-const filtroElement = document.getElementById("filtro")
-filtroElement.addEventListener("change", async (e) => {
-  const value = e.target.value
-  if (value === 'concluído' || value === 'reprovado') {
-    await carregarProcessosDoBanco(value)
+document.addEventListener("DOMContentLoaded", () => {
+  const statusParam = getQueryParam('status')
+  const filtroElement = document.getElementById('filtro')
+
+  if (statusParam === 'concluido' || statusParam === 'concluído') {
+    if (filtroElement) filtroElement.value = 'concluído'
+    carregarProcessosDoBanco('concluído')
   } else {
-    await carregarProcessosDoBanco('ativos')
+    carregarProcessosDoBanco()
+  }
+  carregarAnimais()
+
+  if (filtroElement) {
+    filtroElement.addEventListener("change", async (e) => {
+      const value = e.target.value
+      if (value === 'concluído' || value === 'reprovado') {
+        await carregarProcessosDoBanco(value)
+      } else {
+        await carregarProcessosDoBanco('ativos')
+      }
+    })
   }
 })
 
@@ -878,22 +962,22 @@ function logout(){
 
 // ===== MODAL DE ETAPAS =====
 let adocaoAtualId = null
+let entrevistaSalva = false
+let entrevistaId = null
 
 async function abrirModalEtapas(adocaoId) {
   adocaoAtualId = adocaoId
-  
-  // Buscar dados da adoção
+
   const adocao = adocoes.find(a => a.id == adocaoId)
   if (!adocao) return
-  
-  // Preencher informações
+
   document.getElementById("modalNomeSolicitante").innerText = adocao.adotante_nome || 'Não informado'
   document.getElementById("modalNomeAnimal").innerText = adocao.animal_nome || 'Não informado'
-  
+
+  await carregarEntrevistaDoProcesso(adocaoId)
   renderizarAcoesModal(adocao)
   atualizarLinhaTempo(adocao.status)
-  
-  // Mostrar modal
+
   document.getElementById("modalEtapas").classList.remove("hidden")
   document.getElementById("modalEtapas").classList.add("flex")
 }
@@ -970,6 +1054,9 @@ function renderizarAcoesModal(adocao) {
     Termo: 'Concluir e Finalizar Adoção'
   }[adocao.status] || 'Avançar para Próxima Etapa'
 
+  const mostrarEntrevista = adocao.status === 'Entrevista'
+  const avancarDesabilitado = adocao.status === 'Entrevista' && !entrevistaSalva
+
   rodape.innerHTML = `
     <button id="btnRetroceder" class="h-12 px-4 text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
       <i class="fas fa-arrow-left mr-2"></i>Voltar Etapa
@@ -977,7 +1064,10 @@ function renderizarAcoesModal(adocao) {
     <button id="btnRegistrarAdotante" class="h-12 px-4 text-sm font-medium bg-[#0A9396] hover:bg-[#087779] text-white rounded-lg transition flex items-center justify-center gap-2">
       <i class="fas fa-user-plus mr-2"></i>Registrar como Adotante
     </button>
-    <button id="btnAvancar" class="h-12 px-4 text-sm font-medium bg-[#0A9396] hover:bg-[#087779] text-white rounded-lg transition flex items-center justify-center gap-2">
+    <button id="btnResponderEntrevista" style="display: ${mostrarEntrevista ? 'inline-flex' : 'none'}" class="h-12 px-4 text-sm font-medium bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition flex items-center justify-center gap-2">
+      <i class="fas fa-file-alt mr-2"></i>${entrevistaSalva ? 'Editar Formulário de Entrevista' : 'Responder Formulário de Entrevista'}
+    </button>
+    <button id="btnAvancar" class="h-12 px-4 text-sm font-medium ${avancarDesabilitado ? 'bg-slate-300 text-slate-600 cursor-not-allowed' : 'bg-[#0A9396] hover:bg-[#087779] text-white'} rounded-lg transition flex items-center justify-center gap-2" ${avancarDesabilitado ? 'disabled' : ''}>
       <i class="fas fa-arrow-right mr-2"></i>${textoBotao}
     </button>
     <button id="btnReprovar" class="h-12 px-4 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center justify-center gap-2">
@@ -985,39 +1075,52 @@ function renderizarAcoesModal(adocao) {
     </button>
   `
 
-  document.getElementById('btnRegistrarAdotante').addEventListener('click', async () => {
-    const nome = adocao.adotante_nome || ''
-    const endereco = adocao.endereco || ''
-    const email = adocao.email || ''
-    const telefone = adocao.telefone || ''
+  const btnRegistrar = document.getElementById('btnRegistrarAdotante')
+  const btnRetroceder = document.getElementById('btnRetroceder')
+  const btnAvancar = document.getElementById('btnAvancar')
+  const btnReprovar = document.getElementById('btnReprovar')
+  const btnResponderEntrevista = document.getElementById('btnResponderEntrevista')
 
-    if (!nome || !email) {
-      uiShowError('Nome e e-mail são obrigatórios para registrar o adotante.')
-      return
-    }
+  if (btnRegistrar) {
+    btnRegistrar.onclick = async () => {
+      const nome = adocao.adotante_nome || adocao.nome || ''
+      const endereco = adocao.endereco || ''
+      const email = adocao.email || ''
+      const telefone = adocao.telefone || ''
 
-    try {
-      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adotantes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, endereco, email, telefone })
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || 'Erro ao registrar adotante')
+      if (!nome || !email) {
+        uiShowError('Nome e e-mail são obrigatórios para registrar o adotante.')
+        return
       }
 
-      mostrarSucesso('Adotante registrado com sucesso!')
-    } catch (error) {
-      console.error('Erro ao registrar adotante:', error)
-      uiShowError('Erro ao registrar adotante no sistema')
-    }
-  })
+      try {
+        const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adotantes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, endereco, email, telefone })
+        })
 
-  document.getElementById('btnRetroceder').addEventListener('click', retrocederEtapa)
-  document.getElementById('btnAvancar').addEventListener('click', avancarEtapa)
-  document.getElementById('btnReprovar').addEventListener('click', reprovarAdocao)
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao registrar adotante')
+        }
+
+        mostrarSucesso('Adotante registrado com sucesso!')
+      } catch (error) {
+        console.error('Erro ao registrar adotante:', error)
+        uiShowError('Erro ao registrar adotante no sistema')
+      }
+    }
+  }
+
+  btnRetroceder.onclick = retrocederEtapa
+  btnAvancar.onclick = avancarEtapa
+  btnReprovar.onclick = reprovarAdocao
+  if (btnResponderEntrevista) {
+    btnResponderEntrevista.onclick = () => {
+      abrirFormularioEntrevista()
+    }
+  }
 }
 
 async function retrocederEtapa() {
@@ -1056,6 +1159,113 @@ async function retrocederEtapa() {
   )
 }
 
+async function carregarEntrevistaDoProcesso(adocaoId) {
+  entrevistaSalva = false
+  entrevistaId = null
+  limparFormularioEntrevista()
+
+  try {
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoId}/entrevista`)
+    if (!response.ok) return
+
+    const data = await response.json()
+    entrevistaSalva = true
+    entrevistaId = data.id
+    preencherFormularioEntrevista(data)
+    document.getElementById('entrevistaSalvaBadge').classList.remove('hidden')
+  } catch (error) {
+    entrevistaSalva = false
+    document.getElementById('entrevistaSalvaBadge').classList.add('hidden')
+  }
+}
+
+function abrirFormularioEntrevista() {
+  document.getElementById('modalEtapas').classList.add('hidden')
+  document.getElementById('modalEtapas').classList.remove('flex')
+  document.getElementById('modalEntrevista').classList.remove('hidden')
+  document.getElementById('modalEntrevista').classList.add('flex')
+}
+
+function preencherFormularioEntrevista(data) {
+  document.getElementById('entrevista-motivo').value = data.motivo_adesao || ''
+  document.getElementById('entrevista-concordancia').value = data.concordancia_familia || ''
+  document.getElementById('entrevista-rotas').value = data.rotas_fuga || ''
+  document.getElementById('entrevista-tempo').value = data.tempo_sozinho || ''
+  document.getElementById('entrevista-financeira').value = data.condicao_financeira || ''
+  document.getElementById('entrevista-plano').value = data.plano_viagem || ''
+}
+
+function limparFormularioEntrevista() {
+  document.getElementById('entrevista-motivo').value = ''
+  document.getElementById('entrevista-concordancia').value = ''
+  document.getElementById('entrevista-rotas').value = ''
+  document.getElementById('entrevista-tempo').value = ''
+  document.getElementById('entrevista-financeira').value = ''
+  document.getElementById('entrevista-plano').value = ''
+  document.getElementById('entrevistaSalvaBadge').classList.add('hidden')
+}
+
+async function salvarEntrevista() {
+  if (!adocaoAtualId) return
+  const adocao = adocoes.find(a => a.id == adocaoAtualId)
+  if (!adocao) return
+
+  const adotanteId = adocao.adotante_id || adocao.adotanteId
+  const motivo = document.getElementById('entrevista-motivo').value.trim()
+  const concordancia = document.getElementById('entrevista-concordancia').value.trim()
+  const rotas = document.getElementById('entrevista-rotas').value.trim()
+  const tempo = document.getElementById('entrevista-tempo').value.trim()
+  const condicao = document.getElementById('entrevista-financeira').value.trim()
+  const plano = document.getElementById('entrevista-plano').value.trim()
+
+  if (!adotanteId || !motivo || !concordancia || !rotas || !tempo || !condicao || !plano) {
+    uiShowError('Preencha todas as respostas do formulário de entrevista antes de salvar.')
+    return
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/entrevista`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        adotante_id: adotanteId,
+        motivo_adesao: motivo,
+        concordancia_familia: concordancia,
+        rotas_fuga: rotas,
+        tempo_sozinho: tempo,
+        condicao_financeira: condicao,
+        plano_viagem: plano
+      })
+    })
+
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao salvar a entrevista')
+    }
+
+    entrevistaSalva = true
+    entrevistaId = data.id || entrevistaId
+    document.getElementById('entrevistaSalvaBadge').classList.remove('hidden')
+    fecharFormularioEntrevista()
+    mostrarSucesso('Entrevista salva com sucesso!')
+    renderizarAcoesModal(adocao)
+  } catch (error) {
+    console.error('Erro ao salvar entrevista:', error)
+    uiShowError('Erro ao salvar as respostas da entrevista')
+  }
+}
+
+document.getElementById('btnSalvarEntrevista').addEventListener('click', salvarEntrevista)
+document.getElementById('btnCancelarEntrevista').addEventListener('click', fecharFormularioEntrevista)
+document.getElementById('fecharModalEntrevista').addEventListener('click', fecharFormularioEntrevista)
+
+function fecharFormularioEntrevista() {
+  document.getElementById('modalEntrevista').classList.add('hidden')
+  document.getElementById('modalEntrevista').classList.remove('flex')
+  document.getElementById('modalEtapas').classList.remove('hidden')
+  document.getElementById('modalEtapas').classList.add('flex')
+}
+
 async function avancarEtapa() {
   if (!adocaoAtualId) return
   
@@ -1064,11 +1274,17 @@ async function avancarEtapa() {
   
   let novoStatus = ''
   if (adocao.status === 'Triagem') novoStatus = 'Entrevista'
-  else if (adocao.status === 'Entrevista') novoStatus = 'Visita'
+  else if (adocao.status === 'Entrevista') {
+    if (!entrevistaSalva) {
+      uiShowError('Salve o formulário de entrevista antes de avançar para Visita.')
+      return
+    }
+    novoStatus = 'Visita'
+  }
   else if (adocao.status === 'Visita') novoStatus = 'Termo'
   else if (adocao.status === 'Termo') novoStatus = 'Concluído'
   else return
-  
+
   try {
     const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
     const response = await fetch(url, {
