@@ -469,6 +469,11 @@ Sair
 <script>
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
+function getAdminHeaders(){
+  const token = localStorage.getItem('adminToken')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 function salvar(){
   localStorage.setItem("adocoes", JSON.stringify(adocoes))
 }
@@ -550,7 +555,10 @@ async function alterarStatus(index, status){
     const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocao.id}/etapa`
     const response = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminHeaders()
+      },
       body: JSON.stringify({ status: status })
     })
     
@@ -572,7 +580,7 @@ async function excluir(index){
   uiConfirm('Tem certeza que deseja excluir permanentemente este processo de adoção?', async () => {
     try {
       const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes/${adocao.id}`;
-    const response = await fetch(url, { method: 'DELETE' });
+    const response = await fetch(url, { method: 'DELETE', headers: getAdminHeaders() });
 
     if (!response.ok) throw new Error('Falha ao deletar o processo no servidor');
 
@@ -1096,7 +1104,10 @@ function renderizarAcoesModal(adocao) {
       try {
         const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adotantes`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAdminHeaders()
+          },
           body: JSON.stringify({ nome, endereco, email, telefone })
         })
 
@@ -1142,7 +1153,10 @@ async function retrocederEtapa() {
         const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/retroceder`
         const response = await fetch(url, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAdminHeaders()
+          },
           body: JSON.stringify({ status: novoStatus })
         })
 
@@ -1165,7 +1179,9 @@ async function carregarEntrevistaDoProcesso(adocaoId) {
   limparFormularioEntrevista()
 
   try {
-    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoId}/entrevista`)
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoId}/entrevista`, {
+      headers: getAdminHeaders()
+    })
     if (!response.ok) return
 
     const data = await response.json()
@@ -1226,7 +1242,10 @@ async function salvarEntrevista() {
   try {
     const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/entrevista`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminHeaders()
+      },
       body: JSON.stringify({
         adotante_id: adotanteId,
         motivo_adesao: motivo,
@@ -1289,7 +1308,10 @@ async function avancarEtapa() {
     const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
     const response = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminHeaders()
+      },
       body: JSON.stringify({ status: novoStatus })
     })
     
@@ -1313,7 +1335,10 @@ async function reprovarAdocao() {
       const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
     const response = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAdminHeaders()
+      },
       body: JSON.stringify({ status: 'Reprovado' })
     })
     

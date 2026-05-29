@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPIs - ARPAA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
+<style>
+.menu-ativo {
+  background: rgba(20,184,166,0.1);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
+}
+</style>
+<script src="../js/config-api.js"></script>
+<script src="../js/menu.js"></script>
+<script src="../../public/js/db-local.js"></script>
+<script src="../../public/js/api-local.js"></script>
+<script src="../../public/js/api-helper.js"></script>
+<script src="../../public/js/init-dados-locais.js"></script>
+<script src="../js/dashboard-loader.js"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<script>
+if (localStorage.getItem("adminLogado") !== "true" || localStorage.getItem("usuarioAdmin") !== "true") {
+  window.location.href = "index.html";
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
+  <div class="pt-8 pb-4 flex flex-col items-center justify-center">
+    <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 object-contain">
+    <p class="text-sm font-bold tracking-wider text-slate-500 text-center uppercase">ARPAA</p>
+  </div>
+  <nav class="flex-1 p-6">
+    <ul class="space-y-4">
+      <li>
+        <a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-chart-line"></i>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-dog"></i>
+          Animais
+        </a>
+      </li>
+      <li>
+        <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+          <span class="flex gap-3">
+            <i class="fas fa-heart"></i>
+            Adoções
+          </span>
+          <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+        </button>
+        <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+          <li>
+            <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">Processos</a>
+          </li>
+          <li>
+            <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">Adotantes</a>
+          </li>
+          <li>
+            <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">Solicitações Recebidas</a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-hand-holding-heart"></i>
+          Doações
+        </a>
+      </li>
+      <li>
+        <a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-calendar"></i>
+          Eventos
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="p-6 border-t border-teal-600">
+    <button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+      <i class="fas fa-sign-out-alt"></i>
+      Sair
+    </button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8 space-y-8 ml-64 page-transition min-h-screen overflow-y-auto">
+
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">KPIs</h1>
+      <p class="text-gray-500 text-sm">Indicadores administrativos exclusivos.</p>
+    </div>
+    <div class="bg-white px-5 py-3 rounded-xl shadow-md flex items-center gap-4 border border-gray-100">
+      <div class="bg-teal-100 text-teal-600 p-3 rounded-lg">
+        <i class="fas fa-chart-pie"></i>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold text-gray-700">Acesso administrativo</span>
+        <span class="text-xs text-gray-400">Somente para administradores</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6">
+    <section class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+      <h2 class="font-semibold text-gray-700 text-xl mb-4">Distribuição dos Animais na Ong</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-6">
+        <div class="w-full lg:w-1/2 max-w-full flex justify-center items-center" style="min-height:220px;">
+          <canvas id="graficoAnimais" class="w-full h-full"></canvas>
+        </div>
+        <div class="w-full lg:w-1/2 grid gap-3 self-center text-sm text-gray-600">
+          <div class="flex items-center gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50">
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+            <span class="font-medium">Disponíveis:</span>
+            <span id="legendDisponiveis" class="ml-auto font-semibold text-slate-700">0 (0%)</span>
+          </div>
+          <div class="flex items-center gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50">
+            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+            <span class="font-medium">Reservados:</span>
+            <span id="legendReservados" class="ml-auto font-semibold text-slate-700">0 (0%)</span>
+          </div>
+          <div class="flex items-center gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50">
+            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+            <span class="font-medium">Em tratamento:</span>
+            <span id="legendTratamento" class="ml-auto font-semibold text-slate-700">0 (0%)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white p-6 rounded-2xl shadow-md border border-dashed border-slate-200">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">KPIs / Indicadores</h2>
+      <div id="kpisIndicadores" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Taxa de Conversão</p>
+            <p id="taxaConversao" class="text-3xl font-bold text-teal-600">0%</p>
+          </div>
+          <p id="taxaConversaoDetalhe" class="text-xs text-slate-400 mt-4">0 pedidos / 0 visitantes únicos</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Taxa de Adoção Real</p>
+            <p id="taxaAdocaoReal" class="text-3xl font-bold text-emerald-600">0%</p>
+          </div>
+          <p id="taxaAdocaoRealDetalhe" class="text-xs text-slate-400 mt-4">0 adotados / 0 disponíveis</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Tempo Médio (min)</p>
+            <p id="tempoMedioMinutos" class="text-3xl font-bold text-blue-600">0</p>
+          </div>
+          <p class="text-xs text-slate-400 mt-4">Valor em minutos</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Taxa de Interação</p>
+            <p id="taxaInteracao" class="text-3xl font-bold text-amber-600">0%</p>
+          </div>
+          <p id="taxaInteracaoDetalhe" class="text-xs text-slate-400 mt-4">0 cliques / 0 visitantes únicos</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Clique → Pedido</p>
+            <p id="clickParaPedido" class="text-3xl font-bold text-rose-600">0%</p>
+          </div>
+          <p id="clickParaPedidoDetalhe" class="text-xs text-slate-400 mt-4">0 pedidos / 0 cliques</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-between min-h-[180px]">
+          <div>
+            <p class="text-sm text-slate-500 mb-2">Pedido → Adoção</p>
+            <p id="pedidoParaAdocao" class="text-3xl font-bold text-violet-600">0%</p>
+          </div>
+          <p id="pedidoParaAdocaoDetalhe" class="text-xs text-slate-400 mt-4">0 aprovações / 0 pedidos</p>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+</main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+  console.log('🚀 KPIs inicializando...');
+  carregarDashboard();
+});
+</script>
+</body>
+</html>

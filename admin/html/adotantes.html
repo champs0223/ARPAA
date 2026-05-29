@@ -325,14 +325,14 @@ Sair
   </div>
 </div>
 
-<!-- MODAL SUCESSO -->
-<div id="modalSucesso" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<!-- MODAL MENSAGEM -->
+<div id="modalMensagem" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
   <div class="bg-white p-6 rounded-xl shadow-lg w-80 text-center">
-    <h2 class="text-green-600 text-xl font-bold mb-4">Sucesso</h2>
-    <p id="mensagemSucesso" class="mb-6"></p>
+    <h2 id="modalMensagemTitulo" class="text-xl font-bold mb-4">Mensagem</h2>
+    <p id="modalMensagemTexto" class="mb-6 text-gray-700"></p>
 
-    <button onclick="fecharModal('modalSucesso')" 
-            class="px-4 py-2 bg-green-600 text-white rounded">
+    <button onclick="fecharModal('modalMensagem')" 
+            class="px-4 py-2 bg-teal-600 text-white rounded">
       OK
     </button>
   </div>
@@ -343,6 +343,41 @@ Sair
 let filtroStatus = "todos"
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 let termoBusca = ""
+let adotantes = []
+
+function getAdminHeaders(){
+  const token = localStorage.getItem('adminToken')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+async function carregarAdotantesDoBanco() {
+  try {
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/adotantes`)
+    if (!response.ok) throw new Error('Falha ao carregar adotantes')
+    const data = await response.json()
+    adotantes = data.map(item => ({
+      id: String(item.id || item.adotante_id || item.adotanteId || item.id_adotante || ''),
+      nome: item.nome || item.nome_adotante || item.adotante_nome || 'Sem nome',
+      email: item.email || item.email_adotante || '',
+      telefone: item.telefone || item.contato || item.telefone_adotante || '',
+      endereco: item.endereco || item.endereco_adotante || '',
+      complemento: item.complemento || item.complemento_adotante || '',
+      cidade: item.cidade || item.cidade_adotante || '',
+      estado: item.estado || '',
+      cpf: item.cpf || '',
+      idade: item.idade || item.age || '',
+      trabalha: item.trabalha || item.tem_trabalha || '',
+      criancas: item.criancas || item.tem_criancas || '',
+      pets: item.pets || item.tem_pets || '',
+      quintal: item.quintal || item.tem_quintal || '',
+      observacoes: item.observacoes || ''
+    }))
+  } catch (error) {
+    console.warn('Não foi possível carregar adotantes do banco:', error)
+    mostrarErro('Não foi possível carregar adotantes do banco. Carregando dados locais.')
+    adotantes = JSON.parse(localStorage.getItem('adotantes')) || []
+  }
+}
 
 document.getElementById("busca").addEventListener("input", (e)=>{
   termoBusca = e.target.value.toLowerCase()
@@ -393,8 +428,6 @@ function render(){
   let lista = document.getElementById("lista")
   lista.innerHTML = ""
 
-  let adotantes = JSON.parse(localStorage.getItem("adotantes")) || []
-
   let total = adotantes.length
   let aprovadas = 0
   let recusadas = 0
@@ -422,8 +455,8 @@ if(filtroStatus !== "todos"){
 }
 
     if(
-  !a.nome.toLowerCase().includes(termoBusca) &&
-  !a.telefone.includes(termoBusca)
+  !String(a.nome || "").toLowerCase().includes(termoBusca) &&
+  !String(a.telefone || "").includes(termoBusca)
 ) return
 
    lista.innerHTML += `
@@ -466,7 +499,7 @@ if(filtroStatus !== "todos"){
       <i class="fas fa-eye"></i>
     </button>
 
-    <button onclick="editarAdotante(${a.id})"
+    <button onclick="editarAdotante('${a.id}')"
       class="text-blue-600 hover:text-blue-800 transition">
       <i class="fas fa-pen"></i>
     </button>
@@ -484,12 +517,11 @@ if(filtroStatus !== "todos"){
 
 function verDetalhes(nome){
 
-  let adotantes = agruparAdotantes()
-  let adotante = adotantes.find(a => a.nome === nome)
+  let adotantesAgrupados = agruparAdotantes()
+  let adotante = adotantesAgrupados.find(a => a.nome === nome)
 
   // 🔹 pega dados extras
-  let dadosExtras = JSON.parse(localStorage.getItem("adotantes")) || []
-  let extra = dadosExtras.find(d => d.nome === adotante.nome)
+  let extra = adotantes.find(d => d.nome === adotante.nome)
 
   // 🔹 monta HTML base
   let html = `
@@ -633,10 +665,10 @@ function formatarTelefone(tel){
 
 function salvarAdotante(nome, telefone){
 
-  let adotantes = JSON.parse(localStorage.getItem("adotantes")) || []
+  let existentes = adotantes.filter(a => a.nome === nome && a.telefone === telefone)
 
   // verifica se já existe (evita duplicado)
-  let existente = adotantes.find(a => a.nome === nome && a.telefone === telefone)
+  let existente = existentes[0]
 
   if(existente){
     return existente.id
@@ -661,11 +693,6 @@ document.getElementById("filtro").addEventListener("change", (e)=>{
   render()
 })
 
-document.getElementById("busca").addEventListener("input", (e)=>{
-  termoBusca = e.target.value.toLowerCase()
-  render()
-})
-
 function limparFiltro(){
   filtroStatus = "todos"
   termoBusca = ""
@@ -680,12 +707,11 @@ let adotanteEditando = null
 
 function editarAdotante(id){
 
-  let adotantes = JSON.parse(localStorage.getItem("adotantes")) || []
   let adotante = adotantes.find(a => a.id === id)
 
   if(!adotante){
-  return
-}
+    return
+  }
 
   adotanteEditando = adotante
 
@@ -713,13 +739,8 @@ function fecharEditar(){
 
 function salvarEdicao(){
 
-  abrirConfirmacao("Deseja salvar as alterações?", () => {
-
-    let adotantes = JSON.parse(localStorage.getItem("adotantes")) || []
-
-    let index = adotantes.findIndex(a => a.id === adotanteEditando.id)
-
-    let atualizado = {
+  abrirConfirmacao("Deseja salvar as alterações?", async () => {
+    const atualizado = {
       id: adotanteEditando.id,
       nome: adotanteEditando.nome,
       cpf: document.getElementById("editCPF").value,
@@ -736,19 +757,36 @@ function salvarEdicao(){
       observacoes: document.getElementById("editObs").value
     }
 
-    if(index >= 0){
-      adotantes[index] = atualizado
-    } else {
-      adotantes.push(atualizado)
+    try {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/adotantes/${adotanteEditando.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAdminHeaders()
+        },
+        body: JSON.stringify(atualizado)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar adotante no servidor')
+      }
+
+      const data = await response.json()
+
+      const index = adotantes.findIndex(a => a.id === adotanteEditando.id)
+      if (index >= 0) {
+        adotantes[index] = data
+      } else {
+        adotantes.push(data)
+      }
+
+      fecharEditar()
+      render()
+      mostrarSucesso("Adotante atualizado com sucesso!")
+    } catch (error) {
+      console.error('Erro ao salvar edição:', error)
+      mostrarErro("Erro ao atualizar adotante. Tente novamente.")
     }
-
-    localStorage.setItem("adotantes", JSON.stringify(adotantes))
-
-    fecharEditar()
-    render()
-
-    mostrarSucesso("Adotante atualizado com sucesso!")
-
   })
 }
 
@@ -792,11 +830,32 @@ function abrirConfirmacao(texto, callback){
   document.getElementById("modalConfirmar").classList.add("flex")
 }
 
-function mostrarSucesso(msg){
-  document.getElementById("mensagemSucesso").innerText = msg
+function mostrarMensagem(titulo, msg, color) {
+  const tituloEl = document.getElementById("modalMensagemTitulo")
+  const textoEl = document.getElementById("modalMensagemTexto")
 
-  document.getElementById("modalSucesso").classList.remove("hidden")
-  document.getElementById("modalSucesso").classList.add("flex")
+  if (tituloEl) {
+    tituloEl.innerText = titulo
+    if (color) tituloEl.style.color = color
+  }
+
+  if (textoEl) {
+    textoEl.innerText = msg
+  }
+
+  const modal = document.getElementById("modalMensagem")
+  if (modal) {
+    modal.classList.remove("hidden")
+    modal.classList.add("flex")
+  }
+}
+
+function mostrarSucesso(msg){
+  mostrarMensagem('Sucesso', msg, '#047857')
+}
+
+function mostrarErro(msg){
+  mostrarMensagem('Erro', msg, '#b91c1c')
 }
 
 function fecharModal(id){
@@ -821,7 +880,7 @@ function aplicarMascaraCPF(input){
 
 }
 
-render()
+carregarAdotantesDoBanco().then(render)
 
 aplicarMascaraTelefone(document.getElementById("editTelefone"))
 

@@ -23,6 +23,7 @@ const usuariosRoutes = require('./routes/usuarios');
 const animaisRoutes = require('./routes/animais');
 const adotantesRoutes = require('./routes/adotantes');
 const adocoesRoutes = require('./routes/adocoes');
+const doacoesRoutes = require('./routes/doacoes');
 const resgatesesRoutes = require('./routes/resgates');
 const tratamentosRoutes = require('./routes/tratamentos');
 const vacinasRoutes = require('./routes/vacinas');
@@ -30,6 +31,7 @@ const historicoRoutes = require('./routes/historico');
 const uploadRoutes = require('./routes/upload');
 const eventosRoutes = require('./routes/eventos');
 const solicitacoesRoutes = require('./routes/solicitacoes');
+const metricasRoutes = require('./routes/metricas');
 
 const app = express();
 const server = http.createServer(app);
@@ -81,6 +83,7 @@ app.use('/api', usuariosRoutes);
 app.use('/api', animaisRoutes);
 app.use('/api', adotantesRoutes);
 app.use('/api', adocoesRoutes);
+app.use('/api', doacoesRoutes);
 app.use('/api', resgatesesRoutes);
 app.use('/api', tratamentosRoutes);
 app.use('/api', vacinasRoutes);
@@ -88,6 +91,7 @@ app.use('/api', historicoRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', eventosRoutes);
 app.use('/api', solicitacoesRoutes(io));
+app.use('/api', metricasRoutes);
 
 io.on('connection', (socket) => {
   console.log('📡 Admin socket connected:', socket.id);

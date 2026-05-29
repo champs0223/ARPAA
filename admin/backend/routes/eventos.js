@@ -1,5 +1,6 @@
 const express = require('express');
 const { pool } = require('../db/connection');
+const auth = require('./auth');
 const router = express.Router();
 
 // GET - Listar todos os eventos (público)
@@ -16,7 +17,7 @@ router.get('/public/eventos', async (req, res) => {
 });
 
 // GET - Listar eventos do admin
-router.get('/admin/eventos', async (req, res) => {
+router.get('/admin/eventos', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
     const [eventos] = await pool.query(
       'SELECT id, nome, data, horario, local, descricao FROM eventos ORDER BY data ASC'
@@ -29,7 +30,7 @@ router.get('/admin/eventos', async (req, res) => {
 });
 
 // POST - Criar novo evento
-router.post('/admin/eventos', async (req, res) => {
+router.post('/admin/eventos', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const { nome, data, local, endereco, horario, descricao } = req.body;
 
   if (!nome || !data || !local) {
@@ -57,7 +58,7 @@ router.post('/admin/eventos', async (req, res) => {
   }
 });
 // PUT - Atualizar evento
-router.put('/admin/eventos/:id', async (req, res) => {
+router.put('/admin/eventos/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const { id } = req.params;
   const { nome, data, local, endereco, horario, descricao } = req.body;
 
@@ -91,7 +92,7 @@ router.put('/admin/eventos/:id', async (req, res) => {
 });
 
 // DELETE - Remover evento
-router.delete('/admin/eventos/:id', async (req, res) => {
+router.delete('/admin/eventos/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const { id } = req.params;
 
   try {

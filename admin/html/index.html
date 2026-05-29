@@ -165,7 +165,8 @@ async function login(event){
       localStorage.setItem("adminLogado", "true")
       localStorage.setItem("usuarioId", dados.id)
       localStorage.setItem("usuarioNome", dados.nome)
-      localStorage.setItem("usuarioAdmin", dados.is_admin)
+      localStorage.setItem("usuarioAdmin", dados.is_admin ? "true" : "false")
+      localStorage.setItem("adminToken", dados.token || "")
     }
 
     // Se chegou aqui, login foi bem-sucedido

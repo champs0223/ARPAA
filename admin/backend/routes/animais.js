@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db/connection');
+const auth = require('./auth');
 const { getAll, getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
 // ✨ CONFIGURAR MULTER PARA SALVAR ARQUIVOS LOCALMENTE EM /public/uploads/
@@ -121,7 +122,7 @@ router.get('/animais-com-usuario', async (req, res) => {
 });
 
 // POST - Criar novo animal (salvar foto como arquivo local)
-router.post('/animais', upload.single('foto'), async (req, res) => {
+router.post('/animais', auth.authenticateToken, upload.single('foto'), async (req, res) => {
   try {
     let foto_url = req.body.foto_url || null;
 
@@ -193,7 +194,7 @@ router.post('/animais', upload.single('foto'), async (req, res) => {
 });
 
 // PUT - Atualizar animal (salvar foto como arquivo local)
-router.put('/animais/:id', upload.single('foto'), async (req, res) => {
+router.put('/animais/:id', auth.authenticateToken, upload.single('foto'), async (req, res) => {
   try {
     // Obter animal atual para manter foto anterior se não houver novo upload
     const [animalAtual] = await pool.query('SELECT foto_url FROM animais WHERE id = ?', [req.params.id]);
@@ -273,13 +274,15 @@ router.put('/animais/:id', upload.single('foto'), async (req, res) => {
 });
 
 // DELETE - Deletar animal
-router.delete('/animais/:id', async (req, res) => {
+router.delete('/animais/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
-    const deleted = deleteById('animais', req.params.id);
-    if (!deleted) {
+    const [result] = await pool.query('DELETE FROM animais WHERE id = ?', [req.params.id]);
+    
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Animal não encontrado' });
     }
-    res.json({ message: 'Animal deletado com sucesso' });
+    
+    res.json({ message: 'Animal deletado com sucesso', id: req.params.id });
   } catch (error) {
     console.error('Erro ao deletar animal:', error.message);
     res.status(500).json({ error: error.message });

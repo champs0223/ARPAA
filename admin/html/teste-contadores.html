@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Contadores - ARPAA Dashboard</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status-ok { color: green; font-weight: bold; }
+        .status-erro { color: red; font-weight: bold; }
+        .status-pending { color: orange; font-weight: bold; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Contadores - ARPAA Dashboard</h1>
+        <p>Verificação de endpoints da API para os contadores do dashboard</p>
+
+        <div id="resultados"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001';
+
+        async function testarApi() {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = '<div class="card"><p class="status-pending">⏳ Testando endpoints...</p></div>';
+
+            const endpoints = [
+                { url: `${API_BASE_URL}/api/animais`, nome: 'Animais', contador: 'totalAnimais' },
+                { url: `${API_BASE_URL}/api/adocoes`, nome: 'Adoções', contador: 'totalAdocoes' },
+                { url: `${API_BASE_URL}/api/admin/eventos`, nome: 'Eventos', contador: 'totalEventos' },
+                { url: `${API_BASE_URL}/health`, nome: 'Health Check', contador: 'N/A' }
+            ];
+
+            let html = '';
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url);
+                    const data = await response.json();
+                    const isArray = Array.isArray(data);
+                    const count = isArray ? data.length : 'N/A';
+
+                    html += `
+                        <div class="card">
+                            <h3>✅ ${endpoint.nome} <span class="status-ok">OK</span></h3>
+                            <p><strong>URL:</strong> ${endpoint.url}</p>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Contador (${endpoint.contador}):</strong> ${count}</p>
+                            <details>
+                                <summary>Ver dados completos</summary>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } catch (error) {
+                    html += `
+                        <div class="card">
+                            <h3>❌ ${endpoint.nome} <span class="status-erro">ERRO</span></h3>
+                            <p><strong>URL:</strong> ${endpoint.url}</p>
+                            <p><strong>Erro:</strong> ${error.message}</p>
+                            <p><em>Nota: Certifique-se de que o servidor Node.js está rodando em http://localhost:3001</em></p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Adicionar informações sobre localStorage
+            html += `
+                <div class="card">
+                    <h3>📦 Dados do localStorage</h3>
+                    <p><strong>Animais no localStorage:</strong> ${(JSON.parse(localStorage.getItem('animais')) || []).length}</p>
+                    <p><strong>Adoções no localStorage:</strong> ${(JSON.parse(localStorage.getItem('adocoes')) || []).length}</p>
+                    <p><strong>Eventos no localStorage:</strong> ${(JSON.parse(localStorage.getItem('eventos')) || []).length}</p>
+                    <p><strong>Doações no localStorage:</strong> ${(JSON.parse(localStorage.getItem('doacoes')) || []).length}</p>
+                </div>
+            `;
+
+            resultados.innerHTML = html;
+        }
+
+        // Executar testes quando a página carregar
+        window.addEventListener('DOMContentLoaded', testarApi);
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/config.css">
+<script src="../js/config-api.js"></script>
 
 <style>
 .menu-ativo {
@@ -163,7 +164,7 @@ Sair
   <h1 class="text-3xl font-bold mb-4">Doações</h1>
 
   <!-- CARDS DE DOAÇÕES -->
-<div class="grid md:grid-cols-3 gap-6 mb-8">
+<div class="grid md:grid-cols-4 gap-6 mb-8">
 
   <!-- Doações em Dinheiro -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
@@ -176,25 +177,36 @@ Sair
     </div>
   </div>
 
-  <!-- Doações de Itens -->
+  <!-- Doações em Ração -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
     <div class="flex-shrink-0">
-      <i class="fas fa-box-open text-green-600 text-3xl"></i>
+      <i class="fas fa-drumstick-bite text-green-600 text-3xl"></i>
     </div>
     <div>
-      <p class="text-gray-500">Doações de Itens</p>
-      <p id="totalItens" class="text-2xl font-bold text-green-600">0</p>
+      <p class="text-gray-500">Ração (KG)</p>
+      <p id="totalRacao" class="text-2xl font-bold text-green-600">0 KG</p>
     </div>
   </div>
 
-  <!-- Itens Recebidos -->
+  <!-- Medicamentos -->
   <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
     <div class="flex-shrink-0">
-      <i class="fas fa-clipboard-list text-yellow-600 text-3xl"></i>
+      <i class="fas fa-pills text-blue-600 text-3xl"></i>
     </div>
     <div>
-      <p class="text-gray-500">Itens Recebidos</p>
-      <p id="itensRecebidos" class="text-2xl font-bold text-yellow-600">0</p>
+      <p class="text-gray-500">Medicamentos</p>
+      <p id="totalMedicamentos" class="text-2xl font-bold text-blue-600">0 un</p>
+    </div>
+  </div>
+
+  <!-- Outros Insumos -->
+  <div class="bg-white p-6 rounded-xl shadow flex items-center gap-4 transition">
+    <div class="flex-shrink-0">
+      <i class="fas fa-boxes-stacked text-yellow-600 text-3xl"></i>
+    </div>
+    <div>
+      <p class="text-gray-500">Outros Insumos</p>
+      <p id="totalOutrosInsumos" class="text-2xl font-bold text-yellow-600">0 un</p>
     </div>
   </div>
 
@@ -228,7 +240,13 @@ Sair
         <option value="conforto">Produtos de Conforto</option>
       </select>
       <input type="text" name="descricao" placeholder="Descrição / Nome do Produto" class="border p-2 rounded" required>
-      <input type="number" name="quantidade" placeholder="Quantidade / Valor" class="border p-2 rounded" required>
+      <div class="border p-2 rounded bg-gray-50">
+        <label id="labelQuantidade" class="text-sm text-gray-600 block mb-2">Quantidade / Valor</label>
+        <div class="flex gap-2 items-center">
+          <input type="number" name="quantidade" id="inputQuantidade" placeholder="Digite o valor" class="border p-2 rounded flex-1" step="0.01" required>
+          <span id="unidadeDisplay" class="text-sm text-gray-600 font-medium min-w-[50px] text-center"></span>
+        </div>
+      </div>
       <textarea name="obs" placeholder="Observações" class="border p-2 rounded"></textarea>
       <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition">
         Registrar
@@ -339,14 +357,35 @@ document.getElementById("fecharModal").addEventListener("click", () => {
   let doacoes = JSON.parse(localStorage.getItem("doacoes")) || [];
   let editandoId = null;
 
-  function atualizarCards(){
-    let dinheiro = doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
-    let itens = doacoes.filter(d => d.tipo !== 'dinheiro').length;
-    let totalItens = doacoes.filter(d => d.tipo !== 'dinheiro').reduce((sum,d) => sum + Number(d.quantidade || 0), 0)
+  async function atualizarCards(){
+    const fallback = {
+      dinheiro: doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
+      racao: doacoes.filter(d => d.tipo === 'racao').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
+      medicamentos: doacoes.filter(d => d.tipo === 'medicamento').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
+      outros_insumos: doacoes.filter(d => ['higiene', 'limpeza', 'conforto'].includes(d.tipo)).reduce((sum, d) => sum + Number(d.quantidade || 0), 0)
+    };
 
-    document.getElementById("totalDinheiro").innerText = formatarMoeda(dinheiro);
-    document.getElementById("totalItens").innerText = itens;
-    document.getElementById("itensRecebidos").innerText = totalItens;
+    const endpoint = `${API_BASE_URL || 'http://localhost:3001'}/api/doacoes/summary`;
+
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Resposta inválida do backend');
+      }
+
+      const data = await response.json();
+
+      document.getElementById("totalDinheiro").innerText = formatarMoeda(Number(data.dinheiro || 0));
+      document.getElementById("totalRacao").innerText = `${Number(data.racao || 0)} KG`;
+      document.getElementById("totalMedicamentos").innerText = `${Number(data.medicamentos || 0)} un`;
+      document.getElementById("totalOutrosInsumos").innerText = `${Number(data.outros_insumos || 0)} un`;
+    } catch (error) {
+      console.warn('Falha ao carregar totais de doações do backend:', error.message);
+      document.getElementById("totalDinheiro").innerText = formatarMoeda(fallback.dinheiro);
+      document.getElementById("totalRacao").innerText = `${fallback.racao} KG`;
+      document.getElementById("totalMedicamentos").innerText = `${fallback.medicamentos} un`;
+      document.getElementById("totalOutrosInsumos").innerText = `${fallback.outros_insumos} un`;
+    }
   }
 
   function renderDoacoes(){
@@ -371,7 +410,7 @@ doacoes
 </td>
   <td class="px-4 py-4">${d.contato || "-"}</td>
   <td class="px-4 py-4 capitalize">${d.tipo}</td>
-  <td class="px-4 py-4">${d.tipo === "dinheiro" ? formatarMoeda(Number(d.quantidade)) : (d.quantidade || "-")}</td>
+  <td class="px-4 py-4">${exibirQuantidade(d)}</td>
   <td class="px-4 py-4">${d.descricao || "-"}</td>
   <td class="px-4 py-4">${d.obs || "-"}</td>
 
@@ -388,6 +427,19 @@ doacoes
 `;
     });
   }
+
+function exibirQuantidade(d) {
+  if (d.tipo === "dinheiro") {
+    return formatarMoeda(Number(d.quantidade || 0));
+  }
+
+  if (d.quantidade === "" || d.quantidade == null) {
+    return "-";
+  }
+
+  const unidade = unidadesPorCategoria[d.tipo]?.unidade || "";
+  return `${d.quantidade} ${unidade}`.trim();
+}
 
 function formatarContato(valor){
   // Se tiver letras, já considera email → NÃO mexe
@@ -423,16 +475,69 @@ inputContato.addEventListener("input", function(){
   this.value = formatarContato(this.value);
 });
 
+// 🎯 CONFIGURAÇÃO DE UNIDADES POR CATEGORIA
+const unidadesPorCategoria = {
+  dinheiro: { label: "Valor em Reais", unidade: "R$", placeholder: "Ex: 100.00" },
+  racao: { label: "Quantidade em Quilos", unidade: "KG", placeholder: "Ex: 50" },
+  medicamento: { label: "Quantidade em Unidades", unidade: "un", placeholder: "Ex: 20" },
+  limpeza: { label: "Quantidade em Unidades", unidade: "un", placeholder: "Ex: 10" },
+  higiene: { label: "Quantidade em Unidades", unidade: "un", placeholder: "Ex: 30" },
+  conforto: { label: "Quantidade em Unidades", unidade: "un", placeholder: "Ex: 15" }
+};
+
+// 📝 ATUALIZAR CAMPO DINAMICAMENTE BASEADO NA CATEGORIA
+function atualizarCampoQuantidade() {
+  const tipoSelect = document.getElementById("tipoDoacaoModal");
+  const tipoSelecionado = tipoSelect.value;
+  const inputQuantidade = document.getElementById("inputQuantidade");
+  const labelQuantidade = document.getElementById("labelQuantidade");
+  const unidadeDisplay = document.getElementById("unidadeDisplay");
+
+  if (tipoSelecionado && unidadesPorCategoria[tipoSelecionado]) {
+    const config = unidadesPorCategoria[tipoSelecionado];
+    labelQuantidade.textContent = config.label;
+    inputQuantidade.placeholder = config.placeholder;
+    unidadeDisplay.textContent = config.unidade;
+    inputQuantidade.step = tipoSelecionado === "dinheiro" ? "0.01" : "any";
+  } else {
+    labelQuantidade.textContent = "Quantidade / Valor";
+    inputQuantidade.placeholder = "Digite o valor";
+    unidadeDisplay.textContent = "";
+    inputQuantidade.step = "any";
+  }
+}
+
+function padronizarQuantidade(tipo, valor) {
+  if (valor === "" || valor == null) return "";
+  const numero = Number(String(valor).replace(",", "."));
+  if (Number.isNaN(numero)) return "";
+  return tipo === "dinheiro" ? Number(numero.toFixed(2)) : numero;
+}
+
+// 🔄 EVENT LISTENER PARA MUDANÇA DE CATEGORIA
+document.getElementById("tipoDoacaoModal").addEventListener("change", atualizarCampoQuantidade);
+
+// ⚙️ INICIALIZAR CAMPO QUANDO ABRIR MODAL
+document.getElementById("btnNovaDoacao").addEventListener("click", function() {
+  setTimeout(() => {
+    // Reset ao abrir novo formulário
+    document.getElementById("tipoDoacaoModal").value = "";
+    atualizarCampoQuantidade();
+  }, 50);
+});
+
   document.getElementById("form-doacao-modal").addEventListener("submit", function(e){
   e.preventDefault();
   const form = e.target;
+
+  const quantidadePadronizada = padronizarQuantidade(form.tipo.value, form.quantidade.value);
 
   const dados = {
     tipo: form.tipo.value,
     nome: form.nome.value,
     contato: formatarContato(form.contato.value),
     descricao: form.descricao.value,
-    quantidade: form.quantidade.value,
+    quantidade: quantidadePadronizada,
     obs: form.obs.value
   };
 
@@ -481,6 +586,7 @@ function editarDoacao(id){
   form.nome.value = doacao.nome || "";
 form.contato.value = doacao.contato || "";
 form.tipo.value = doacao.tipo || "";
+atualizarCampoQuantidade();
 form.descricao.value = doacao.descricao || "";
 form.quantidade.value = doacao.quantidade || "";
 form.obs.value = doacao.obs || "";
@@ -536,7 +642,7 @@ function verDoador(nome){
     ${historico.map(d => `
   <div class="border p-3 rounded-lg bg-gray-50 text-sm">
     <p><strong>Tipo:</strong> ${d.tipo || "-"}</p>
-    <p><strong>Quantidade:</strong> ${d.quantidade || "-"}</p>
+    <p><strong>Quantidade:</strong> ${exibirQuantidade(d)}</p>
     <p><strong>Descrição:</strong> ${d.descricao || "-"}</p>
   </div>
 `).join("")}

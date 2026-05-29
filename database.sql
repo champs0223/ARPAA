@@ -212,3 +212,45 @@ CREATE TABLE IF NOT EXISTS `solicitacoes_adocao` (
   KEY `idx_solicitacoes_status` (`status`),
   CONSTRAINT `fk_solicitacoes_animais` FOREIGN KEY (`animal_id`) REFERENCES `animais` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- TABELA 11: SESSÕES DE VISITANTES
+-- ========================================
+CREATE TABLE IF NOT EXISTS `sessoes_visitantes` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_sessao` VARCHAR(255) NOT NULL,
+  `tempo_permanencia_segundos` INT UNSIGNED NOT NULL DEFAULT 0,
+  `data_hora` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sessoes_visitantes_token_sessao` (`token_sessao`),
+  KEY `idx_sessoes_visitantes_data_hora` (`data_hora`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- TABELA 12: CLIQUES E INTERAÇÕES
+-- ========================================
+CREATE TABLE IF NOT EXISTS `cliques_interacoes` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_sessao` VARCHAR(255) NOT NULL,
+  `id_animal` INT UNSIGNED DEFAULT NULL,
+  `data_hora` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_cliques_interacoes_token_sessao` (`token_sessao`),
+  KEY `idx_cliques_interacoes_id_animal` (`id_animal`),
+  KEY `idx_cliques_interacoes_data_hora` (`data_hora`),
+  CONSTRAINT `fk_cliques_interacoes_animais` FOREIGN KEY (`id_animal`) REFERENCES `animais` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- TABELA 13: DOAÇÕES
+-- ========================================
+CREATE TABLE IF NOT EXISTS `doacoes` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `tipo` ENUM('dinheiro', 'item', 'outro') NOT NULL,
+  `descricao` VARCHAR(255),
+  `quantidade` DECIMAL(10, 2) NOT NULL,
+  `data_doacao` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `registrado_por` INT UNSIGNED,
+  INDEX `idx_doacoes_tipo` (`tipo`),
+  INDEX `idx_doacoes_data_doacao` (`data_doacao`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

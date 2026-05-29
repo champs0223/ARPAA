@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
 const { pool } = require('../db/connection');
+const auth = require('./auth');
 const { getById, insertItem, updateItem, deleteById } = require('../db/localdb');
 
 // GET - Listar adoções por status: ativas por padrão, concluídas ou reprovadas dependendo do filtro
@@ -39,6 +40,40 @@ router.get('/adocoes', async (req, res) => {
     return res.status(200).json(rows);
   } catch (error) {
     console.error('❌ ERRO NO BACKEND AO BUSCAR ADOÇÕES:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET - Resumo de status das adoções
+router.get('/adocoes/summary', async (req, res) => {
+  try {
+    const summaryQuery = `
+      SELECT
+        SUM(CASE
+          WHEN LOWER(TRIM(status)) IN ('pendente', 'ativo', 'processamento') THEN 1
+          ELSE 0
+        END) AS pendentes,
+        SUM(CASE
+          WHEN LOWER(TRIM(status)) IN ('aprovado', 'concluído', 'concluido', 'finalizado') THEN 1
+          ELSE 0
+        END) AS aprovadas,
+        SUM(CASE
+          WHEN LOWER(TRIM(status)) IN ('recusado', 'reprovado', 'rejeitado') THEN 1
+          ELSE 0
+        END) AS recusadas
+      FROM adocoes
+    `;
+
+    const [rows] = await pool.execute(summaryQuery);
+    const result = rows[0] || {};
+
+    return res.status(200).json({
+      pendentes: Number(result.pendentes || 0),
+      aprovadas: Number(result.aprovadas || 0),
+      recusadas: Number(result.recusadas || 0)
+    });
+  } catch (error) {
+    console.error('❌ ERRO NO BACKEND AO BUSCAR RESUMO DE ADOÇÕES:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -86,7 +121,7 @@ router.put('/adocoes/:id', async (req, res) => {
 });
 
 // PUT - Avançar etapa do processo de adoção
-router.put('/admin/adocoes/:id/etapa', async (req, res) => {
+router.put('/admin/adocoes/:id/etapa', auth.authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -186,7 +221,7 @@ router.put('/admin/adocoes/:id/etapa', async (req, res) => {
 });
 
 // GET - Buscar entrevista por processo de adoção
-router.get('/admin/adocoes/:id/entrevista', async (req, res) => {
+router.get('/admin/adocoes/:id/entrevista', auth.authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.execute(
       `SELECT e.*, a.nome AS adotante_nome, a.email, a.telefone, a.endereco
@@ -208,7 +243,7 @@ router.get('/admin/adocoes/:id/entrevista', async (req, res) => {
 });
 
 // POST - Salvar ou atualizar entrevista do processo de adoção
-router.post('/admin/adocoes/:id/entrevista', async (req, res) => {
+router.post('/admin/adocoes/:id/entrevista', auth.authenticateToken, async (req, res) => {
   const { id } = req.params;
   const {
     adotante_id,
@@ -285,7 +320,7 @@ router.post('/admin/adocoes/:id/entrevista', async (req, res) => {
 });
 
 // PUT - Retroceder etapa do processo de adoção
-router.put('/admin/adocoes/:id/retroceder', async (req, res) => {
+router.put('/admin/adocoes/:id/retroceder', auth.authenticateToken, async (req, res) => {
   const { id } = req.params;
   const etapas = ['Triagem', 'Entrevista', 'Visita', 'Termo', 'Concluído'];
 
@@ -335,7 +370,7 @@ router.put('/admin/adocoes/:id/retroceder', async (req, res) => {
 });
 
 // DELETE - Remover processo de adoção fisicamente do MySQL
-router.delete('/adocoes/:id', async (req, res) => {
+router.delete('/adocoes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     const [result] = await pool.execute('DELETE FROM adocoes WHERE id = ?', [id]);

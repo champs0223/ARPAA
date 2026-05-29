@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuários - ARPAA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
+<script src="../js/config-api.js"></script>
+<script src="../js/menu.js"></script>
+</head>
+<body class="bg-gray-100">
+
+<script>
+if(localStorage.getItem('adminLogado') !== 'true'){
+  window.location.href = 'index.html'
+}
+if(localStorage.getItem('usuarioAdmin') !== 'true'){
+  window.location.href = 'dashboard.html'
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
+  <div class="pt-8 pb-4 flex flex-col items-center justify-center">
+    <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 object-contain">
+    <p class="text-sm font-bold tracking-wider text-slate-500 text-center uppercase">ARPAA</p>
+  </div>
+  <nav class="flex-1 p-6">
+    <ul class="space-y-4">
+      <li>
+        <a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-chart-line"></i>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-dog"></i>
+          Animais
+        </a>
+      </li>
+      <li>
+        <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+          <span class="flex gap-3">
+            <i class="fas fa-heart"></i>
+            Adoções
+          </span>
+          <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+        </button>
+        <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+          <li>
+            <a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">Processos</a>
+          </li>
+          <li>
+            <a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">Adotantes</a>
+          </li>
+          <li>
+            <a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">Solicitações Recebidas</a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-hand-holding-heart"></i>
+          Doações
+        </a>
+      </li>
+      <li>
+        <a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+          <i class="fas fa-calendar"></i>
+          Eventos
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="p-6 border-t border-teal-600">
+    <button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400">
+      <i class="fas fa-sign-out-alt"></i>
+      Sair
+    </button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8 space-y-8 ml-64 page-transition min-h-screen overflow-y-auto">
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
+      <p class="text-gray-500 text-sm">Crie e visualize usuários internos. Somente administradores têm acesso.</p>
+    </div>
+    <div class="bg-white px-5 py-3 rounded-xl shadow-md flex items-center gap-4 border border-gray-100">
+      <div class="bg-teal-100 text-teal-600 p-3 rounded-lg">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-semibold text-gray-700">Administrador</span>
+        <span class="text-xs text-gray-400">Acesso total confirmado</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+    <section class="bg-white p-6 rounded-3xl shadow-md border border-slate-200">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-700">Lista de Usuários</h2>
+          <p class="text-sm text-gray-500">Usuários cadastrados no sistema.</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-600 text-sm uppercase tracking-wider">
+              <th class="px-4 py-3">Nome</th>
+              <th class="px-4 py-3">CPF / E-mail</th>
+              <th class="px-4 py-3">Administrador</th>
+              <th class="px-4 py-3">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="usuariosTabela" class="bg-white divide-y divide-slate-200">
+            <tr>
+              <td colspan="4" class="px-4 py-6 text-center text-slate-500">Carregando usuários...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white p-6 rounded-3xl shadow-md border border-slate-200">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Criar novo usuário</h2>
+      <form id="formCriarUsuario" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Nome</label>
+          <input id="usuarioNome" type="text" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700">CPF</label>
+          <input id="usuarioCpf" type="text" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Senha</label>
+          <input id="usuarioSenha" type="password" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+        </div>
+        <div class="flex items-center gap-3">
+          <input id="usuarioAdmin" type="checkbox" class="h-4 w-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500">
+          <label for="usuarioAdmin" class="text-sm text-slate-700">Administrador</label>
+        </div>
+        <button type="submit" class="w-full rounded-2xl bg-teal-600 px-4 py-3 text-white font-semibold hover:bg-teal-700 transition">Criar usuário</button>
+        <p id="mensagemUsuario" class="text-sm text-slate-500"></p>
+      </form>
+    </section>
+  </div>
+</main>
+
+</div>
+
+<script>
+const tabelaUsuarios = document.getElementById('usuariosTabela')
+const mensagemUsuario = document.getElementById('mensagemUsuario')
+const formCriarUsuario = document.getElementById('formCriarUsuario')
+
+function getHeaders() {
+  const token = localStorage.getItem('adminToken')
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
+
+function getUsuariosApiUrl(path = '') {
+  const base = USE_LOCAL_DB ? `${API_BASE_URL}/api/usuarios` : `${API_BASE_URL}/api/admin/usuarios`
+  return path ? `${base}/${path}` : base
+}
+
+function montarLinhaUsuario(usuario) {
+  const cpfOuEmail = usuario.cpf || usuario.email || '--'
+  return `
+    <tr class="hover:bg-slate-50 transition">
+      <td class="px-4 py-4 text-slate-700">${usuario.nome || '--'}</td>
+      <td class="px-4 py-4 text-slate-700">${cpfOuEmail}</td>
+      <td class="px-4 py-4 text-slate-700">${usuario.is_admin ? 'Sim' : 'Não'}</td>
+      <td class="px-4 py-4 text-slate-700 flex flex-wrap gap-2">
+        <button type="button" class="rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-slate-100" onclick="editarUsuario(${usuario.id})">Editar</button>
+        <button type="button" class="rounded-xl border border-teal-600 bg-teal-50 px-3 py-2 text-xs text-teal-700 hover:bg-teal-100" onclick="redefinirSenhaUsuario(${usuario.id})">Senha</button>
+        <button type="button" class="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 hover:bg-red-100" onclick="deletarUsuario(${usuario.id})">Excluir</button>
+      </td>
+    </tr>
+  `
+}
+
+async function carregarUsuarios() {
+  try {
+    const url = getUsuariosApiUrl()
+    const response = await fetch(url, { headers: getHeaders() })
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(text || 'Falha ao carregar usuários')
+    }
+    const usuarios = await response.json()
+    tabelaUsuarios.innerHTML = usuarios.length > 0
+      ? usuarios.map(montarLinhaUsuario).join('')
+      : `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Nenhum usuário encontrado</td></tr>`
+  } catch (error) {
+    tabelaUsuarios.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-red-500">${error.message}</td></tr>`
+  }
+}
+
+function atualizarMensagem(texto, sucesso = true) {
+  mensagemUsuario.textContent = texto
+  mensagemUsuario.className = `text-sm ${sucesso ? 'text-green-600' : 'text-red-500'}`
+}
+
+formCriarUsuario.addEventListener('submit', async (event) => {
+  event.preventDefault()
+  atualizarMensagem('')
+
+  const nome = document.getElementById('usuarioNome').value.trim()
+  const cpf = document.getElementById('usuarioCpf').value.trim()
+  const senha = document.getElementById('usuarioSenha').value
+  const isAdmin = document.getElementById('usuarioAdmin').checked
+
+  if (!nome || !cpf || !senha) {
+    atualizarMensagem('Preencha todos os campos para cadastrar o usuário.', false)
+    return
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/registro`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ usuario: nome, senha, cpf, is_admin: isAdmin })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao criar usuário')
+    }
+
+    atualizarMensagem('Usuário criado com sucesso.')
+    formCriarUsuario.reset()
+    carregarUsuarios()
+  } catch (error) {
+    atualizarMensagem(error.message, false)
+  }
+})
+
+async function editarUsuario(id) {
+  const nome = prompt('Novo nome do usuário:')?.trim()
+  if (!nome) return
+
+  const cpf = prompt('Novo CPF do usuário:')?.trim()
+  if (!cpf) return
+
+  const isAdmin = confirm('Tornar o usuário administrador? Clique em OK para Sim, Cancelar para Não.')
+
+  try {
+    const response = await fetch(getUsuariosApiUrl(String(id)), {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ nome, cpf, is_admin: isAdmin })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao atualizar usuário')
+    }
+    atualizarMensagem('Usuário atualizado com sucesso.')
+    carregarUsuarios()
+  } catch (error) {
+    atualizarMensagem(error.message, false)
+  }
+}
+
+async function redefinirSenhaUsuario(id) {
+  const senha = prompt('Digite a nova senha do usuário:')
+  if (!senha) return
+
+  try {
+    const response = await fetch(getUsuariosApiUrl(`${id}/senha`), {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ senha })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao redefinir senha')
+    }
+    atualizarMensagem('Senha atualizada com sucesso.')
+  } catch (error) {
+    atualizarMensagem(error.message, false)
+  }
+}
+
+async function deletarUsuario(id) {
+  const confirmacao = confirm('Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.')
+  if (!confirmacao) return
+
+  try {
+    const response = await fetch(getUsuariosApiUrl(String(id)), {
+      method: 'DELETE',
+      headers: getHeaders()
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao excluir usuário')
+    }
+    atualizarMensagem('Usuário removido com sucesso.')
+    carregarUsuarios()
+  } catch (error) {
+    atualizarMensagem(error.message, false)
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  carregarUsuarios()
+})
+</script>
+
+</body>
+</html>

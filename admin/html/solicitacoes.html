@@ -31,7 +31,7 @@
 <body class="bg-gray-100 text-gray-900">
     <script>
         if (localStorage.getItem("adminLogado") !== "true") {
-            window.location.href = "../index.html";
+            window.location.href = "index.html";
         }
     </script>
 
@@ -261,7 +261,16 @@ let solicitacaoAtual = null;
 // Carregar solicitações
 async function carregarSolicitacoes() {
     try {
-        const response = await fetch('http://localhost:3001/api/admin/solicitacoes?status=Pendente');
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            throw new Error('Token de autenticação não encontrado');
+        }
+
+        const response = await fetch('http://localhost:3001/api/admin/solicitacoes?status=Pendente', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
         if (!response.ok) throw new Error('Erro ao buscar solicitações');
 
         solicitacoesCarregadas = await response.json();

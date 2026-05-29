@@ -1,11 +1,97 @@
-const paginaAtual = window.location.pathname.split("/").pop()
-const links = document.querySelectorAll(".menu-link")
+var paginaAtual = window.location.pathname.split("/").pop()
 
-links.forEach(link => {
-  if (link.getAttribute("href") === paginaAtual) {
-    link.classList.add("text-yellow-300", "menu-ativo")
+function isAdminUser() {
+  return localStorage.getItem('usuarioAdmin') === 'true'
+}
+
+function getCurrentUserName() {
+  return localStorage.getItem('nome') || localStorage.getItem('usuarioNome') || sessionStorage.getItem('nome') || sessionStorage.getItem('usuarioNome') || ''
+}
+
+function renderUserGreeting() {
+  const aside = document.querySelector('aside')
+  if (!aside) return
+  if (document.getElementById('user-greeting')) return
+
+  const nome = getCurrentUserName()
+  if (!nome) return
+
+  const greeting = document.createElement('div')
+  greeting.id = 'user-greeting'
+  greeting.className = 'px-6 pb-4 text-sm text-slate-600'
+  greeting.innerHTML = `
+    <p class="text-slate-500">Olá,</p>
+    <p class="font-semibold text-slate-800">${nome}</p>
+  `
+
+  const logoBlock = aside.querySelector('div')
+  if (logoBlock) {
+    logoBlock.insertAdjacentElement('afterend', greeting)
+  } else {
+    aside.insertAdjacentElement('afterbegin', greeting)
   }
-})
+}
+
+function logout() {
+  const keys = ['adminLogado', 'usuarioId', 'usuarioNome', 'usuarioAdmin', 'adminToken']
+  keys.forEach(key => {
+    localStorage.removeItem(key)
+    sessionStorage.removeItem(key)
+  })
+  window.location.href = 'index.html'
+}
+
+window.logout = logout
+
+function injectAdminMenuItems() {
+  if (!isAdminUser()) return
+
+  const menuList = document.querySelector('aside nav ul')
+  if (!menuList) return
+
+  if (!document.getElementById('menuKPIs')) {
+    const kpisItem = document.createElement('li')
+    kpisItem.innerHTML = `
+      <a id="menuKPIs" href="kpis.html" class="menu-link flex gap-3 hover:text-yellow-300">
+        <i class="fas fa-chart-pie"></i>
+        KPIs
+      </a>
+    `
+
+    const animaisLink = document.getElementById('menuAnimais')
+    if (animaisLink && animaisLink.parentNode) {
+      menuList.insertBefore(kpisItem, animaisLink.parentNode)
+    } else {
+      menuList.appendChild(kpisItem)
+    }
+  }
+
+  if (!document.getElementById('menuUsuarios')) {
+    const usuariosItem = document.createElement('li')
+    usuariosItem.innerHTML = `
+      <a id="menuUsuarios" href="usuarios.html" class="menu-link flex gap-3 hover:text-yellow-300">
+        <i class="fas fa-users"></i>
+        Usuários
+      </a>
+    `
+
+    const animaisLink = document.getElementById('menuAnimais')
+    if (animaisLink && animaisLink.parentNode) {
+      menuList.insertBefore(usuariosItem, animaisLink.parentNode)
+    } else {
+      menuList.appendChild(usuariosItem)
+    }
+  }
+}
+
+function activateCurrentMenuLink() {
+  const links = document.querySelectorAll(".menu-link")
+  links.forEach(link => {
+    if (link.getAttribute("href") === paginaAtual) {
+      link.classList.add("text-yellow-300", "menu-ativo")
+    }
+  })
+}
 
 function toggleMenu(){
   const submenu = document.getElementById("submenuAdocoes")
@@ -15,12 +101,17 @@ function toggleMenu(){
   seta.classList.toggle("rotate-180")
 }
 
-if(paginaAtual === "adocoes.html" || paginaAtual === "adotantes.html" || paginaAtual === "solicitacoes.html"){
-  document.getElementById("submenuAdocoes").classList.remove("hidden")
-  document.getElementById("iconeSeta").classList.add("rotate-180")
-}
-
 document.addEventListener('DOMContentLoaded', () => {
+  if (paginaAtual === "adocoes.html" || paginaAtual === "adotantes.html" || paginaAtual === "solicitacoes.html") {
+    const submenu = document.getElementById("submenuAdocoes")
+    const seta = document.getElementById("iconeSeta")
+    if (submenu) submenu.classList.remove("hidden")
+    if (seta) seta.classList.add("rotate-180")
+  }
+
+  injectAdminMenuItems()
+  renderUserGreeting()
+  activateCurrentMenuLink()
   initializeAdminNotifications()
 })
 

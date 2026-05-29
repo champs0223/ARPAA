@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const { pool } = require('../db/connection');
+const auth = require('./auth');
 
 module.exports = (io) => {
   const router = express.Router();
@@ -57,7 +58,7 @@ module.exports = (io) => {
  * GET /api/admin/solicitacoes
  * Listar todas as solicitações de adoção (admin)
  */
-router.get('/admin/solicitacoes', async (req, res) => {
+router.get('/admin/solicitacoes', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
     const { status } = req.query;
     const params = [];
@@ -101,7 +102,7 @@ router.get('/admin/solicitacoes', async (req, res) => {
  * GET /api/admin/solicitacoes/:id
  * Obter detalhes de uma solicitação específica
  */
-router.get('/admin/solicitacoes/:id', async (req, res) => {
+router.get('/admin/solicitacoes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
     const [solicitacoes] = await pool.query(`
       SELECT 
@@ -137,7 +138,7 @@ router.get('/admin/solicitacoes/:id', async (req, res) => {
  * PUT /api/admin/solicitacoes/:id
  * Atualizar status da solicitação (Aprovado, Rejeitado, Pendente)
  */
-router.put('/admin/solicitacoes/:id', async (req, res) => {
+router.put('/admin/solicitacoes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const connection = await pool.getConnection();
   try {
     const { status, observacoes } = req.body;
@@ -224,7 +225,7 @@ router.put('/admin/solicitacoes/:id', async (req, res) => {
  * DELETE /api/admin/solicitacoes/:id
  * Deletar uma solicitação
  */
-router.delete('/admin/solicitacoes/:id', async (req, res) => {
+router.delete('/admin/solicitacoes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
     const [result] = await pool.execute(
       'DELETE FROM solicitacoes_adocao WHERE id = ?',
@@ -246,7 +247,7 @@ router.delete('/admin/solicitacoes/:id', async (req, res) => {
  * POST /api/admin/solicitacoes/:id/iniciar
  * Iniciar processo de adoção: transfere dados para adotantes e adocoes
  */
-router.post('/admin/solicitacoes/:id/iniciar', async (req, res) => {
+router.post('/admin/solicitacoes/:id/iniciar', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
