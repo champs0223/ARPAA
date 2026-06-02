@@ -3,7 +3,74 @@ const crypto = require('crypto');
 const router = express.Router();
 const { pool } = require('../db/connection');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'replace-this-secret-in-env';
+const JWT_EXPIRE_SECONDS = 8 * 60 * 60; // 8 horas
+
 const sessions = new Map();
+
+function base64UrlEncode(buffer) {
+  return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function base64UrlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  return Buffer.from(str, 'base64');
+}
+
+function signJwt(payload) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const body = {
+    ...payload,
+    iat: now,
+    exp: now + JWT_EXPIRE_SECONDS
+  };
+
+  const encodedHeader = base64UrlEncode(Buffer.from(JSON.stringify(header)));
+  const encodedPayload = base64UrlEncode(Buffer.from(JSON.stringify(body)));
+  const signature = crypto.createHmac('sha256', JWT_SECRET)
+    .update(`${encodedHeader}.${encodedPayload}`)
+    .digest();
+  const encodedSignature = base64UrlEncode(signature);
+
+  return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+}
+
+function verifyJwt(token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [encodedHeader, encodedPayload, encodedSignature] = parts;
+  const message = `${encodedHeader}.${encodedPayload}`;
+  const expectedSignature = base64UrlEncode(
+    crypto.createHmac('sha256', JWT_SECRET).update(message).digest()
+  );
+
+  const signatureBuffer = Buffer.from(encodedSignature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (signatureBuffer.length !== expectedBuffer.length) {
+    return null;
+  }
+
+  if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(base64UrlDecode(encodedPayload).toString('utf8'));
+    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 function createSession(user) {
   const token = crypto.randomBytes(24).toString('hex');
@@ -15,6 +82,25 @@ function createSession(user) {
   return token;
 }
 
+function createAuthToken(user) {
+  if (JWT_SECRET && JWT_SECRET !== 'replace-this-secret-in-env') {
+    return signJwt({ id: user.id, nome: user.nome, is_admin: Boolean(user.is_admin) });
+  }
+  return createSession(user);
+}
+
+function verifyToken(token) {
+  if (!token) {
+    return null;
+  }
+
+  if (token.split('.').length === 3) {
+    return verifyJwt(token);
+  }
+
+  return sessions.get(token) || null;
+}
+
 async function authenticateToken(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -24,7 +110,7 @@ async function authenticateToken(req, res, next) {
       return res.status(401).json({ error: 'Token de autenticação ausente' });
     }
 
-    const session = sessions.get(token);
+    const session = verifyToken(token);
     if (!session) {
       return res.status(401).json({ error: 'Token inválido ou expirado' });
     }
@@ -37,7 +123,8 @@ async function authenticateToken(req, res, next) {
     req.user = {
       id: rows[0].id,
       nome: rows[0].nome,
-      is_admin: Boolean(rows[0].is_admin)
+      is_admin: Boolean(session.is_admin || rows[0].is_admin),
+      role: Boolean(session.is_admin || rows[0].is_admin) ? 'admin' : 'user'
     };
 
     next();
@@ -76,7 +163,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Usuário ou senha incorretos' });
     }
 
-    const token = createSession(user);
+    const token = createAuthToken(user);
 
     return res.json({
       success: true,

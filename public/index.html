@@ -34,8 +34,28 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     </div>
 </a>
 
-<div class="flex-1"></div>
+<nav class="hidden md:flex items-center space-x-8">
+    <a href="index.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Início</a>
+    <a href="adote.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Adote</a>
+    <a href="doe.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Doe</a>
+    <a href="sobre.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Sobre</a>
+    <a href="contato.html" class="nav-link text-gray-700 hover:text-teal-600 py-2">Contato</a>
+</nav>
 
+<button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none" aria-expanded="false">
+    <i class="fas fa-bars text-2xl"></i>
+</button>
+
+</div>
+
+<div id="mobile-menu" class="md:hidden hidden bg-white rounded-b-xl overflow-hidden transition-all duration-300">
+    <div class="px-4 pt-2 pb-4 space-y-2">
+        <a href="index.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Início</a>
+        <a href="adote.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Adote</a>
+        <a href="doe.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Doe</a>
+        <a href="sobre.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Sobre</a>
+        <a href="contato.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Contato</a>
+    </div>
 </div>
 </div>
 </header>
@@ -182,8 +202,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
             <div class="grid md:grid-cols-4 gap-8">
                 <!-- LOGO -->
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <i class="fas fa-paw text-teal-600 text-2xl"></i>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="../icones/logo.png" alt="Logo ARPAA" class="h-10 w-10 object-contain rounded-lg bg-white p-1">
                         <span class="text-xl font-bold">ARPAA</span>
                     </div>
                     <p class="text-gray-400">

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contatos - ARPAA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/config.css">
+<style>
+.menu-ativo {
+  background: rgba(20,184,166,0.1);
+  border-left: 4px solid #fde047;
+  border-radius: 8px;
+  padding: 8px;
+}
+.menu-link {
+  color: #475569;
+  transition: all 0.3s;
+}
+.menu-link:hover {
+  color: #14b8a6;
+  font-weight: 500;
+}
+</style>
+<script src="../js/menu.js"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- PROTEÇÃO DE LOGIN -->
+<script>
+if (localStorage.getItem("adminLogado") !== "true") {
+  window.location.href = "index.html";
+}
+</script>
+
+<!-- MODAL DETALHES DE CONTATO -->
+<div id="modalContatoDetalhes" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 mx-4">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 id="contNome" class="text-2xl font-bold text-gray-900">Nome</h2>
+        <div class="mt-1 text-sm text-gray-600" id="contEmail">email@exemplo.com</div>
+      </div>
+      <button onclick="fecharContatoModal()" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-500" id="contMeta">Data de envio</div>
+
+    <div class="mt-4 bg-gray-50 p-4 rounded-lg text-gray-800" id="contMensagem">
+      Mensagem completa
+    </div>
+
+    <div class="flex justify-end mt-4 gap-3">
+      <button onclick="deletarContato()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Deletar</button>
+      <button onclick="fecharContatoModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function verContato(contato){
+  try{
+    const nome = contato.nome || '-'
+    const email = contato.email || '-'
+    const msg = contato.mensagem || '-'
+    const data = contato.criadoEm ? formatDate(contato.criadoEm) : '-'
+
+    document.getElementById('contNome').innerText = nome
+    document.getElementById('contEmail').innerText = email
+    document.getElementById('contMeta').innerText = `Enviado em: ${data}`
+    document.getElementById('contMensagem').innerText = msg
+
+    // guardar id atual para operações (ex: deletar)
+    window.contatoAtualId = contato.id
+
+    const modal = document.getElementById('modalContatoDetalhes')
+    modal.classList.remove('hidden')
+    modal.classList.add('flex')
+  }catch(err){
+    console.error('Erro ao abrir modal de contato', err)
+  }
+}
+
+function fecharContatoModal(){
+  const modal = document.getElementById('modalContatoDetalhes')
+  modal.classList.add('hidden')
+  modal.classList.remove('flex')
+}
+
+function deletarContato(){
+  try{
+    const id = window.contatoAtualId
+    if(!id) return
+    let contatos = JSON.parse(localStorage.getItem('arpaaContatosPublicos') || '[]')
+    contatos = contatos.filter(c => String(c.id) !== String(id))
+    localStorage.setItem('arpaaContatosPublicos', JSON.stringify(contatos))
+    fecharContatoModal()
+    renderContacts()
+  }catch(err){
+    console.error('Erro ao deletar contato', err)
+  }
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<aside class="fixed top-0 h-screen w-64 bg-slate-100 text-gray-800 flex flex-col z-50 overflow-y-auto shadow-lg">
+  <div class="pt-8 pb-4 flex flex-col items-center justify-center">
+    <img src="../../icones/logo.png" alt="ARPAA Logo" class="w-24 h-24 mx-auto mb-2 block object-contain">
+    <p class="text-sm font-bold tracking-wider text-slate-500 text-center uppercase">ARPAA</p>
+  </div>
+  <nav class="flex-1 p-6">
+    <ul class="space-y-4">
+      <li>
+        <a id="menuDashboard" href="dashboard.html" class="menu-link flex gap-3 hover:text-yellow-300"><i class="fas fa-chart-line"></i>Dashboard</a>
+      </li>
+      <li>
+        <a id="menuAnimais" href="animais.html" class="menu-link flex gap-3 hover:text-yellow-300"><i class="fas fa-dog"></i>Animais</a>
+      </li>
+      <li>
+        <button id="menuAdocoes" onclick="toggleMenu()" class="flex items-center justify-between w-full hover:text-yellow-300">
+          <span class="flex gap-3"><i class="fas fa-heart"></i>Adoções</span>
+          <i id="iconeSeta" class="fas fa-chevron-down text-sm transition-transform"></i>
+        </button>
+        <ul id="submenuAdocoes" class="ml-8 mt-2 space-y-2 hidden">
+          <li><a id="menuProcessos" href="adocoes.html" class="menu-link block hover:text-yellow-300">Processos</a></li>
+          <li><a id="menuAdotantes" href="adotantes.html" class="menu-link block hover:text-yellow-300">Adotantes</a></li>
+          <li><a id="menuSolicitacoes" href="solicitacoes.html" class="menu-link block hover:text-yellow-300">Solicitações Recebidas</a></li>
+        </ul>
+      </li>
+      <li><a id="menuDoacoes" href="doacoes.html" class="menu-link flex gap-3 hover:text-yellow-300"><i class="fas fa-hand-holding-heart"></i>Doações</a></li>
+      <li><a id="menuContatos" href="contatos.html" class="menu-link flex gap-3 hover:text-yellow-300"><i class="fas fa-envelope"></i>Contatos</a></li>
+      <li><a id="menuEventos" href="eventos.html" class="menu-link flex gap-3 hover:text-yellow-300"><i class="fas fa-calendar"></i>Eventos</a></li>
+    </ul>
+  </nav>
+  <div class="p-6 border-t border-teal-600">
+    <button onclick="logout()" class="flex items-center gap-2 text-red-200 hover:text-red-400"><i class="fas fa-sign-out-alt"></i>Sair</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8 space-y-8 ml-64 page-transition min-h-screen max-h-screen overflow-y-auto">
+
+<div class="flex justify-between items-center">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-800">Contatos</h1>
+    <p class="text-gray-500 text-sm">Mensagens enviadas pelo formulário público de contato.</p>
+  </div>
+  <div class="bg-white px-5 py-3 rounded-xl shadow-md flex items-center gap-4 border border-gray-100">
+    <div class="bg-teal-100 text-teal-600 p-3 rounded-lg"><i class="fas fa-envelope"></i></div>
+    <div class="flex flex-col leading-tight">
+      <span id="contatos-count" class="text-sm font-semibold text-gray-700">0 mensagens</span>
+      <span class="text-xs text-gray-400">Atualizado localmente</span>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white rounded-3xl shadow-md border border-slate-200 p-6">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800">Mensagens recebidas</h2>
+        <p class="text-sm text-gray-500">Aqui estão os contatos salvos localmente no navegador.</p>
+      </div>
+      <button id="refresh-contacts" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-full shadow-sm hover:bg-teal-700 transition">
+        <i class="fas fa-sync-alt"></i> Atualizar
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm text-gray-600">
+        <thead class="border-b border-slate-200 text-gray-700">
+          <tr>
+            <th class="px-4 py-3">Nome</th>
+            <th class="px-4 py-3">E-mail</th>
+            <th class="px-4 py-3">Mensagem</th>
+            <th class="px-4 py-3">Data</th>
+          </tr>
+        </thead>
+        <tbody id="contacts-table-body" class="divide-y divide-slate-200">
+          <tr>
+            <td colspan="4" class="px-4 py-6 text-center text-gray-400">Nenhuma mensagem recebida ainda.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function formatDate(isoString) {
+  try {
+    return new Date(isoString).toLocaleString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  } catch (error) {
+    return isoString;
+  }
+}
+
+function renderContacts() {
+  const container = document.getElementById('contacts-table-body');
+  const countLabel = document.getElementById('contatos-count');
+  const raw = localStorage.getItem('arpaaContatosPublicos') || '[]';
+  let contatos = [];
+
+  try {
+    contatos = JSON.parse(raw);
+  } catch {
+    contatos = [];
+  }
+
+  container.innerHTML = '';
+  if (!contatos.length) {
+    container.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Nenhuma mensagem recebida ainda.</td></tr>';
+  } else {
+    contatos.slice().reverse().forEach(contato => {
+      container.innerHTML += `
+        <tr onclick='verContato(${JSON.stringify(contato)})' class="hover:bg-slate-50 transition duration-200 cursor-pointer">
+          <td class="px-4 py-4 font-semibold text-slate-700">${contato.nome || '-'}</td>
+          <td class="px-4 py-4 text-slate-600">${contato.email || '-'}</td>
+          <td class="px-4 py-4 text-slate-600 max-w-xl whitespace-normal">${contato.mensagem || '-'}</td>
+          <td class="px-4 py-4 text-slate-500">${formatDate(contato.criadoEm)}</td>
+        </tr>`;
+    });
+  }
+
+  countLabel.textContent = `${contatos.length} mensagem${contatos.length !== 1 ? 's' : ''}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderContacts();
+  document.getElementById('refresh-contacts').addEventListener('click', renderContacts);
+});
+</script>
+
+</body>
+
+</html>

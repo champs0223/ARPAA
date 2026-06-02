@@ -16,6 +16,10 @@ function safeNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// Estado para evitar recargas concorrentes do dashboard e debouncing
+let _arpaaDashboardReloadTimer = null;
+let _arpaaDashboardLoading = false;
+
 function setElementText(id, text) {
   const element = document.getElementById(id);
   if (element) {
@@ -35,14 +39,13 @@ function setElementWidth(id, width) {
  */
 async function carregarDashboard() {
   console.log('📊 Iniciando carregamento do dashboard...');
+  _arpaaDashboardLoading = true;
   
   try {
-    const authHeaders = localStorage.getItem('adminToken')
-      ? { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      : {}
+    const authHeaders = getAdminHeaders();
 
     // Carregar dados em paralelo
-    const [animais, adocoes, adocoesResumo, metricasResumo, eventos, doacoes, doacoesResumo] = await Promise.all([
+    const [animais, adocoes, adocoesResumo, metricasResumo, eventos, doacoesResumo, doacoesList] = await Promise.all([
       fetch(`${API_BASE_URL}/api/animais`, { headers: authHeaders }).then(r => r.json()).catch(e => {
         console.warn('⚠️ Erro ao buscar animais:', e.message);
         return JSON.parse(localStorage.getItem('animais')) || [];
@@ -68,11 +71,11 @@ async function carregarDashboard() {
         return null;
       }),
       // Doações - carrega do localStorage pois tabela ainda não está no DB
-      Promise.resolve(safeParseJSON(localStorage.getItem('doacoes')) || [])
+      Promise.resolve(safeParseJSON(localStorage.getItem('arpaa_doacoes_dados')) || [])
     ]);
 
-    const doacoesList = Array.isArray(doacoes) ? doacoes : [];
-    const totalDoacoesCount = safeNumber(doacoesList.length);
+    const doacoesArray = Array.isArray(doacoesList) ? doacoesList : [];
+    const totalDoacoesCount = safeNumber(doacoesArray.length);
 
     console.log('✅ Dados carregados:', { 
       animaisCount: animais?.length || 0, 
@@ -88,27 +91,28 @@ async function carregarDashboard() {
     animarNumero(document.getElementById('totalEventos'), safeNumber((eventos || []).length));
 
     // ===== DOAÇÕES DETALHADAS =====
-    const resumoDoacoesData = doacoesResumo || {};
-    const resumoDoacoes = {
-      dinheiro: safeNumber(resumoDoacoesData.dinheiro),
-      racao: safeNumber(resumoDoacoesData.racao),
-      medicamentos: safeNumber(resumoDoacoesData.medicamentos),
-      outros_insumos: safeNumber(resumoDoacoesData.outros_insumos)
-    };
+    // Preferir dados do resumo vindo da API quando presentes; senão calcular a partir do local
+    const resumoDoacoesData = (doacoesResumo && Object.keys(doacoesResumo).length > 0) ? doacoesResumo : null;
+    const resumoDoacoes = { dinheiro: 0, racao: 0, medicamentos: 0, outros_insumos: 0 };
 
-    if (!doacoesResumo) {
+    if (resumoDoacoesData) {
+      resumoDoacoes.dinheiro = parsePortugueseNumber(resumoDoacoesData.dinheiro);
+      resumoDoacoes.racao = parsePortugueseNumber(resumoDoacoesData.racao);
+      resumoDoacoes.medicamentos = parsePortugueseNumber(resumoDoacoesData.medicamentos);
+      resumoDoacoes.outros_insumos = parsePortugueseNumber(resumoDoacoesData.outros_insumos);
+    } else {
       resumoDoacoes.dinheiro = doacoesList
-        .filter(d => d && d.tipo === 'dinheiro')
-        .reduce((s, d) => s + safeNumber(d.quantidade), 0);
+        .filter(d => d && String(d.tipo || '').toLowerCase() === 'dinheiro')
+        .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
       resumoDoacoes.racao = doacoesList
-        .filter(d => d && d.tipo === 'racao')
-        .reduce((s, d) => s + safeNumber(d.quantidade), 0);
+        .filter(d => d && String(d.tipo || '').toLowerCase() === 'racao')
+        .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
       resumoDoacoes.medicamentos = doacoesList
-        .filter(d => d && d.tipo === 'medicamento')
-        .reduce((s, d) => s + safeNumber(d.quantidade), 0);
+        .filter(d => d && String(d.tipo || '').toLowerCase() === 'medicamento')
+        .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
       resumoDoacoes.outros_insumos = doacoesList
-        .filter(d => d && ['higiene', 'limpeza', 'conforto'].includes(d.tipo))
-        .reduce((s, d) => s + safeNumber(d.quantidade), 0);
+        .filter(d => d && ['higiene', 'limpeza', 'conforto'].includes(String(d.tipo || '').toLowerCase()))
+        .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
     }
 
     animarNumero(
@@ -120,6 +124,14 @@ async function carregarDashboard() {
     setElementText('totalRacaoDash', `${Number(resumoDoacoes.racao || 0)} KG`);
     setElementText('totalMedicamentosDash', `${Number(resumoDoacoes.medicamentos || 0)} un`);
     setElementText('totalOutrosInsumosDash', `${Number(resumoDoacoes.outros_insumos || 0)} un`);
+
+      // Also populate compact dashboard card if present
+      const compactMoneyEl = document.getElementById('totalDinheiroDashCompact');
+      if (compactMoneyEl) compactMoneyEl.innerText = Number(parsePortugueseNumber(resumoDoacoes.dinheiro || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const compactRacaoEl = document.getElementById('totalRacaoDashCompact');
+      if (compactRacaoEl) compactRacaoEl.innerText = `${Number(resumoDoacoes.racao || 0)} KG`;
+      const compactMedEl = document.getElementById('totalMedicamentosDashCompact');
+      if (compactMedEl) compactMedEl.innerText = `${Number(resumoDoacoes.medicamentos || 0)} un`;
 
     // ===== STATUS DAS ADOÇÕES =====
     let pendentes = 0;
@@ -184,6 +196,8 @@ async function carregarDashboard() {
     console.error('❌ Erro ao carregar dashboard:', erro);
     // Fallback: carregar do localStorage
     carregarDashboardComFallback();
+  } finally {
+    _arpaaDashboardLoading = false;
   }
 }
 
@@ -224,7 +238,7 @@ function carregarDashboardComFallback() {
   
   let animais = safeParseJSON(localStorage.getItem('animais')) || [];
   let adocoes = safeParseJSON(localStorage.getItem('adocoes')) || [];
-  let doacoesRaw = safeParseJSON(localStorage.getItem('doacoes'));
+  let doacoesRaw = safeParseJSON(localStorage.getItem('arpaa_doacoes_dados'));
   let eventos = safeParseJSON(localStorage.getItem('eventos')) || [];
   const doacoes = Array.isArray(doacoesRaw) ? doacoesRaw : [];
 
@@ -235,20 +249,20 @@ function carregarDashboardComFallback() {
   animarNumero(document.getElementById('totalEventos'), eventos.length);
 
   const dinheiro = doacoes
-    .filter(d => d && d.tipo === 'dinheiro')
-    .reduce((s, d) => s + Number(d.quantidade || 0), 0);
+    .filter(d => d && String(d.tipo || '').toLowerCase() === 'dinheiro')
+    .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
 
   const racao = doacoes
-    .filter(d => d && d.tipo === 'racao')
-    .reduce((s, d) => s + Number(d.quantidade || 0), 0);
+    .filter(d => d && String(d.tipo || '').toLowerCase() === 'racao')
+    .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
 
   const medicamentos = doacoes
-    .filter(d => d && d.tipo === 'medicamento')
-    .reduce((s, d) => s + Number(d.quantidade || 0), 0);
+    .filter(d => d && String(d.tipo || '').toLowerCase() === 'medicamento')
+    .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
 
   const outrosInsumos = doacoes
-    .filter(d => d && ['higiene', 'limpeza', 'conforto'].includes(d.tipo))
-    .reduce((s, d) => s + Number(d.quantidade || 0), 0);
+    .filter(d => d && ['higiene', 'limpeza', 'conforto'].includes(String(d.tipo || '').toLowerCase()))
+    .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
 
   animarNumero(
     document.getElementById('totalDinheiroDash'),
@@ -364,13 +378,15 @@ function atualizarTimestamp() {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
-    });
+    })
+  );
 
   setElementText('ultimaAtualizacao',
     agora.toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
-    });
+    })
+  );
 }
 
 /**
@@ -420,3 +436,21 @@ function logout() {
 }
 
 console.log('✅ dashboard-loader.js carregado');
+
+// Listener para atualização inter-abas das doações (debounced)
+window.addEventListener('arpaa:doacoes:updated', (e) => {
+  // Agrega eventos rápidos e evita múltiplas chamadas concorrentes
+  if (_arpaaDashboardReloadTimer) clearTimeout(_arpaaDashboardReloadTimer);
+  _arpaaDashboardReloadTimer = setTimeout(() => {
+    if (!_arpaaDashboardLoading) {
+      try {
+        carregarDashboard();
+      } catch (err) {
+        console.warn('Erro ao recarregar dashboard a partir do evento de doações:', err && err.message);
+      }
+    } else {
+      // Agendar tentativa leve para depois
+      setTimeout(() => { if (!_arpaaDashboardLoading) carregarDashboard(); }, 500);
+    }
+  }, 250);
+}, { passive: true });

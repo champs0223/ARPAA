@@ -184,10 +184,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-paw text-white text-xl"></i>
-                        </div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="../icones/logo.png" alt="Logo ARPAA" class="h-10 w-10 object-contain rounded-lg bg-white p-1">
                         <span class="text-2xl font-bold text-white">ARPAA</span>
                     </div>
                     <p class="text-sm text-gray-400 mb-4">Associação de Resgate, Proteção e Amparo Animal. Transformando
@@ -266,6 +264,42 @@
         <i class="fas fa-arrow-up"></i>
     </button>
     <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const statusMessage = document.createElement('p');
+            statusMessage.className = 'mt-4 text-sm font-semibold';
+            form.appendChild(statusMessage);
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const nome = document.getElementById('nome').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const mensagem = document.getElementById('mensagem').value.trim();
+
+                if (!nome || !email || !mensagem) {
+                    statusMessage.textContent = 'Por favor, preencha todos os campos antes de enviar.';
+                    statusMessage.className = 'mt-4 text-sm text-red-600 font-semibold';
+                    return;
+                }
+
+                const contatos = JSON.parse(localStorage.getItem('arpaaContatosPublicos') || '[]');
+                contatos.push({
+                    id: Date.now(),
+                    nome,
+                    email,
+                    mensagem,
+                    criadoEm: new Date().toISOString()
+                });
+                localStorage.setItem('arpaaContatosPublicos', JSON.stringify(contatos));
+
+                statusMessage.textContent = 'Mensagem enviada com sucesso! Ela ficará disponível no painel administrativo.';
+                statusMessage.className = 'mt-4 text-sm text-green-700 font-semibold';
+                form.reset();
+            });
+        });
+    </script>
 </body>
 
 </html>

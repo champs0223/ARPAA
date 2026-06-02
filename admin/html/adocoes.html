@@ -40,6 +40,7 @@
 
 </style>
 <script src="../js/config-api.js"></script>
+<script src="../js/modal-confirmation.js"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -244,6 +245,7 @@ Sair
     <th class="px-4 py-3 text-left">Telefone</th>
     <th class="px-4 py-3 text-left">Data</th>
     <th class="px-4 py-3 text-center">Status</th>
+    <th class="px-4 py-3 text-center">Ações</th>
   </tr>
 </thead>
     <tbody id="listaAdocoes"></tbody>
@@ -469,11 +471,6 @@ Sair
 <script>
 let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 
-function getAdminHeaders(){
-  const token = localStorage.getItem('adminToken')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
 function salvar(){
   localStorage.setItem("adocoes", JSON.stringify(adocoes))
 }
@@ -577,21 +574,40 @@ async function alterarStatus(index, status){
 
 async function excluir(index){
   const adocao = adocoes[index];
-  uiConfirm('Tem certeza que deseja excluir permanentemente este processo de adoção?', async () => {
+  
+  // Verificar se apenas admins podem deletar e se o processo está concluído
+  const isAdmin = localStorage.getItem('usuarioAdmin') === 'true';
+  if (!isAdmin) {
+    uiShowError('Apenas administradores podem excluir processos de adoção.');
+    return;
+  }
+  
+  const isConcluido = adocao.status && (
+    adocao.status.toLowerCase().includes('concluído') || 
+    adocao.status.toLowerCase().includes('concluido') ||
+    adocao.status.toLowerCase().includes('finalizado')
+  );
+  
+  if (!isConcluido) {
+    uiShowError('Apenas processos concluídos podem ser excluídos.');
+    return;
+  }
+  
+  confirmDelete('processo de adoção', async () => {
     try {
       const url = `${API_BASE_URL || 'http://localhost:3001'}/api/adocoes/${adocao.id}`;
-    const response = await fetch(url, { method: 'DELETE', headers: getAdminHeaders() });
+      const response = await fetch(url, { method: 'DELETE', headers: getAdminHeaders() });
 
-    if (!response.ok) throw new Error('Falha ao deletar o processo no servidor');
+      if (!response.ok) throw new Error('Falha ao deletar o processo no servidor');
 
-    // Recarrega a listagem limpa direto do MySQL para atualizar a tela e os contadores do topo
-    await carregarProcessosDoBanco();
-    mostrarSucesso("Processo de adoção excluído com sucesso!");
-  } catch (error) {
-    console.error("❌ Erro ao excluir adoção:", error);
-    uiShowError("Erro ao excluir processo de adoção do servidor.");
-  }
-});
+      // Recarrega a listagem limpa direto do MySQL para atualizar a tela e os contadores do topo
+      await carregarProcessosDoBanco();
+      mostrarSucesso("Processo de adoção excluído com sucesso!");
+    } catch (error) {
+      console.error("❌ Erro ao excluir adoção:", error);
+      uiShowError("Erro ao excluir processo de adoção do servidor.");
+    }
+  });
 }
 
 function normalizarTexto(texto) {
@@ -609,6 +625,7 @@ function render(){
 })
     let lista = document.getElementById("listaAdocoes")
   let filtro = document.getElementById("filtro").value
+  const isAdmin = localStorage.getItem('usuarioAdmin') === 'true'
 
   lista.innerHTML = ""
 
@@ -619,28 +636,31 @@ function render(){
       adocao.data = adocao.data_adocao
     }
   })
-  adocoes.sort((a,b)=> new Date(b.data) - new Date(a.data))
+  adocoes.sort((a,b)=> new Date(b.data || b.data_adocao || 0) - new Date(a.data || a.data_adocao || 0))
   adocoes.forEach((adocao, i)=>{
     if (!adocao.status) adocao.status = 'Triagem';
     if (!adocao.animalNome) adocao.animalNome = adocao.animal_nome || 'Não informado';
-    if (!adocao.nome) adocao.nome = adocao.adotante_nome || 'Não informado';
+    if (!adocao.nome) adocao.nome = adocao.adotante_nome || adocao.nome || 'Não informado';
     if (!adocao.animalId) adocao.animalId = adocao.animal_id || adocao.animalId;
+    if (adocao.telefone === undefined || adocao.telefone === null) adocao.telefone = 'Não informado'
 
     const statusMinusculo = normalizarTexto(adocao.status)
 
-    // Contadores ajustados: Pendentes são Triagem, Entrevista, Visita, Termo
-    if (['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) p++;
-    if (statusMinusculo.includes("conclu")) a++;
-    if (statusMinusculo.includes("reprov")) r++;
+    // Contadores ajustados: Pendentes são Triagem, Entrevista, Visita, Termo, Pendentes gerais
+    if (['triagem', 'entrevista', 'visita', 'termo', 'pendente', 'ativo', 'processamento', 'em andamento'].includes(statusMinusculo)) p++;
+    if (statusMinusculo.includes('conclu') || statusMinusculo.includes('aprov')) a++;
+    if (statusMinusculo.includes('reprov') || statusMinusculo.includes('recus')) r++;
 
     if(filtro !== "todos" && !statusMinusculo.includes(normalizarTexto(filtro))) return
     if(!adocao.animalNome.toLowerCase().includes(termoBusca)) return
 
     let cor = "gray"
     if(['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)) cor = "yellow"
-    else if(statusMinusculo.includes("conclu")) cor = "green"
-    else if(statusMinusculo.includes("reprov")) cor = "red"
+    else if(statusMinusculo.includes("conclu") || statusMinusculo.includes('aprov')) cor = "green"
+    else if(statusMinusculo.includes("reprov") || statusMinusculo.includes('recus')) cor = "red"
     else if(statusMinusculo.includes("devolv")) cor = "blue"
+
+    const podeDeletar = isAdmin && (statusMinusculo.includes('conclu') || statusMinusculo.includes('finalizado'))
 
     lista.innerHTML += `
 <tr class="border-t hover:bg-gray-50 cursor-pointer transition" onclick="abrirModalEtapas('${adocao.id}')">
@@ -656,34 +676,43 @@ function render(){
 
   <td class="px-4 py-4 text-left">
     ${adocao.nome}
-    
   </td>
   <td class="px-4 py-4">${formatarTelefone(adocao.telefone)}</td>
   <td class="px-4 py-4">
-  ${new Date(adocao.data).toLocaleDateString("pt-BR", {
-    timeZone: "America/Sao_Paulo"
-  })}
-</td>
+    ${formatarData(adocao.data)}
+  </td>
 
   <td class="px-4 py-4 text-center">
     <span class="bg-${cor}-100 text-${cor}-700 px-3 py-1 rounded-full text-sm inline-flex items-center gap-1">
       ${
         ['triagem', 'entrevista', 'visita', 'termo'].includes(statusMinusculo)
           ? '<i class="fas fa-clock"></i>'
-          : adocao.status === "Concluído"
+          : statusMinusculo.includes('conclu') || statusMinusculo.includes('aprov')
           ? '<i class="fas fa-check"></i>'
           : '<i class="fas fa-times"></i>'
       }
       ${adocao.status.charAt(0).toUpperCase() + adocao.status.slice(1)}
     </span>
   </td>
-
+  <td class="px-4 py-4 text-center">
+    ${podeDeletar ? `<button type="button" onclick="event.stopPropagation(); deletar(${i})" class="text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded px-3 py-1 transition">Excluir</button>` : ''}
+  </td>
 </tr>`
   })
 
   document.getElementById("pendentes").innerText = p
   document.getElementById("aprovadas").innerText = a
   document.getElementById("recusadas").innerText = r
+}
+
+function formatarData(data) {
+  if (!data) return 'Não informado'
+  const date = new Date(data)
+  if (Number.isNaN(date.getTime())) return 'Não informado'
+
+  return date.toLocaleDateString('pt-BR', {
+    timeZone: 'America/Sao_Paulo'
+  })
 }
 
 let indexEditando = null
@@ -1330,31 +1359,31 @@ async function avancarEtapa() {
 }
 
 async function reprovarAdocao() {
-  uiConfirm('Tem certeza que deseja reprovar esta adoção? Esta ação não pode ser desfeita.', async () => {
+  confirmReject('processo de adoção', async () => {
     try {
       const url = `${API_BASE_URL || 'http://localhost:3001'}/api/admin/adocoes/${adocaoAtualId}/etapa`
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAdminHeaders()
-      },
-      body: JSON.stringify({ status: 'Reprovado' })
-    })
-    
-    if (!response.ok) throw new Error('Erro ao reprovar adoção')
-    
-    mostrarSucesso('Adoção reprovada com sucesso!')
-    fecharModalEtapas()
-    
-    // Recarregar dados
-    await carregarProcessosDoBanco()
-    
-  } catch (error) {
-    console.error('Erro ao reprovar adoção:', error)
-    uiShowError('Erro ao reprovar adoção')
-  }
-})
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAdminHeaders()
+        },
+        body: JSON.stringify({ status: 'Reprovado' })
+      })
+      
+      if (!response.ok) throw new Error('Erro ao reprovar adoção')
+      
+      mostrarSucesso('Adoção reprovada com sucesso!')
+      fecharModalEtapas()
+      
+      // Recarregar dados
+      await carregarProcessosDoBanco()
+      
+    } catch (error) {
+      console.error('Erro ao reprovar adoção:', error)
+      uiShowError('Erro ao reprovar adoção')
+    }
+  })
 }
 
 </script>

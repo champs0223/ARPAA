@@ -82,6 +82,23 @@ function injectAdminMenuItems() {
       menuList.appendChild(usuariosItem)
     }
   }
+
+  if (!document.getElementById('menuContatos')) {
+    const contatosItem = document.createElement('li')
+    contatosItem.innerHTML = `
+      <a id="menuContatos" href="contatos.html" class="menu-link flex gap-3 hover:text-yellow-300">
+        <i class="fas fa-envelope"></i>
+        Contatos
+      </a>
+    `
+
+    const eventosLink = document.getElementById('menuEventos')
+    if (eventosLink && eventosLink.parentNode) {
+      menuList.insertBefore(contatosItem, eventosLink.parentNode)
+    } else {
+      menuList.appendChild(contatosItem)
+    }
+  }
 }
 
 function activateCurrentMenuLink() {
@@ -236,12 +253,60 @@ function renderNotificationsList() {
 window.uiConfirm = function(message, callback) {
   try {
     if (typeof message !== 'string') message = String(message)
-    if (confirm(message)) {
+    createGlobalConfirmModal()
+
+    const modal = document.getElementById('global-ui-confirm')
+    const messageEl = modal.querySelector('#globalUiConfirmMessage')
+    const confirmButton = modal.querySelector('[data-action="confirm"]')
+    const cancelButton = modal.querySelector('[data-action="cancel"]')
+
+    let cleanup = () => {
+      modal.classList.add('hidden')
+      modal.classList.remove('flex')
+      confirmButton.replaceWith(confirmButton.cloneNode(true))
+      cancelButton.replaceWith(cancelButton.cloneNode(true))
+    }
+
+    messageEl.textContent = message
+    modal.classList.remove('hidden')
+    modal.classList.add('flex')
+
+    const handleConfirm = () => {
+      cleanup()
       if (typeof callback === 'function') callback()
     }
+
+    const handleCancel = () => {
+      cleanup()
+    }
+
+    modal.querySelector('[data-action="confirm"]').addEventListener('click', handleConfirm)
+    modal.querySelector('[data-action="cancel"]').addEventListener('click', handleCancel)
   } catch (e) {
     console.error('uiConfirm error', e)
   }
+}
+
+function createGlobalConfirmModal() {
+  if (document.getElementById('global-ui-confirm')) return
+
+  const modal = document.createElement('div')
+  modal.id = 'global-ui-confirm'
+  modal.className = 'fixed inset-0 z-[1200] hidden items-center justify-center bg-black/60 p-4'
+  modal.innerHTML = `
+    <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="p-6 border-b border-slate-200">
+        <h2 class="text-xl font-semibold text-slate-900">Confirmação</h2>
+        <p id="globalUiConfirmMessage" class="mt-2 text-sm text-slate-600"></p>
+      </div>
+      <div class="flex flex-col gap-4 p-6 sm:flex-row sm:justify-end sm:items-center">
+        <button type="button" data-action="cancel" class="w-full sm:w-auto rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">Cancelar</button>
+        <button type="button" data-action="confirm" class="w-full sm:w-auto rounded-2xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-700 transition">Confirmar</button>
+      </div>
+    </div>
+  `
+
+  document.body.appendChild(modal)
 }
 
 window.uiShowError = function(message) {

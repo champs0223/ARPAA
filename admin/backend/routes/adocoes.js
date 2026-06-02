@@ -373,6 +373,21 @@ router.put('/admin/adocoes/:id/retroceder', auth.authenticateToken, async (req, 
 router.delete('/adocoes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   const { id } = req.params;
   try {
+    // Verificar se o processo existe e está concluído
+    const [processo] = await pool.execute('SELECT status FROM adocoes WHERE id = ?', [id]);
+    
+    if (processo.length === 0) {
+      return res.status(404).json({ error: 'Processo de adoção não encontrado' });
+    }
+    
+    const status = processo[0].status || '';
+    const statusLower = String(status).toLowerCase();
+    const isConcluido = statusLower.includes('concluído') || statusLower.includes('concluido') || statusLower.includes('finalizado');
+    
+    if (!isConcluido) {
+      return res.status(400).json({ error: 'Apenas processos concluídos podem ser excluídos' });
+    }
+    
     const [result] = await pool.execute('DELETE FROM adocoes WHERE id = ?', [id]);
     
     if (result.affectedRows === 0) {

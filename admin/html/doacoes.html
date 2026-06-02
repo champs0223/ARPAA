@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/config.css">
 <script src="../js/config-api.js"></script>
+<script src="../js/modal-confirmation.js"></script>
 
 <style>
 .menu-ativo {
@@ -354,31 +355,45 @@ document.getElementById("fecharModal").addEventListener("click", () => {
 });
 
   // LocalStorage
-  let doacoes = JSON.parse(localStorage.getItem("doacoes")) || [];
+  let doacoes = JSON.parse(localStorage.getItem("arpaa_doacoes_dados")) || [];
   let editandoId = null;
 
   async function atualizarCards(){
     const fallback = {
-      dinheiro: doacoes.filter(d => d.tipo === 'dinheiro').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
-      racao: doacoes.filter(d => d.tipo === 'racao').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
-      medicamentos: doacoes.filter(d => d.tipo === 'medicamento').reduce((sum, d) => sum + Number(d.quantidade || 0), 0),
-      outros_insumos: doacoes.filter(d => ['higiene', 'limpeza', 'conforto'].includes(d.tipo)).reduce((sum, d) => sum + Number(d.quantidade || 0), 0)
+      dinheiro: doacoes.filter(d => String(d.tipo || '').toLowerCase() === 'dinheiro').reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0),
+      racao: doacoes.filter(d => String(d.tipo || '').toLowerCase() === 'racao').reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0),
+      medicamentos: doacoes.filter(d => String(d.tipo || '').toLowerCase() === 'medicamento').reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0),
+      outros_insumos: doacoes.filter(d => ['higiene', 'limpeza', 'conforto'].includes(String(d.tipo || '').toLowerCase())).reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0)
     };
 
     const endpoint = `${API_BASE_URL || 'http://localhost:3001'}/api/doacoes/summary`;
 
     try {
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, { headers: getAdminHeaders() });
       if (!response.ok) {
         throw new Error('Resposta inválida do backend');
       }
 
       const data = await response.json();
 
-      document.getElementById("totalDinheiro").innerText = formatarMoeda(Number(data.dinheiro || 0));
-      document.getElementById("totalRacao").innerText = `${Number(data.racao || 0)} KG`;
-      document.getElementById("totalMedicamentos").innerText = `${Number(data.medicamentos || 0)} un`;
-      document.getElementById("totalOutrosInsumos").innerText = `${Number(data.outros_insumos || 0)} un`;
+      // Só aplicar os totais se a resposta tiver conteúdo válido; caso contrário usar fallback
+      if (data && Object.keys(data).length > 0) {
+        const elDin = document.getElementById("totalDinheiro");
+        const elRac = document.getElementById("totalRacao");
+        const elMed = document.getElementById("totalMedicamentos");
+        const elOut = document.getElementById("totalOutrosInsumos");
+
+        if (elDin) elDin.innerText = formatarMoeda(parsePortugueseNumber(data.dinheiro || 0));
+        if (elRac) elRac.innerText = `${parsePortugueseNumber(data.racao || 0)} KG`;
+        if (elMed) elMed.innerText = `${parsePortugueseNumber(data.medicamentos || 0)} un`;
+        if (elOut) elOut.innerText = `${parsePortugueseNumber(data.outros_insumos || 0)} un`;
+      } else {
+        // fallback caso a API retorne objeto vazio
+        document.getElementById("totalDinheiro").innerText = formatarMoeda(fallback.dinheiro);
+        document.getElementById("totalRacao").innerText = `${fallback.racao} KG`;
+        document.getElementById("totalMedicamentos").innerText = `${fallback.medicamentos} un`;
+        document.getElementById("totalOutrosInsumos").innerText = `${fallback.outros_insumos} un`;
+      }
     } catch (error) {
       console.warn('Falha ao carregar totais de doações do backend:', error.message);
       document.getElementById("totalDinheiro").innerText = formatarMoeda(fallback.dinheiro);
@@ -394,8 +409,8 @@ document.getElementById("fecharModal").addEventListener("click", () => {
     let filtro = document.getElementById("filtro").value;
 let busca = document.getElementById("busca").value.toLowerCase();
 
-doacoes
-  .filter(d => filtro === "todos" || d.tipo === filtro)
+  doacoes
+  .filter(d => filtro === "todos" || String(d.tipo || '').toLowerCase() === String(filtro || '').toLowerCase())
   .filter(d => 
     d.nome.toLowerCase().includes(busca) ||
     (d.descricao && d.descricao.toLowerCase().includes(busca))
@@ -429,15 +444,15 @@ doacoes
   }
 
 function exibirQuantidade(d) {
-  if (d.tipo === "dinheiro") {
-    return formatarMoeda(Number(d.quantidade || 0));
+  if (String(d.tipo || '').toLowerCase() === "dinheiro") {
+    return formatarMoeda(parsePortugueseNumber(d.quantidade));
   }
 
   if (d.quantidade === "" || d.quantidade == null) {
     return "-";
   }
 
-  const unidade = unidadesPorCategoria[d.tipo]?.unidade || "";
+  const unidade = unidadesPorCategoria[String(d.tipo || '').toLowerCase()]?.unidade || "";
   return `${d.quantidade} ${unidade}`.trim();
 }
 
@@ -526,7 +541,7 @@ document.getElementById("btnNovaDoacao").addEventListener("click", function() {
   }, 50);
 });
 
-  document.getElementById("form-doacao-modal").addEventListener("submit", function(e){
+  document.getElementById("form-doacao-modal").addEventListener("submit", async function(e){
   e.preventDefault();
   const form = e.target;
 
@@ -555,9 +570,9 @@ if(editandoId){
   });
 }
 
-localStorage.setItem("doacoes", JSON.stringify(doacoes));
+localStorage.setItem("arpaa_doacoes_dados", JSON.stringify(doacoes));
 
-atualizarCards();
+await atualizarCards();
 renderDoacoes();
 form.reset();
 
@@ -568,6 +583,13 @@ mostrarSucesso(
     ? "Doação atualizada com sucesso!" 
     : "Doação registrada com sucesso!"
 );
+
+  // Notifica outras abas/janelas que as doações foram atualizadas
+  try {
+    window.dispatchEvent(new CustomEvent('arpaa:doacoes:updated', { detail: { action: estavaEditando ? 'edit' : 'create' } }));
+  } catch (e) {
+    console.warn('Não foi possível disparar evento de atualização de doações:', e && e.message);
+  }
 });
 
 document.getElementById("filtro").addEventListener("change", renderDoacoes);
@@ -601,16 +623,23 @@ form.obs.value = doacao.obs || "";
 
 function excluirDoacao(id){
 
-  abrirConfirmacao("Deseja excluir essa doação?", () => {
+  abrirConfirmacao("Deseja excluir essa doação?", async () => {
 
     doacoes = doacoes.filter(d => d.id !== id)
 
-    localStorage.setItem("doacoes", JSON.stringify(doacoes))
+    localStorage.setItem("arpaa_doacoes_dados", JSON.stringify(doacoes))
 
-    atualizarCards()
-    renderDoacoes()
+    await atualizarCards();
+    renderDoacoes();
 
     mostrarSucesso("Doação excluída com sucesso!")
+
+    // Notifica outras abas/janelas que as doações foram atualizadas (deleção)
+    try {
+      window.dispatchEvent(new CustomEvent('arpaa:doacoes:updated', { detail: { action: 'delete', id } }));
+    } catch (e) {
+      console.warn('Não foi possível disparar evento de atualização de doações:', e && e.message);
+    }
 
   })
 
@@ -623,12 +652,12 @@ function verDoador(nome){
   const historico = doacoes.filter(d => d.nome === nome);
 
   let totalDinheiro = historico
-    .filter(d => d.tipo === "dinheiro")
-  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
+    .filter(d => String(d.tipo || '').toLowerCase() === "dinheiro")
+    .reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0);
 
   let totalItens = historico
-    .filter(d => d.tipo !== "dinheiro")
-  .reduce((sum, d) => sum + Number(d.quantidade || 0), 0);
+    .filter(d => String(d.tipo || '').toLowerCase() !== "dinheiro")
+    .reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0);
 
   conteudo.innerHTML = `
     <p><strong>Nome:</strong> ${nome}</p>
@@ -684,9 +713,16 @@ function fecharModal(id){
   document.getElementById(id).classList.add("hidden")
 }
 
-// Inicialização
-atualizarCards();
-renderDoacoes();
+// Inicialização única e ordenada da tela
+async function initDoacoes(){
+  await atualizarCards();
+  renderDoacoes();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Garantir execução única do fluxo de inicialização
+  initDoacoes();
+}, { once: true });
 </script>
 
 <script src="../js/menu.js"></script>

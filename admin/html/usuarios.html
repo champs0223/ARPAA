@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/config.css">
 <script src="../js/config-api.js"></script>
+<script src="../js/modal-confirmation.js"></script>
 <script src="../js/menu.js"></script>
 </head>
 <body class="bg-gray-100">
@@ -155,20 +156,86 @@ if(localStorage.getItem('usuarioAdmin') !== 'true'){
   </div>
 </main>
 
+<!-- MODAL EDITAR USUÁRIO -->
+<div id="modalEditarUsuario" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-2xl rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-200">
+      <h2 class="text-xl font-semibold text-slate-900">Editar usuário</h2>
+      <p class="text-sm text-slate-500 mt-1">Atualize o nome, CPF e permissão administrativa.</p>
+    </div>
+    <form id="formEditarUsuario" class="p-6 space-y-4">
+      <input type="hidden" id="editarUsuarioId">
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Nome</label>
+        <input id="editarUsuarioNome" type="text" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700">CPF</label>
+        <input id="editarUsuarioCpf" type="text" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+      </div>
+      <div class="flex items-center gap-3">
+        <input id="editarUsuarioAdmin" type="checkbox" class="h-4 w-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500">
+        <label for="editarUsuarioAdmin" class="text-sm text-slate-700">Administrador</label>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button type="button" onclick="fecharModal('modalEditarUsuario')" class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 transition">Cancelar</button>
+        <button type="submit" class="rounded-2xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-700 transition">Salvar alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL REDIFINIR SENHA -->
+<div id="modalSenhaUsuario" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-xl rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-200">
+      <h2 class="text-xl font-semibold text-slate-900">Redefinir senha</h2>
+      <p class="text-sm text-slate-500 mt-1">Defina uma nova senha para este usuário.</p>
+    </div>
+    <form id="formSenhaUsuario" class="p-6 space-y-4">
+      <input type="hidden" id="senhaUsuarioId">
+      <div>
+        <label class="block text-sm font-medium text-slate-700">Nova senha</label>
+        <input id="senhaUsuarioNova" type="password" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-teal-500 focus:outline-none" required>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button type="button" onclick="fecharModal('modalSenhaUsuario')" class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 transition">Cancelar</button>
+        <button type="submit" class="rounded-2xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-700 transition">Salvar senha</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EXCLUIR USUÁRIO -->
+<div id="modalExcluirUsuario" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-xl rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-200">
+      <h2 class="text-xl font-semibold text-slate-900">Confirmar exclusão</h2>
+      <p class="text-sm text-slate-500 mt-1">Tem certeza de que deseja excluir <span id="deletarUsuarioNome" class="font-semibold"></span>?</p>
+    </div>
+    <form id="formExcluirUsuario" class="p-6 space-y-4">
+      <input type="hidden" id="deletarUsuarioId">
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button type="button" onclick="fecharModal('modalExcluirUsuario')" class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 transition">Cancelar</button>
+        <button type="submit" class="rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 transition">Excluir</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </div>
 
 <script>
 const tabelaUsuarios = document.getElementById('usuariosTabela')
 const mensagemUsuario = document.getElementById('mensagemUsuario')
 const formCriarUsuario = document.getElementById('formCriarUsuario')
+const formEditarUsuario = document.getElementById('formEditarUsuario')
+const formSenhaUsuario = document.getElementById('formSenhaUsuario')
+const formExcluirUsuario = document.getElementById('formExcluirUsuario')
+let usuariosCache = []
 
 function getHeaders() {
-  const token = localStorage.getItem('adminToken')
-  const headers = { 'Content-Type': 'application/json' }
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-  return headers
+  return getAdminHeaders();
 }
 
 function getUsuariosApiUrl(path = '') {
@@ -186,7 +253,7 @@ function montarLinhaUsuario(usuario) {
       <td class="px-4 py-4 text-slate-700 flex flex-wrap gap-2">
         <button type="button" class="rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-slate-100" onclick="editarUsuario(${usuario.id})">Editar</button>
         <button type="button" class="rounded-xl border border-teal-600 bg-teal-50 px-3 py-2 text-xs text-teal-700 hover:bg-teal-100" onclick="redefinirSenhaUsuario(${usuario.id})">Senha</button>
-        <button type="button" class="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 hover:bg-red-100" onclick="deletarUsuario(${usuario.id})">Excluir</button>
+        <button type="button" class="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 hover:bg-red-100" data-nome="${(usuario.nome || '').replace(/"/g, '&quot;')}" onclick="deletarUsuario(${usuario.id}, this.dataset.nome)">Excluir</button>
       </td>
     </tr>
   `
@@ -201,6 +268,7 @@ async function carregarUsuarios() {
       throw new Error(text || 'Falha ao carregar usuários')
     }
     const usuarios = await response.json()
+    usuariosCache = usuarios
     tabelaUsuarios.innerHTML = usuarios.length > 0
       ? usuarios.map(montarLinhaUsuario).join('')
       : `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Nenhum usuário encontrado</td></tr>`
@@ -247,14 +315,47 @@ formCriarUsuario.addEventListener('submit', async (event) => {
   }
 })
 
+formEditarUsuario.addEventListener('submit', salvarEdicaoUsuario)
+formSenhaUsuario.addEventListener('submit', salvarSenhaUsuario)
+formExcluirUsuario.addEventListener('submit', confirmarExcluirUsuario)
+
+function abrirModal(id) {
+  const modal = document.getElementById(id)
+  if (!modal) return
+  modal.classList.remove('hidden')
+  modal.classList.add('flex')
+}
+
+function fecharModal(id) {
+  const modal = document.getElementById(id)
+  if (!modal) return
+  modal.classList.add('hidden')
+  modal.classList.remove('flex')
+}
+
 async function editarUsuario(id) {
-  const nome = prompt('Novo nome do usuário:')?.trim()
-  if (!nome) return
+  const usuario = usuariosCache.find((item) => item.id === id)
+  if (!usuario) return
+  document.getElementById('editarUsuarioId').value = usuario.id
+  document.getElementById('editarUsuarioNome').value = usuario.nome || ''
+  document.getElementById('editarUsuarioCpf').value = usuario.cpf || ''
+  document.getElementById('editarUsuarioAdmin').checked = Boolean(usuario.is_admin)
+  abrirModal('modalEditarUsuario')
+}
 
-  const cpf = prompt('Novo CPF do usuário:')?.trim()
-  if (!cpf) return
+async function salvarEdicaoUsuario(event) {
+  event.preventDefault()
+  atualizarMensagem('')
 
-  const isAdmin = confirm('Tornar o usuário administrador? Clique em OK para Sim, Cancelar para Não.')
+  const id = document.getElementById('editarUsuarioId').value
+  const nome = document.getElementById('editarUsuarioNome').value.trim()
+  const cpf = document.getElementById('editarUsuarioCpf').value.trim()
+  const isAdmin = document.getElementById('editarUsuarioAdmin').checked
+
+  if (!nome || !cpf) {
+    atualizarMensagem('Preencha nome e CPF para atualizar o usuário.', false)
+    return
+  }
 
   try {
     const response = await fetch(getUsuariosApiUrl(String(id)), {
@@ -267,15 +368,29 @@ async function editarUsuario(id) {
       throw new Error(data.error || 'Erro ao atualizar usuário')
     }
     atualizarMensagem('Usuário atualizado com sucesso.')
+    fecharModal('modalEditarUsuario')
     carregarUsuarios()
   } catch (error) {
     atualizarMensagem(error.message, false)
   }
 }
 
-async function redefinirSenhaUsuario(id) {
-  const senha = prompt('Digite a nova senha do usuário:')
-  if (!senha) return
+function redefinirSenhaUsuario(id) {
+  document.getElementById('senhaUsuarioId').value = id
+  document.getElementById('senhaUsuarioNova').value = ''
+  abrirModal('modalSenhaUsuario')
+}
+
+async function salvarSenhaUsuario(event) {
+  event.preventDefault()
+  atualizarMensagem('')
+
+  const id = document.getElementById('senhaUsuarioId').value
+  const senha = document.getElementById('senhaUsuarioNova').value.trim()
+  if (!senha) {
+    atualizarMensagem('Digite a nova senha.', false)
+    return
+  }
 
   try {
     const response = await fetch(getUsuariosApiUrl(`${id}/senha`), {
@@ -288,14 +403,22 @@ async function redefinirSenhaUsuario(id) {
       throw new Error(data.error || 'Erro ao redefinir senha')
     }
     atualizarMensagem('Senha atualizada com sucesso.')
+    fecharModal('modalSenhaUsuario')
   } catch (error) {
     atualizarMensagem(error.message, false)
   }
 }
 
-async function deletarUsuario(id) {
-  const confirmacao = confirm('Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.')
-  if (!confirmacao) return
+function deletarUsuario(id, nome) {
+  document.getElementById('deletarUsuarioId').value = id
+  document.getElementById('deletarUsuarioNome').textContent = nome || 'este usuário'
+  abrirModal('modalExcluirUsuario')
+}
+
+async function confirmarExcluirUsuario(event) {
+  event.preventDefault()
+  atualizarMensagem('')
+  const id = document.getElementById('deletarUsuarioId').value
 
   try {
     const response = await fetch(getUsuariosApiUrl(String(id)), {
@@ -307,6 +430,7 @@ async function deletarUsuario(id) {
       throw new Error(data.error || 'Erro ao excluir usuário')
     }
     atualizarMensagem('Usuário removido com sucesso.')
+    fecharModal('modalExcluirUsuario')
     carregarUsuarios()
   } catch (error) {
     atualizarMensagem(error.message, false)

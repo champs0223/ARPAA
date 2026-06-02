@@ -73,7 +73,7 @@ router.post('/adotantes', async (req, res) => {
     await pool.execute(
       `INSERT INTO adotantes (
         id, nome, email, telefone, endereco, complemento, cidade, estado,
-        cpf, idade, tem_trabalha, tem_criancas, tem_pets, tem_quintal, observacoes
+        cpf, idade, trabalha, tem_criancas, tem_pets, tem_quintal, observacoes
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
@@ -129,7 +129,7 @@ router.post('/admin/adotantes', auth.authenticateToken, auth.ensureAdmin, async 
     const idUnico = crypto.randomBytes(6).toString('hex').toUpperCase();
     const query = `INSERT INTO adotantes
       (id, nome, endereco, email, telefone, complemento, cidade, estado, cpf, idade,
-       tem_trabalha, tem_criancas, tem_pets, tem_quintal, observacoes)
+       trabalha, tem_criancas, tem_pets, tem_quintal, observacoes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     await pool.execute(query, [
@@ -180,7 +180,7 @@ router.put('/adotantes/:id', async (req, res) => {
     const [result] = await pool.execute(
       `UPDATE adotantes SET
         nome = ?, email = ?, telefone = ?, endereco = ?, complemento = ?, cidade = ?, estado = ?,
-        cpf = ?, idade = ?, tem_trabalha = ?, tem_criancas = ?, tem_pets = ?, tem_quintal = ?, observacoes = ?
+        cpf = ?, idade = ?, trabalha = ?, tem_criancas = ?, tem_pets = ?, tem_quintal = ?, observacoes = ?
       WHERE id = ?`,
       [
         nome,
@@ -214,7 +214,7 @@ router.put('/adotantes/:id', async (req, res) => {
 });
 
 // DELETE - Deletar adotante
-router.delete('/adotantes/:id', async (req, res) => {
+router.delete('/adotantes/:id', auth.authenticateToken, auth.ensureAdmin, async (req, res) => {
   try {
     const [result] = await pool.execute('DELETE FROM adotantes WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) {

@@ -26,10 +26,13 @@
       font-weight: 500;
     }
     </style>
+    <script src="../js/config-api.js"></script>
+    <script src="../js/modal-confirmation.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-900">
     <script>
+        // Permitir tanto admins quanto usuários comuns acessarem solicitações
         if (localStorage.getItem("adminLogado") !== "true") {
             window.location.href = "index.html";
         }
@@ -261,15 +264,13 @@ let solicitacaoAtual = null;
 // Carregar solicitações
 async function carregarSolicitacoes() {
     try {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) {
-            throw new Error('Token de autenticação não encontrado');
+        const headers = getAdminHeaders();
+        if (!headers.Authorization) {
+            throw new Error('Token de autenticação não encontrado. Por favor, faça login novamente.');
         }
 
         const response = await fetch('http://localhost:3001/api/admin/solicitacoes?status=Pendente', {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
+            headers
         });
         if (!response.ok) throw new Error('Erro ao buscar solicitações');
 
@@ -353,8 +354,11 @@ function renderizarTabela(solicitacoes) {
 // Abrir modal de detalhes
 async function abrirDetalhes(id) {
     try {
+        const headers = getAdminHeaders();
         const idSeguro = String(id || '');
-        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${idSeguro}`);
+        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${idSeguro}`, {
+            headers
+        });
         if (!response.ok) throw new Error('Erro ao buscar detalhes');
 
         solicitacaoAtual = await response.json();
@@ -378,23 +382,29 @@ async function abrirDetalhes(id) {
 }
 
 async function deletarSolicitacao(id) {
-    uiConfirm('Deseja excluir permanentemente esta solicitação?', async () => {
+    confirmDelete('solicitação', async () => {
         try {
+            const headers = getAdminHeaders();
+            if (!headers.Authorization) {
+                throw new Error('Token de autenticação não encontrado. Faça login novamente.');
+            }
+
             const idSeguro = String(id || '');
             const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${idSeguro}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers
             });
 
-        if (!response.ok) throw new Error('Erro ao excluir solicitação');
+            if (!response.ok) throw new Error('Erro ao excluir solicitação');
 
-        uiShowSuccess('Solicitação excluída com sucesso.');
-        fecharModal();
-        carregarSolicitacoes();
-    } catch (error) {
-        console.error('Erro:', error);
-        uiShowError('Erro ao excluir solicitação');
-    }
-});
+            uiShowSuccess('Solicitação excluída com sucesso.');
+            fecharModal();
+            carregarSolicitacoes();
+        } catch (error) {
+            console.error('Erro:', error);
+            uiShowError('Erro ao excluir solicitação');
+        }
+    })
 }
 
 let confirmacaoAcaoCallback = null
@@ -436,10 +446,16 @@ function confirmarAcao() {
 document.getElementById('btnAprovar').addEventListener('click', () => {
     if (!solicitacaoAtual) return;
 
-    abrirModalConfirmacaoAcao('aprovar', 'Tem certeza que deseja APROVAR esta solicitação?', async () => {
+    confirmApprove('solicitação', async () => {
         try {
+            const headers = getAdminHeaders();
+            if (!headers.Authorization) {
+                throw new Error('Token de autenticação não encontrado. Faça login novamente.');
+            }
+
             const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}/iniciar`, {
-                method: 'POST'
+                method: 'POST',
+                headers
             });
 
             if (!response.ok) throw new Error('Erro ao iniciar o processo');
@@ -459,11 +475,19 @@ document.getElementById('btnAprovar').addEventListener('click', () => {
 document.getElementById('btnRejeitar').addEventListener('click', () => {
     if (!solicitacaoAtual) return;
 
-    abrirModalConfirmacaoAcao('rejeitar', 'Tem certeza que deseja REJEITAR esta solicitação?', async () => {
+    confirmReject('solicitação', async () => {
         try {
+            const headers = getAdminHeaders();
+            if (!headers.Authorization) {
+                throw new Error('Token de autenticação não encontrado. Faça login novamente.');
+            }
+
             const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${solicitacaoAtual.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     status: 'Rejeitado',
                     observacoes: document.getElementById('observacoesAdmin').value
@@ -482,10 +506,6 @@ document.getElementById('btnRejeitar').addEventListener('click', () => {
         }
     });
 });
-
-document.getElementById('confirmacao-confirmar').addEventListener('click', confirmarAcao)
-document.getElementById('confirmacao-cancelar').addEventListener('click', fecharModalConfirmacaoAcao)
-document.getElementById('confirmacao-fechar').addEventListener('click', fecharModalConfirmacaoAcao)
 
 // Fechar modal
 function fecharModal() {

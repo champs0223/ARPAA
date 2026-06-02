@@ -25,11 +25,7 @@
 </style>
 <script src="../js/config-api.js"></script>
 <script src="../js/menu.js"></script>
-<script src="../../public/js/db-local.js"></script>
-<script src="../../public/js/api-local.js"></script>
 <script src="../../public/js/api-helper.js"></script>
-<script src="../../public/js/init-dados-locais.js"></script>
-<script src="../js/dashboard-loader.js"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -211,10 +207,150 @@ if (localStorage.getItem("adminLogado") !== "true" || localStorage.getItem("usua
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   console.log('🚀 KPIs inicializando...');
-  carregarDashboard();
-});
+  (async () => { await carregarKPIs(); })();
+}, { once: true });
+
+async function carregarKPIs() {
+  console.log('🚀 KPIs inicializando...');
+
+  const token = getAdminToken();
+
+  console.log(
+    '[Debug] Token recuperado para KPIs:',
+    token ? `Encontrado (Inicia com ${token.substring(0, 10)}...)` : 'NULO/AUSENTE'
+  );
+
+  if (!token) {
+    console.error('Erro: Token de autenticação não encontrado no storage.');
+    return;
+  }
+
+  const metricasUrl = `${API_BASE_URL}/api/metricas/summary`;
+  const animaisUrl = `${API_BASE_URL}/api/animais`;
+
+  try {
+    // Usar helper centralizado para gerar headers (inclui 'Bearer' quando necessário)
+    const metricasHeaders = buildAuthHeaders(token, 'application/json');
+
+    const [metricasResponse, animaisResponse] = await Promise.all([
+      fetch(metricasUrl, { method: 'GET', headers: metricasHeaders }),
+      fetch(animaisUrl)
+    ]);
+
+    if (metricasResponse.status === 401) {
+      throw new Error('Falha ao carregar métricas (401 - Não Autorizado). Verifique a validade do token.');
+    }
+
+    if (!metricasResponse.ok) {
+      throw new Error(`Falha ao carregar métricas (${metricasResponse.status})`);
+    }
+
+    if (!animaisResponse.ok) {
+      throw new Error(`Falha ao carregar lista de animais (${animaisResponse.status})`);
+    }
+
+    const metricas = await metricasResponse.json();
+    const animais = await animaisResponse.json();
+
+    console.log('Dados de métricas recebidos com sucesso:', metricas);
+
+    atualizarKPIs(metricas);
+    atualizarDistribuicaoAnimais(animais);
+  } catch (error) {
+    console.error('Erro ao carregar KPIs:', error);
+    // Se for 401 -> token inválido/expirado, limpar sessão e redirecionar para login
+    const msg = String(error && (error.message || ''));
+    if (/401|Não Autorizado|Não autorizado|Unauthorized/i.test(msg)) {
+      try {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminLogado');
+        sessionStorage.removeItem('adminToken');
+      } catch (_) {}
+      window.location.href = 'index.html';
+    }
+  }
+}
+
+function atualizarKPIs(metricas) {
+  if (!metricas || typeof metricas !== 'object' || Object.keys(metricas).length === 0) return;
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  };
+
+  setText('taxaConversao', `${metricas.taxaConversao?.toFixed?.(2) ?? Number(metricas.taxaConversao || 0).toFixed(2)}%`);
+  setText('taxaConversaoDetalhe', `${metricas.totalPedidos ?? 0} pedidos / ${metricas.visitantesUnicos ?? 0} visitantes únicos`);
+  setText('taxaAdocaoReal', `${metricas.taxaAdocaoReal?.toFixed?.(2) ?? Number(metricas.taxaAdocaoReal || 0).toFixed(2)}%`);
+  setText('taxaAdocaoRealDetalhe', `${metricas.animaisAdotados ?? 0} adotados / ${metricas.animaisDisponiveis ?? 0} disponíveis`);
+  setText('tempoMedioMinutos', `${metricas.tempoMedioMinutos?.toFixed?.(2) ?? Number(metricas.tempoMedioMinutos || 0).toFixed(2)}`);
+  setText('taxaInteracao', `${metricas.taxaInteracao?.toFixed?.(2) ?? Number(metricas.taxaInteracao || 0).toFixed(2)}%`);
+  setText('taxaInteracaoDetalhe', `${metricas.cliquesAnimais ?? 0} cliques / ${metricas.visitantesUnicos ?? 0} visitantes únicos`);
+  setText('clickParaPedido', `${metricas.cliqueParaPedido?.toFixed?.(2) ?? Number(metricas.cliqueParaPedido || 0).toFixed(2)}%`);
+  setText('clickParaPedidoDetalhe', `${metricas.totalPedidos ?? 0} pedidos / ${metricas.cliquesAnimais ?? 0} cliques`);
+  setText('pedidoParaAdocao', `${metricas.pedidoParaAdocao?.toFixed?.(2) ?? Number(metricas.pedidoParaAdocao || 0).toFixed(2)}%`);
+  setText('pedidoParaAdocaoDetalhe', `${metricas.pedidosAprovados ?? 0} aprovações / ${metricas.totalPedidos ?? 0} pedidos`);
+}
+
+function atualizarDistribuicaoAnimais(animais) {
+  if (!Array.isArray(animais)) return;
+
+  const disponiveis = animais.filter(a => String(a.status || '').toLowerCase().includes('dispon')).length;
+  const reservados = animais.filter(a => String(a.status || '').toLowerCase().includes('reservad')).length;
+  const tratamento = animais.filter(a => String(a.status || '').toLowerCase().includes('tratament')).length;
+  const total = disponiveis + reservados + tratamento || 1;
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  };
+
+  setText('legendDisponiveis', `${disponiveis} (${Math.round((disponiveis / total) * 100)}%)`);
+  setText('legendReservados', `${reservados} (${Math.round((reservados / total) * 100)}%)`);
+  setText('legendTratamento', `${tratamento} (${Math.round((tratamento / total) * 100)}%)`);
+
+  renderGraficoAnimais(disponiveis, reservados, tratamento);
+}
+
+function renderGraficoAnimais(disponiveis, reservados, tratamento) {
+  const canvas = document.getElementById('graficoAnimais');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  if (window.kpisChart instanceof Chart) {
+    window.kpisChart.destroy();
+  }
+
+  window.kpisChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Disponíveis', 'Reservados', 'Em tratamento'],
+      datasets: [{
+        data: [disponiveis, reservados, tratamento],
+        backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.label}: ${context.formattedValue}`
+          }
+        }
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>

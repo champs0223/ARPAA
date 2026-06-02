@@ -8,6 +8,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/config.css">
+<script src="../js/config-api.js"></script>
+<script src="../js/modal-confirmation.js"></script>
 
 <style>
 .menu-ativo {
@@ -345,11 +347,6 @@ let adocoes = JSON.parse(localStorage.getItem("adocoes")) || []
 let termoBusca = ""
 let adotantes = []
 
-function getAdminHeaders(){
-  const token = localStorage.getItem('adminToken')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
 async function carregarAdotantesDoBanco() {
   try {
     const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/adotantes`)
@@ -502,6 +499,11 @@ if(filtroStatus !== "todos"){
     <button onclick="editarAdotante('${a.id}')"
       class="text-blue-600 hover:text-blue-800 transition">
       <i class="fas fa-pen"></i>
+    </button>
+
+    <button onclick="deletarAdotante('${a.id}', '${a.nome}')"
+      class="text-red-600 hover:text-red-800 transition">
+      <i class="fas fa-trash"></i>
     </button>
 
   </td>
@@ -786,6 +788,29 @@ function salvarEdicao(){
     } catch (error) {
       console.error('Erro ao salvar edição:', error)
       mostrarErro("Erro ao atualizar adotante. Tente novamente.")
+    }
+  })
+}
+
+async function deletarAdotante(id, nome) {
+  confirmDelete(nome || 'adotante', async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/adotantes/${id}`, {
+        method: 'DELETE',
+        headers: getAdminHeaders()
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao deletar adotante')
+      }
+
+      adotantes = adotantes.filter(a => a.id !== id)
+      render()
+      mostrarSucesso("Adotante deletado com sucesso!")
+    } catch (error) {
+      console.error('Erro ao deletar adotante:', error)
+      mostrarErro(error.message || "Erro ao deletar adotante. Tente novamente.")
     }
   })
 }
