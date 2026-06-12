@@ -33,6 +33,38 @@ window.location.href = "index.html"
 }
 </script>
 
+<!-- MIGRAÇÃO DE CHAVE DE DOAÇÕES (doacoes -> arpaa_doacoes_dados) -->
+<script>
+function migrateDoacoesLocalStorage(){
+  try{
+    const oldRaw = localStorage.getItem('doacoes');
+    if(!oldRaw) return;
+    const old = JSON.parse(oldRaw || '[]');
+    if(!Array.isArray(old) || old.length === 0) { localStorage.removeItem('doacoes'); return; }
+
+    const currentRaw = localStorage.getItem('arpaa_doacoes_dados');
+    const current = JSON.parse(currentRaw || '[]');
+
+    const map = new Map();
+    const keyFor = (d) => d && (d.id || d._id) ? (d.id || d._id) : JSON.stringify(d);
+
+    (current || []).forEach(d => map.set(keyFor(d), d));
+    (old || []).forEach(d => {
+      const k = keyFor(d);
+      if(!map.has(k)) map.set(k, d);
+    });
+
+    const merged = Array.from(map.values());
+    localStorage.setItem('arpaa_doacoes_dados', JSON.stringify(merged));
+    localStorage.removeItem('doacoes');
+  }catch(e){
+    console.warn('Migração de doacoes falhou', e);
+  }
+}
+
+migrateDoacoesLocalStorage();
+</script>
+
 
 <div class="flex min-h-screen">
 
@@ -330,7 +362,7 @@ document.getElementById("dataAtual").innerText =
 function carregarDashboard() {
   let animais = JSON.parse(localStorage.getItem("animais")) || [];
   let adocoes = JSON.parse(localStorage.getItem("adocoes")) || [];
-  let doacoes = JSON.parse(localStorage.getItem("doacoes")) || [];
+  let doacoes = JSON.parse(localStorage.getItem("arpaa_doacoes_dados")) || [];
 
   // CARDS PRINCIPAIS
   animarNumero(document.getElementById("totalAnimais"), animais.length);

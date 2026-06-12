@@ -287,10 +287,9 @@ async function login(){
     }
 
     // Login bem-sucedido
-    localStorage.setItem("adminLogado", "true")
     localStorage.setItem("usuarioId", dados.id)
     localStorage.setItem("usuarioNome", dados.nome)
-    localStorage.setItem("usuarioAdmin", dados.is_admin)
+    localStorage.setItem("adminLogado", dados.is_admin ? 'true' : 'false')
     
     window.location.href="dashboard.html"
 

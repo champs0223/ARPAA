@@ -55,6 +55,59 @@ module.exports = (io) => {
 });
 
 /**
+ * GET /api/public/solicitacoes
+ * Listar solicitações do usuário autenticado
+ */
+router.get('/public/solicitacoes', auth.authenticateToken, async (req, res) => {
+  try {
+    const { status, email } = req.query;
+    const userName = String(req.user.nome || '').trim();
+
+    if (!userName) {
+      return res.status(400).json({ error: 'Nome do usuário não disponível para consulta' });
+    }
+
+    const params = [userName];
+    let whereClause = 'WHERE s.nome = ?';
+
+    if (email) {
+      whereClause += ' AND s.email = ?';
+      params.push(email);
+    }
+
+    if (status) {
+      whereClause += ' AND s.status = ?';
+      params.push(status);
+    }
+
+    const [solicitacoes] = await pool.query(`
+      SELECT 
+        s.id,
+        s.animal_id,
+        s.nome as nome_adotante,
+        s.email,
+        s.telefone,
+        s.endereco,
+        s.mensagem,
+        s.status,
+        s.created_at,
+        a.nome as nome_animal,
+        a.especie,
+        a.idade_aproximada
+      FROM solicitacoes_adocao s
+      LEFT JOIN animais a ON s.animal_id = a.id
+      ${whereClause}
+      ORDER BY s.created_at DESC
+    `, params);
+
+    res.json(solicitacoes);
+  } catch (error) {
+    console.error('Erro ao listar solicitações do usuário:', error);
+    res.status(500).json({ error: 'Erro ao listar solicitações' });
+  }
+});
+
+/**
  * GET /api/admin/solicitacoes
  * Listar todas as solicitações de adoção (admin)
  */
@@ -95,6 +148,50 @@ router.get('/admin/solicitacoes', auth.authenticateToken, auth.ensureAdmin, asyn
   } catch (error) {
     console.error('Erro ao listar solicitações:', error);
     res.status(500).json({ error: 'Erro ao listar solicitações' });
+  }
+});
+
+/**
+ * GET /api/public/solicitacoes/:id
+ * Obter detalhes de uma solicitação para o usuário autenticado
+ */
+router.get('/public/solicitacoes/:id', auth.authenticateToken, async (req, res) => {
+  try {
+    const userName = String(req.user.nome || '').trim();
+    const solicitacaoId = req.params.id;
+
+    if (!userName) {
+      return res.status(400).json({ error: 'Nome do usuário não disponível para consulta' });
+    }
+
+    const [solicitacoes] = await pool.query(`
+      SELECT 
+        s.id,
+        s.animal_id,
+        s.nome as nome_adotante,
+        s.email,
+        s.telefone,
+        s.endereco,
+        s.mensagem,
+        s.status,
+        s.created_at,
+        a.nome as nome_animal,
+        a.especie,
+        a.idade_aproximada
+      FROM solicitacoes_adocao s
+      LEFT JOIN animais a ON s.animal_id = a.id
+      WHERE s.id = ? AND s.nome = ?
+      LIMIT 1
+    `, [solicitacaoId, userName]);
+
+    if (solicitacoes.length === 0) {
+      return res.status(404).json({ error: 'Solicitação não encontrada' });
+    }
+
+    res.json(solicitacoes[0]);
+  } catch (error) {
+    console.error('Erro ao buscar solicitação do usuário:', error);
+    res.status(500).json({ error: 'Erro ao buscar solicitação' });
   }
 });
 

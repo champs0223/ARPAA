@@ -111,7 +111,7 @@ router.get('/metricas/summary', auth.authenticateToken, auth.ensureAdmin, async 
       }
     }
 
-    let eventosCount = 0, animaisCount = 0;
+    let eventosCount = 0, animaisCount = 0, adocoesCount = 0;
     try {
       const [eventosRows] = await pool.query('SELECT COUNT(*) AS eventosCount FROM eventos');
       eventosCount = Number(eventosRows[0]?.eventosCount || 0);
@@ -124,6 +124,13 @@ router.get('/metricas/summary', auth.authenticateToken, auth.ensureAdmin, async 
       animaisCount = Number(animaisCountRows[0]?.animaisCount || 0);
     } catch (e) {
       try { animaisCount = (getAll('animais') || []).length; } catch (_) { animaisCount = 0; }
+    }
+
+    try {
+      const [adocoesRows] = await pool.query('SELECT COUNT(*) AS adocoesCount FROM adocoes');
+      adocoesCount = Number(adocoesRows[0]?.adocoesCount || 0);
+    } catch (e) {
+      try { adocoesCount = (getAll('adocoes') || []).length; } catch (_) { adocoesCount = 0; }
     }
 
     const taxaConversao = visitantesUnicos > 0
@@ -148,7 +155,7 @@ router.get('/metricas/summary', auth.authenticateToken, auth.ensureAdmin, async 
       totalPedidos,
       pedidosAprovados,
       animaisAdotados,
-+      animaisCount,
+      animaisCount,
       animaisDisponiveis,
       taxaConversao: Number(taxaConversao.toFixed(2)),
       taxaAdocaoReal: Number(taxaAdocaoReal.toFixed(2)),
@@ -156,11 +163,12 @@ router.get('/metricas/summary', auth.authenticateToken, auth.ensureAdmin, async 
       taxaInteracao: Number(taxaInteracao.toFixed(2)),
       cliqueParaPedido: Number(cliqueParaPedido.toFixed(2)),
       pedidoParaAdocao: Number(pedidoParaAdocao.toFixed(2)),
-+      eventosCount,
-+      doacoesCount,
-+      totalDinheiro,
-+      totalRacao,
-+      totalMedicamentos
+      eventosCount,
+      adocoesCount,
+      doacoesCount,
+      totalDinheiro,
+      totalRacao,
+      totalMedicamentos
     });
   } catch (error) {
     console.error('Erro ao buscar resumo de métricas:', error);
@@ -176,7 +184,13 @@ router.get('/metricas/summary', auth.authenticateToken, auth.ensureAdmin, async 
       tempoMedioMinutos: 0.00,
       taxaInteracao: 0.00,
       cliqueParaPedido: 0.00,
-      pedidoParaAdocao: 0.00
+      pedidoParaAdocao: 0.00,
+      eventosCount: 0,
+      adocoesCount: 0,
+      doacoesCount: 0,
+      totalDinheiro: 0,
+      totalRacao: 0,
+      totalMedicamentos: 0
     });
   }
 });

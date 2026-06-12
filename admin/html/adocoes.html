@@ -576,7 +576,7 @@ async function excluir(index){
   const adocao = adocoes[index];
   
   // Verificar se apenas admins podem deletar e se o processo está concluído
-  const isAdmin = localStorage.getItem('usuarioAdmin') === 'true';
+  const isAdmin = localStorage.getItem('adminLogado') === 'true';
   if (!isAdmin) {
     uiShowError('Apenas administradores podem excluir processos de adoção.');
     return;
@@ -625,7 +625,7 @@ function render(){
 })
     let lista = document.getElementById("listaAdocoes")
   let filtro = document.getElementById("filtro").value
-  const isAdmin = localStorage.getItem('usuarioAdmin') === 'true'
+  const isAdmin = localStorage.getItem('adminLogado') === 'true'
 
   lista.innerHTML = ""
 

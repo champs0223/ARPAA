@@ -104,6 +104,37 @@ function buildAuthHeaders(providedToken = null, contentType = 'application/json'
   return headers;
 }
 
+// Migração segura do localStorage: unifica 'doacoes' -> 'arpaa_doacoes_dados'
+function migrateDoacoesLocalStorage(){
+  try{
+    const oldRaw = localStorage.getItem('doacoes');
+    if(!oldRaw) return;
+    const old = JSON.parse(oldRaw || '[]');
+    if(!Array.isArray(old) || old.length === 0) { localStorage.removeItem('doacoes'); return; }
+
+    const currentRaw = localStorage.getItem('arpaa_doacoes_dados');
+    const current = JSON.parse(currentRaw || '[]');
+
+    const map = new Map();
+    const keyFor = (d) => d && (d.id || d._id) ? (d.id || d._id) : JSON.stringify(d);
+
+    (current || []).forEach(d => map.set(keyFor(d), d));
+    (old || []).forEach(d => {
+      const k = keyFor(d);
+      if(!map.has(k)) map.set(k, d);
+    });
+
+    const merged = Array.from(map.values());
+    localStorage.setItem('arpaa_doacoes_dados', JSON.stringify(merged));
+    localStorage.removeItem('doacoes');
+  }catch(e){
+    console.warn('Migração de doacoes falhou', e);
+  }
+}
+
+// Executa migração ao carregar o helper (admin pages)
+migrateDoacoesLocalStorage();
+
 // Expor aliases seguros no escopo global sem sobrescrever nomes existentes
 window.buildAuthHeaders = window.buildAuthHeaders || buildAuthHeaders;
 window.getAuthHeaders = window.getAuthHeaders || getAuthHeaders;

@@ -16,19 +16,42 @@ function safeNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isAdminUser() {
+  const explicit = localStorage.getItem('usuarioAdmin');
+  if (explicit !== null) return explicit === 'true';
+  return localStorage.getItem('adminLogado') === 'true';
+}
+
+async function safeFetchJson(url, options = {}, defaultValue = null) {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      if (response.status === 403) {
+        console.warn(`⚠️ Acesso negado para ${url}, ignorando endpoint restrito.`);
+        return defaultValue;
+      }
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.warn(`⚠️ Erro ao buscar ${url}:`, error.message || error);
+    return defaultValue;
+  }
+}
+
 // Estado para evitar recargas concorrentes do dashboard e debouncing
 let _arpaaDashboardReloadTimer = null;
 let _arpaaDashboardLoading = false;
 
-function setElementText(id, text) {
-  const element = document.getElementById(id);
+function setElementText(id, text, fallbackId) {
+  const element = document.getElementById(id) || (fallbackId ? document.getElementById(fallbackId) : null);
   if (element) {
     element.innerText = text;
   }
 }
 
-function setElementWidth(id, width) {
-  const element = document.getElementById(id);
+function setElementWidth(id, width, fallbackId) {
+  const element = document.getElementById(id) || (fallbackId ? document.getElementById(fallbackId) : null);
   if (element) {
     element.style.width = width;
   }
@@ -43,63 +66,78 @@ async function carregarDashboard() {
   
   try {
     const authHeaders = getAdminHeaders();
+    const adminAccess = isAdminUser();
+
+    const metricasResumoPromise = adminAccess
+      ? safeFetchJson(`${API_BASE_URL}/api/metricas/summary`, { headers: authHeaders }, null)
+      : Promise.resolve(null);
+
+    const eventosPromise = adminAccess
+      ? safeFetchJson(`${API_BASE_URL}/api/admin/eventos`, { headers: authHeaders }, JSON.parse(localStorage.getItem('eventos')) || [])
+      : Promise.resolve(JSON.parse(localStorage.getItem('eventos')) || []);
+
+    const doacoesResumoPromise = adminAccess
+      ? safeFetchJson(`${API_BASE_URL}/api/doacoes/summary`, { headers: authHeaders }, null)
+      : Promise.resolve(null);
 
     // Carregar dados em paralelo
     const [animais, adocoes, adocoesResumo, metricasResumo, eventos, doacoesResumo, doacoesList] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/animais`, { headers: authHeaders }).then(r => r.json()).catch(e => {
-        console.warn('⚠️ Erro ao buscar animais:', e.message);
-        return JSON.parse(localStorage.getItem('animais')) || [];
-      }),
-      fetch(`${API_BASE_URL}/api/adocoes`, { headers: authHeaders }).then(r => r.json()).catch(e => {
-        console.warn('⚠️ Erro ao buscar adoções:', e.message);
-        return JSON.parse(localStorage.getItem('adocoes')) || [];
-      }),
-      fetch(`${API_BASE_URL}/api/adocoes/summary`, { headers: authHeaders }).then(r => r.ok ? r.json() : Promise.reject(new Error('Resumo inválido'))).catch(e => {
-        console.warn('⚠️ Erro ao buscar resumo de adoções:', e.message);
-        return null;
-      }),
-      fetch(`${API_BASE_URL}/api/metricas/summary`, { headers: authHeaders }).then(r => r.ok ? r.json() : Promise.reject(new Error('Resumo de métricas inválido'))).catch(e => {
-        console.warn('⚠️ Erro ao buscar resumo de métricas:', e.message);
-        return null;
-      }),
-      fetch(`${API_BASE_URL}/api/admin/eventos`, { headers: authHeaders }).then(r => r.json()).catch(e => {
-        console.warn('⚠️ Erro ao buscar eventos:', e.message);
-        return JSON.parse(localStorage.getItem('eventos')) || [];
-      }),
-      fetch(`${API_BASE_URL}/api/doacoes/summary`, { headers: authHeaders }).then(r => r.ok ? r.json() : Promise.reject(new Error('Resumo inválido de doações'))).catch(e => {
-        console.warn('⚠️ Erro ao buscar resumo de doações:', e.message);
-        return null;
-      }),
+      safeFetchJson(`${API_BASE_URL}/api/animais`, { headers: authHeaders }, JSON.parse(localStorage.getItem('animais')) || []),
+      safeFetchJson(`${API_BASE_URL}/api/adocoes`, { headers: authHeaders }, JSON.parse(localStorage.getItem('adocoes')) || []),
+      safeFetchJson(`${API_BASE_URL}/api/adocoes/summary`, { headers: authHeaders }, null),
+      metricasResumoPromise,
+      eventosPromise,
+      doacoesResumoPromise,
       // Doações - carrega do localStorage pois tabela ainda não está no DB
       Promise.resolve(safeParseJSON(localStorage.getItem('arpaa_doacoes_dados')) || [])
     ]);
 
+    // Isolar dados de doações em namespace para evitar sobrescrita por outros scripts
     const doacoesArray = Array.isArray(doacoesList) ? doacoesList : [];
     const totalDoacoesCount = safeNumber(doacoesArray.length);
+    const serverDoacoesCount = safeNumber(metricasResumo?.doacoesCount);
+    const doacoesCount = serverDoacoesCount || totalDoacoesCount;
 
-    console.log('✅ Dados carregados:', { 
-      animaisCount: animais?.length || 0, 
+    // Salvar snapshot seguro em window.kpiData para evitar concorrência assíncrona
+    try {
+      window.kpiData = window.kpiData || {};
+      window.kpiData.lastDashboardLoad = Date.now();
+      window.kpiData.doacoes = {
+        count: doacoesCount,
+        listLength: totalDoacoesCount,
+        serverCount: serverDoacoesCount
+      };
+      // Não sobrescrever objetos existentes, apenas anexar resumo de doações
+      window.kpiData.resumoDoacoes = window.kpiData.resumoDoacoes || {};
+    } catch (e) {
+      console.warn('Falha ao gravar window.kpiData (não crítico):', e && e.message);
+    }
+
+    console.log('✅ Dados carregados:', {
+      animaisCount: animais?.length || 0,
       adocoesCount: adocoes?.length || 0,
       eventosCount: eventos?.length || 0,
-      doacoesCount: totalDoacoesCount
+      doacoesCount
     });
 
     // ===== CARDS PRINCIPAIS =====
     animarNumero(document.getElementById('totalAnimais'), safeNumber((animais || []).length));
     animarNumero(document.getElementById('totalAdocoes'), safeNumber((adocoes || []).length));
-    animarNumero(document.getElementById('totalDoacoes'), totalDoacoesCount);
+    animarNumero(document.getElementById('totalDoacoes') || document.getElementById('totalDoacoesDetalhe'), doacoesCount);
     animarNumero(document.getElementById('totalEventos'), safeNumber((eventos || []).length));
 
     // ===== DOAÇÕES DETALHADAS =====
-    // Preferir dados do resumo vindo da API quando presentes; senão calcular a partir do local
-    const resumoDoacoesData = (doacoesResumo && Object.keys(doacoesResumo).length > 0) ? doacoesResumo : null;
+    // Preferir os totais agregados direto do endpoint de métricas; se não estiverem disponíveis, usar dados de resumo de doações ou fallback local.
+    const resumoDoacoesData = (metricasResumo && (metricasResumo.totalDinheiro !== undefined || metricasResumo.totalRacao !== undefined || metricasResumo.totalMedicamentos !== undefined))
+      ? metricasResumo
+      : (doacoesResumo && Object.keys(doacoesResumo).length > 0 ? doacoesResumo : null);
     const resumoDoacoes = { dinheiro: 0, racao: 0, medicamentos: 0, outros_insumos: 0 };
 
     if (resumoDoacoesData) {
-      resumoDoacoes.dinheiro = parsePortugueseNumber(resumoDoacoesData.dinheiro);
-      resumoDoacoes.racao = parsePortugueseNumber(resumoDoacoesData.racao);
-      resumoDoacoes.medicamentos = parsePortugueseNumber(resumoDoacoesData.medicamentos);
-      resumoDoacoes.outros_insumos = parsePortugueseNumber(resumoDoacoesData.outros_insumos);
+      resumoDoacoes.dinheiro = parsePortugueseNumber(resumoDoacoesData.totalDinheiro ?? resumoDoacoesData.dinheiro ?? 0);
+      resumoDoacoes.racao = parsePortugueseNumber(resumoDoacoesData.totalRacao ?? resumoDoacoesData.racao ?? 0);
+      resumoDoacoes.medicamentos = parsePortugueseNumber(resumoDoacoesData.totalMedicamentos ?? resumoDoacoesData.medicamentos ?? 0);
+      resumoDoacoes.outros_insumos = parsePortugueseNumber(resumoDoacoesData.outros_insumos ?? 0);
     } else {
       resumoDoacoes.dinheiro = doacoesList
         .filter(d => d && String(d.tipo || '').toLowerCase() === 'dinheiro')
@@ -115,14 +153,20 @@ async function carregarDashboard() {
         .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
     }
 
+    // Publicar resumo calculado no namespace kpiData para leitura por outros módulos sem risco
+    try {
+      window.kpiData = window.kpiData || {};
+      window.kpiData.resumoDoacoes = Object.assign({}, resumoDoacoes);
+    } catch (e) { /* ignore */ }
+
     animarNumero(
-      document.getElementById('totalDinheiroDash'),
+      document.getElementById('totalDinheiroDashCompact') || document.getElementById('totalDinheiroDash'),
       Number(resumoDoacoes.dinheiro || 0),
       1200,
       true
     );
-    setElementText('totalRacaoDash', `${Number(resumoDoacoes.racao || 0)} KG`);
-    setElementText('totalMedicamentosDash', `${Number(resumoDoacoes.medicamentos || 0)} un`);
+    setElementText('totalRacaoDashCompact', `${Number(resumoDoacoes.racao || 0)} KG`, 'totalRacaoDash');
+    setElementText('totalMedicamentosDashCompact', `${Number(resumoDoacoes.medicamentos || 0)} un`, 'totalMedicamentosDash');
     setElementText('totalOutrosInsumosDash', `${Number(resumoDoacoes.outros_insumos || 0)} un`);
 
       // Also populate compact dashboard card if present
@@ -169,7 +213,9 @@ async function carregarDashboard() {
     setElementWidth('barraAprovadas', `${(aprovadas / totalStatus) * 100}%`);
     setElementWidth('barraRecusadas', `${(recusadas / totalStatus) * 100}%`);
 
-    preencherKPIsEngajamento(metricasResumo);
+    if (document.getElementById('kpisIndicadores')) {
+      preencherKPIsEngajamento(metricasResumo);
+    }
 
     // ===== GRÁFICO DE DISTRIBUIÇÃO DOS ANIMAIS =====
     let disponiveis = (animais || []).filter(a => {
@@ -203,10 +249,12 @@ async function carregarDashboard() {
 
 function preencherKPIsEngajamento(metrica) {
   const kpisContainer = document.getElementById('kpisIndicadores');
-  if (kpisContainer) {
-    kpisContainer.style.display = 'grid';
-    kpisContainer.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-3', 'gap-6');
+  if (!kpisContainer) {
+    return;
   }
+
+  kpisContainer.style.display = 'grid';
+  kpisContainer.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-3', 'gap-6');
 
   const resumo = metrica || {};
   const taxaConversao = safeNumber(resumo.taxaConversao).toFixed(2);
@@ -245,7 +293,7 @@ function carregarDashboardComFallback() {
   // Repetir lógica principal
   animarNumero(document.getElementById('totalAnimais'), animais.length);
   animarNumero(document.getElementById('totalAdocoes'), adocoes.length);
-  animarNumero(document.getElementById('totalDoacoes'), doacoes.length);
+  animarNumero(document.getElementById('totalDoacoes') || document.getElementById('totalDoacoesDetalhe'), doacoes.length);
   animarNumero(document.getElementById('totalEventos'), eventos.length);
 
   const dinheiro = doacoes
@@ -265,13 +313,13 @@ function carregarDashboardComFallback() {
     .reduce((s, d) => s + parsePortugueseNumber(d.quantidade), 0);
 
   animarNumero(
-    document.getElementById('totalDinheiroDash'),
+    document.getElementById('totalDinheiroDashCompact') || document.getElementById('totalDinheiroDash'),
     dinheiro,
     1200,
     true
   );
-  setElementText('totalRacaoDash', `${racao} KG`);
-  setElementText('totalMedicamentosDash', `${medicamentos} un`);
+  setElementText('totalRacaoDashCompact', `${racao} KG`, 'totalRacaoDash');
+  setElementText('totalMedicamentosDashCompact', `${medicamentos} un`, 'totalMedicamentosDash');
   setElementText('totalOutrosInsumosDash', `${outrosInsumos} un`);
 
   let pendentes = (adocoes || []).filter(a => {
@@ -315,7 +363,9 @@ function carregarDashboardComFallback() {
   }).length;
 
   renderizarGraficoAnimais(disponiveis, reservados, tratamento);
-  preencherKPIsEngajamento(null);
+  if (document.getElementById('kpisIndicadores')) {
+    preencherKPIsEngajamento(null);
+  }
   atualizarTimestamp();
 }
 

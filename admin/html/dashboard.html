@@ -291,8 +291,10 @@ document.getElementById("dataAtual").innerText =
 <!-- Dashboard Loader - carrega dados dinâmicos da API -->
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-  console.log('🚀 Dashboard inicializando...');
-  carregarDashboard();
+  if (document.getElementById('totalDinheiroDashCompact') || document.getElementById('totalDinheiroDash')) {
+    console.log('🚀 Dashboard inicializando...');
+    carregarDashboard();
+  }
 });
 </script>
 </body>

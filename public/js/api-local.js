@@ -157,7 +157,7 @@ async function fazerLogin(usuario, senha) {
     localStorage.setItem('adminLogado', 'true');
     localStorage.setItem('usuarioId', usuarioEncontrado.id);
     localStorage.setItem('usuarioNome', usuarioEncontrado.nome);
-    localStorage.setItem('usuarioAdmin', usuarioEncontrado.is_admin ? 'true' : 'false');
+    localStorage.setItem('adminLogado', usuarioEncontrado.is_admin ? 'true' : 'false');
 
     return usuarioEncontrado;
   } catch (error) {

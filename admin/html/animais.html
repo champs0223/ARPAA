@@ -543,7 +543,7 @@ Salvar Alterações
 </div>
 
 <!-- MODAL CONFIRMAÇÃO -->
-<div id="modalConfirmar" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
+<div id="modalConfirmar" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center" style="z-index:1200;">
   <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-80 text-center">
     <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
     <h2 class="text-lg font-bold mb-4">Tem certeza?</h2>
@@ -567,23 +567,38 @@ Salvar Alterações
   <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-96 text-center">
     <i class="fas fa-user-shield text-teal-600 text-3xl mb-3"></i>
     <h2 class="text-lg font-bold mb-2">Credencial ADM necessária</h2>
-    <p class="text-gray-600 mb-4">Digite sua senha administrativa para confirmar esta exclusão.</p>
+    <p class="text-gray-600 mb-2">Digite o nome/CPF e a senha de um administrador para confirmar esta exclusão.</p>
 
-    <input id="senhaAdminConfirmacao" type="password" placeholder="Senha administrativa" 
+    <input id="usuarioAdminConfirmacao" type="text" placeholder="Nome ou CPF do administrador"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-3" />
+
+    <input id="senhaAdminConfirmacao" type="password" placeholder="Senha administrativa"
       class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-3" />
 
     <p id="erroCredencialAdmin" class="text-red-600 text-sm mb-4 hidden"></p>
 
     <div class="flex justify-center gap-4">
-      <button onclick="fecharModalCredencialAdmin()" 
+      <button onclick="fecharModalCredencialAdmin()"
               class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition">
         Cancelar
       </button>
-      <button id="btnConfirmarCredencialAdmin" 
+      <button id="btnConfirmarCredencialAdmin"
               class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition">
         Confirmar credencial
       </button>
     </div>
+  </div>
+</div>
+
+<div id="modalBloqueioAdmin" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-70">
+  <div class="modal-box bg-white p-6 rounded-2xl shadow-xl w-96 text-center">
+    <i class="fas fa-lock text-red-500 text-3xl mb-3"></i>
+    <h2 class="text-lg font-bold mb-2">Acesso negado</h2>
+    <p id="textoBloqueioAdmin" class="text-gray-700 mb-6"></p>
+    <button onclick="fecharModal('modalBloqueioAdmin')"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+      OK
+    </button>
   </div>
 </div>
 
@@ -605,6 +620,10 @@ Salvar Alterações
 
 let animalEditando = null
 let pendingDeleteAnimalId = null
+
+function usuarioAtualEhAdmin(){
+  return localStorage.getItem('adminLogado') === 'true'
+}
 
 function logout(){
 
@@ -679,7 +698,7 @@ function mostrarAnimais(){
     )
 
     lista.innerHTML += `
-        <div onclick='verAnimal(${JSON.stringify(animal)})'
+        <div onclick='verAnimal(event, ${JSON.stringify(animal)})'
         class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
         <img src="${animal.foto_url ? (animal.foto_url.startsWith('http') ? animal.foto_url : `${API_BASE_URL}/${animal.foto_url.replace(/\\/g, '/').replace(/^\/+/, '').replace(/^(uploads\/)?/, 'uploads/')}`) : '/icones/logo.png'}" onerror="this.onerror=null; this.src='/icones/logo.png';"
@@ -704,13 +723,11 @@ function mostrarAnimais(){
 
         <div class="flex gap-2">
 
-        <button onclick="event.stopPropagation(); abrirEditar('${animal.id}')"
-        class="bg-yellow-500 text-white px-3 py-1 rounded">
+        <button onclick="event.stopPropagation(); abrirEditar('${animal.id}')" data-id="${animal.id}" class="bg-yellow-500 text-white px-3 py-1 rounded btn-edit">
         Editar
         </button>
 
-        <button onclick="event.stopPropagation(); excluirAnimal('${animal.id}')"
-        class="bg-red-500 text-white px-3 py-1 rounded">
+        <button onclick="event.stopPropagation(); rotearFluxoExclusao('${animal.id}')" data-id="${animal.id}" class="bg-red-500 text-white px-3 py-1 rounded btn-delete">
         Excluir
         </button>
 
@@ -782,7 +799,7 @@ animaisFiltrados.forEach((animal,index)=>{
 
 lista.innerHTML += `
 
-<div onclick='verAnimal(${JSON.stringify(animal)})'
+<div onclick='verAnimal(event, ${JSON.stringify(animal)})'
 class="bg-white rounded-xl shadow hover:shadow-xl hover:-translate-y-1 transition overflow-hidden cursor-pointer">
 
 <img src="${animal.foto_url ? (animal.foto_url.startsWith('http') ? animal.foto_url : `${API_BASE_URL || 'http://localhost:3001'}/${animal.foto_url.replace(/\\/g, '/').replace(/^\/+/, '').replace(/^(uploads\/)?/, 'uploads/')}`) : (animal.foto ? `${API_BASE_URL || 'http://localhost:3001'}/uploads/${String(animal.foto).replace(/^\/+/, '')}` : '/icones/logo.png')}"
@@ -806,15 +823,13 @@ ${animal.descricao || ""}
 
 <div class="flex gap-2">
 
-<button onclick="event.stopPropagation(); abrirEditarPorId('${animal.id}')"
-class="bg-yellow-500 text-white px-3 py-1 rounded">
+<button onclick="event.stopPropagation(); abrirEditarPorId('${animal.id}')" data-id="${animal.id}" class="bg-yellow-500 text-white px-3 py-1 rounded btn-edit">
 Editar
 </button>
 
-<button onclick="event.stopPropagation(); excluirAnimal('${animal.id}')"
-class="bg-red-500 text-white px-3 py-1 rounded">
-Excluir
-</button>
+<button onclick="event.stopPropagation(); rotearFluxoExclusao('${animal.id}')" data-id="${animal.id}" class="bg-red-500 text-white px-3 py-1 rounded btn-delete">
+  Excluir
+  </button>
 
 </div>
 
@@ -889,26 +904,56 @@ function abrirEditar(id, animal = null){
 
 }
 
-function excluirAnimal(id){
+function rotearFluxoExclusao(id){
+  // Roteador único para exclusão: nunca dispara DELETE diretamente
   pendingDeleteAnimalId = String(id || '')
+
+  // Verificar privilégios usando a flag explícita definida no login
+  const isAdmin = localStorage.getItem('usuarioAdmin') === 'true'
+
+  if (isAdmin) {
+    abrirConfirmacao('Deseja excluir este animal? Esta ação não pode ser desfeita.', () => {
+      executarExclusaoAnimal(pendingDeleteAnimalId)
+    })
+    return
+  }
+
+  // Usuário comum: abrir modal de credencial e não realizar chamadas até validação
   abrirModalCredencialAdmin()
 }
 
 function abrirModalCredencialAdmin(){
+  document.getElementById('usuarioAdminConfirmacao').value = ''
   document.getElementById('senhaAdminConfirmacao').value = ''
   document.getElementById('erroCredencialAdmin').classList.add('hidden')
-  document.getElementById('modalCredencialAdmin').classList.remove('hidden')
-  document.getElementById('modalCredencialAdmin').classList.add('flex')
+  try { fecharModal('modalConfirmar'); } catch (e) { /* ignore */ }
+  const modal = document.getElementById('modalCredencialAdmin')
+  modal.classList.remove('hidden')
+  modal.classList.add('flex')
+
+  const box = modal.querySelector('.modal-box')
+  if(box){
+    setTimeout(() => box.classList.add('ativo'), 10)
+  }
+
+  setTimeout(() => { const s = document.getElementById('usuarioAdminConfirmacao'); if(s) s.focus(); }, 120);
 }
 
 function fecharModalCredencialAdmin(){
-  document.getElementById('modalCredencialAdmin').classList.add('hidden')
+  fecharModal('modalCredencialAdmin')
 }
 
 async function confirmarCredencialAdmin(){
+  const usuario = document.getElementById('usuarioAdminConfirmacao').value.trim()
   const senha = document.getElementById('senhaAdminConfirmacao').value.trim()
   const erro = document.getElementById('erroCredencialAdmin')
   erro.classList.add('hidden')
+
+  if (!usuario) {
+    erro.innerText = 'Informe o nome ou CPF do administrador.'
+    erro.classList.remove('hidden')
+    return
+  }
 
   if (!senha) {
     erro.innerText = 'Informe a senha administrativa.'
@@ -916,26 +961,31 @@ async function confirmarCredencialAdmin(){
     return
   }
 
-  const usuarioId = localStorage.getItem('usuarioId')
-  if (!usuarioId) {
-    erro.innerText = 'Não foi possível identificar o usuário. Faça login novamente.'
-    erro.classList.remove('hidden')
-    return
-  }
-
   try {
-    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/admin/verify-credentials`, {
+    const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ usuarioId, senha })
+      body: JSON.stringify({ usuario, senha })
     })
 
+    const data = await response.json()
+
     if (!response.ok) {
-      const data = await response.json()
       throw new Error(data.error || 'Credenciais inválidas')
     }
+
+    if (!data.is_admin) {
+      fecharModalCredencialAdmin()
+      mostrarBloqueioAdmin('Este usuário não é um administrador, exclusão cancelada')
+      return
+    }
+
+    // Salvar token temporário de elevação em sessionStorage e executar a exclusão
+    try {
+      if (data.token) sessionStorage.setItem('adminElevationToken', data.token)
+    } catch (e) { /* ignore storage errors */ }
 
     fecharModalCredencialAdmin()
     await executarExclusaoAnimal(pendingDeleteAnimalId)
@@ -946,11 +996,32 @@ async function confirmarCredencialAdmin(){
   }
 }
 
+function mostrarBloqueioAdmin(mensagem){
+  const modal = document.getElementById('modalBloqueioAdmin')
+  document.getElementById('textoBloqueioAdmin').innerText = mensagem
+  modal.classList.remove('hidden')
+  modal.classList.add('flex')
+}
+
 async function executarExclusaoAnimal(id){
+  // Segurança: bloquear exclusões diretas para usuários não-administradores
+  const isAdminLogged = localStorage.getItem('adminLogado') === 'true'
+  const elevationToken = sessionStorage.getItem('adminElevationToken') || ''
+
+  if (!isAdminLogged && !elevationToken) {
+    // Garantir que o modal de credencial apareça para obter elevação
+    abrirModalCredencialAdmin()
+    return
+  }
+
   try {
+    const headers = (window.buildAuthHeaders && typeof window.buildAuthHeaders === 'function')
+      ? window.buildAuthHeaders(elevationToken || undefined)
+      : (elevationToken ? { 'Authorization': 'Bearer ' + elevationToken } : getAdminHeaders())
+
     const response = await fetch(`${API_BASE_URL || 'http://localhost:3001'}/api/animais/${id}`, {
       method: 'DELETE',
-      headers: getAdminHeaders()
+      headers
     })
 
     if (!response.ok) {
@@ -961,9 +1032,17 @@ async function executarExclusaoAnimal(id){
     let animais = JSON.parse(localStorage.getItem("animais")) || []
     animais = animais.filter(animal => String(animal.id) !== id)
     localStorage.setItem("animais", JSON.stringify(animais))
+    pendingDeleteAnimalId = null
 
+    // Garantir remoção visual dos modais antes de mostrar sucesso
+    try { fecharModalCredencialAdmin(); } catch (e) { /* ignore */ }
+    try { fecharModal('modalConfirmar'); } catch (e) { /* ignore */ }
     mostrarAnimais()
+    // Forçar foco de retorno para a lista para acessibilidade
+    try { document.getElementById('listaAnimais')?.focus(); } catch (e) { document.body.focus(); }
     mostrarSucesso("Animal excluído com sucesso!")
+    // Limpar token temporário de elevação após uso
+    try { sessionStorage.removeItem('adminElevationToken') } catch (e) { /* ignore */ }
   } catch (error) {
     console.error(error)
     uiShowError('Falha ao excluir o animal: ' + error.message)
@@ -972,8 +1051,16 @@ async function executarExclusaoAnimal(id){
 
 function salvarEdicao(){
   abrirConfirmacao("Salvar alterações deste animal?", async () => {
-    let animais = JSON.parse(localStorage.getItem("animais"))
+    const animaisRaw = JSON.parse(localStorage.getItem("animais"))
+    const animais = Array.isArray(animaisRaw) ? animaisRaw : []
+
     let index = animais.findIndex(a => String(a.id) === String(animalEditando))
+    if (index === -1) {
+      console.warn('Animal não encontrado na lista de edição:', animalEditando)
+      uiShowError('Não foi possível salvar alterações: animal não encontrado. Recarregue a página e tente novamente.')
+      return
+    }
+
     let animal = animais[index]
 
     let animalAtualizado = {
@@ -1063,7 +1150,13 @@ reader.readAsDataURL(arquivo)
 
 }
 
-function verAnimal(animal){
+function verAnimal(event, animal){
+  try {
+    // Se o click veio de um botão de exclusão ou edição, ignorar para evitar conflito de bubbling
+    if (event && event.target && event.target.closest && event.target.closest('.btn-delete')) return;
+    if (event && event.target && event.target.closest && event.target.closest('.btn-edit')) return;
+  } catch (e) { /* ignore */ }
+
   // montar URL da foto: preferir foto_url absoluta, senão usar API_BASE_URL/uploads/<file>
   let fotoUrl = 'https://via.placeholder.com/800x600?text=Sem+Foto'
   if (animal.foto_url) {
@@ -1177,8 +1270,13 @@ function abrirConfirmacao(msg, callback){
 }
 
 document.getElementById("btnConfirmarAcao").onclick = function(){
-  if(acaoConfirmada) acaoConfirmada();
+  // Fechar primeiro o modal de confirmação para evitar conflitos de empilhamento
   fecharModal("modalConfirmar");
+  // Executar ação confirmada logo após animação de fechamento
+  setTimeout(() => {
+    try { if(acaoConfirmada) acaoConfirmada(); } catch (e) { console.warn('Erro na ação confirmada:', e); }
+    acaoConfirmada = null;
+  }, 220);
 };
 
 document.getElementById('btnConfirmarCredencialAdmin').onclick = confirmarCredencialAdmin;
@@ -1204,6 +1302,34 @@ function mostrarSucesso(msg){
 
   box.classList.add("ativo")
 }
+
+// Delegated handlers para botões dinâmicos (Editar / Excluir)
+;(function bindDelegatedAnimalActions(){
+  try{
+    const lista = document.getElementById('listaAnimais');
+    if(!lista) return;
+
+    lista.addEventListener('click', function(e){
+      const editBtn = e.target.closest('.btn-edit');
+      if(editBtn && lista.contains(editBtn)){
+        e.stopPropagation();
+        const id = editBtn.dataset.id;
+        if(id) abrirEditar(id);
+        return;
+      }
+
+      const delBtn = e.target.closest('.btn-delete');
+      if(delBtn && lista.contains(delBtn)){
+        e.stopPropagation();
+        const id = delBtn.dataset.id;
+        if(id) rotearFluxoExclusao(id);
+        return;
+      }
+    });
+  }catch(err){
+    console.warn('Erro ao ligar eventos delegados de animais', err);
+  }
+})();
 
 // Carrega animais da API quando a página carrega
 window.addEventListener('load', () => {

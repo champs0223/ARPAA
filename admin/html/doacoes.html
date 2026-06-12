@@ -366,7 +366,7 @@ document.getElementById("fecharModal").addEventListener("click", () => {
       outros_insumos: doacoes.filter(d => ['higiene', 'limpeza', 'conforto'].includes(String(d.tipo || '').toLowerCase())).reduce((sum, d) => sum + parsePortugueseNumber(d.quantidade), 0)
     };
 
-    const endpoint = `${API_BASE_URL || 'http://localhost:3001'}/api/doacoes/summary`;
+    const endpoint = `${API_BASE_URL || 'http://localhost:3001'}/api/metricas/summary`;
 
     try {
       const response = await fetch(endpoint, { headers: getAdminHeaders() });
@@ -376,17 +376,20 @@ document.getElementById("fecharModal").addEventListener("click", () => {
 
       const data = await response.json();
 
-      // Só aplicar os totais se a resposta tiver conteúdo válido; caso contrário usar fallback
-      if (data && Object.keys(data).length > 0) {
+      // Só aplicar os totais se a resposta tiver os campos esperados; caso contrário usar fallback
+      if (
+        data &&
+        (typeof data.totalDinheiro === 'number' || typeof data.totalRacao === 'number' || typeof data.totalMedicamentos === 'number')
+      ) {
         const elDin = document.getElementById("totalDinheiro");
         const elRac = document.getElementById("totalRacao");
         const elMed = document.getElementById("totalMedicamentos");
         const elOut = document.getElementById("totalOutrosInsumos");
 
-        if (elDin) elDin.innerText = formatarMoeda(parsePortugueseNumber(data.dinheiro || 0));
-        if (elRac) elRac.innerText = `${parsePortugueseNumber(data.racao || 0)} KG`;
-        if (elMed) elMed.innerText = `${parsePortugueseNumber(data.medicamentos || 0)} un`;
-        if (elOut) elOut.innerText = `${parsePortugueseNumber(data.outros_insumos || 0)} un`;
+        if (elDin) elDin.innerText = formatarMoeda(Number(data.totalDinheiro || 0));
+        if (elRac) elRac.innerText = `${Number(data.totalRacao || 0)} KG`;
+        if (elMed) elMed.innerText = `${Number(data.totalMedicamentos || 0)} un`;
+        if (elOut) elOut.innerText = `${Number(data.outros_insumos || 0)} un`;
       } else {
         // fallback caso a API retorne objeto vazio
         document.getElementById("totalDinheiro").innerText = formatarMoeda(fallback.dinheiro);
@@ -571,9 +574,13 @@ if(editandoId){
 }
 
 localStorage.setItem("arpaa_doacoes_dados", JSON.stringify(doacoes));
+    // Garantir atualização imediata dos cartões utilizando o utilitário compartilhado
+    if (window.arpaa && typeof window.arpaa.atualizarTotaisDoacoesDOM === 'function') {
+      try { window.arpaa.atualizarTotaisDoacoesDOM(doacoes); } catch (e) { console.warn('Erro ao atualizar totais via arpaa util:', e && e.message); }
+    }
 
-await atualizarCards();
-renderDoacoes();
+    await atualizarCards();
+    renderDoacoes();
 form.reset();
 
 modal.classList.add("hidden");
@@ -628,6 +635,11 @@ function excluirDoacao(id){
     doacoes = doacoes.filter(d => d.id !== id)
 
     localStorage.setItem("arpaa_doacoes_dados", JSON.stringify(doacoes))
+
+    // Atualiza também os totais via utilitário global (não altera seletores)
+    if (window.arpaa && typeof window.arpaa.atualizarTotaisDoacoesDOM === 'function') {
+      try { window.arpaa.atualizarTotaisDoacoesDOM(doacoes); } catch (e) { console.warn('Erro ao atualizar totais via arpaa util:', e && e.message); }
+    }
 
     await atualizarCards();
     renderDoacoes();
@@ -717,12 +729,30 @@ function fecharModal(id){
 async function initDoacoes(){
   await atualizarCards();
   renderDoacoes();
+  // Sincroniza os cartões superiores com os dados carregados localmente
+  if (window.arpaa && typeof window.arpaa.atualizarTotaisDoacoesDOM === 'function') {
+    try { window.arpaa.atualizarTotaisDoacoesDOM(doacoes); } catch (e) { console.warn('Erro ao inicializar totais via arpaa util:', e && e.message); }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   // Garantir execução única do fluxo de inicialização
   initDoacoes();
 }, { once: true });
+
+// Atualiza automaticamente se outro contexto (outra aba) alterar o localStorage
+window.addEventListener('storage', (e) => {
+  if (e.key !== 'arpaa_doacoes_dados') return;
+  try {
+    doacoes = JSON.parse(localStorage.getItem('arpaa_doacoes_dados')) || [];
+  } catch (_e) {
+    doacoes = [];
+  }
+  renderDoacoes();
+  if (window.arpaa && typeof window.arpaa.atualizarTotaisDoacoesDOM === 'function') {
+    try { window.arpaa.atualizarTotaisDoacoesDOM(doacoes); } catch (err) { console.warn('Erro ao atualizar totais via storage listener:', err && err.message); }
+  }
+});
 </script>
 
 <script src="../js/menu.js"></script>

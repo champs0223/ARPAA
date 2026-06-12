@@ -1,7 +1,11 @@
 var paginaAtual = window.location.pathname.split("/").pop()
 
 function isAdminUser() {
-  return localStorage.getItem('usuarioAdmin') === 'true'
+  // Preferir a flag de privilégio explícita 'usuarioAdmin'.
+  // Se não existir, manter fallback para 'adminLogado' para compatibilidade.
+  const explicit = localStorage.getItem('usuarioAdmin')
+  if (explicit !== null) return explicit === 'true'
+  return localStorage.getItem('adminLogado') === 'true'
 }
 
 function getCurrentUserName() {
@@ -33,7 +37,7 @@ function renderUserGreeting() {
 }
 
 function logout() {
-  const keys = ['adminLogado', 'usuarioId', 'usuarioNome', 'usuarioAdmin', 'adminToken']
+  const keys = ['adminLogado', 'usuarioId', 'usuarioNome', 'adminToken']
   keys.forEach(key => {
     localStorage.removeItem(key)
     sessionStorage.removeItem(key)
@@ -110,6 +114,23 @@ function activateCurrentMenuLink() {
   })
 }
 
+function hideSolicitacoesForNonAdmin() {
+  if (isAdminUser()) return
+
+  const solicitacoesLinks = document.querySelectorAll("a[href$='solicitacoes.html']")
+  solicitacoesLinks.forEach(link => {
+    link.classList.add('hidden')
+    link.style.display = 'none'
+  })
+}
+
+function redirectNonAdminFromSolicitacoes() {
+  if (paginaAtual !== 'solicitacoes.html') return
+  if (isAdminUser()) return
+
+  window.location.href = 'index.html'
+}
+
 function toggleMenu(){
   const submenu = document.getElementById("submenuAdocoes")
   const seta = document.getElementById("iconeSeta")
@@ -126,6 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (seta) seta.classList.add("rotate-180")
   }
 
+  redirectNonAdminFromSolicitacoes()
+  hideSolicitacoesForNonAdmin()
   injectAdminMenuItems()
   renderUserGreeting()
   activateCurrentMenuLink()

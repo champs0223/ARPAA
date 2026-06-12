@@ -161,12 +161,13 @@ async function login(event){
         return
       }
 
-      // Login bem-sucedido
-      localStorage.setItem("adminLogado", "true")
-      localStorage.setItem("usuarioId", dados.id)
-      localStorage.setItem("usuarioNome", dados.nome)
-      localStorage.setItem("usuarioAdmin", dados.is_admin ? "true" : "false")
-      localStorage.setItem("adminToken", dados.token || "")
+          // Login bem-sucedido: marcar como logado sempre, registrar privilégio separadamente
+          localStorage.setItem("adminLogado", "true")
+          localStorage.setItem("usuarioId", dados.id)
+          localStorage.setItem("usuarioNome", dados.nome)
+          // Manter flag de administrador para checagens de privilégios em outros módulos
+          try { localStorage.setItem("usuarioAdmin", dados.is_admin ? "true" : "false") } catch (e) { /* ignore */ }
+          localStorage.setItem("adminToken", dados.token || "")
     }
 
     // Se chegou aqui, login foi bem-sucedido

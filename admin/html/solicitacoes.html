@@ -32,8 +32,9 @@
 
 <body class="bg-gray-100 text-gray-900">
     <script>
-        // Permitir tanto admins quanto usuários comuns acessarem solicitações
-        if (localStorage.getItem("adminLogado") !== "true") {
+        const isAdminUser = localStorage.getItem("adminLogado") === "true";
+        const token = getAdminToken();
+        if (!token) {
             window.location.href = "index.html";
         }
     </script>
@@ -78,7 +79,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a id="menuProcessosConcluidos" href="adocoes.html?status=concluido" class="menu-link block hover:text-yellow-300">
+                                <a id="menuProcessosConcluidos" href="./adocoes.html?status=concluido" class="menu-link block hover:text-yellow-300">
                                     Processos Concluídos
                                 </a>
                             </li>
@@ -269,7 +270,11 @@ async function carregarSolicitacoes() {
             throw new Error('Token de autenticação não encontrado. Por favor, faça login novamente.');
         }
 
-        const response = await fetch('http://localhost:3001/api/admin/solicitacoes?status=Pendente', {
+        const endpoint = isAdminUser
+            ? `${API_BASE_URL}/api/admin/solicitacoes?status=Pendente`
+            : `${API_BASE_URL}/api/public/solicitacoes?status=Pendente`;
+
+        const response = await fetch(endpoint, {
             headers
         });
         if (!response.ok) throw new Error('Erro ao buscar solicitações');
@@ -306,6 +311,7 @@ function renderizarTabela(solicitacoes) {
         const idSolicitacao = String(s.id || '');
         const statusSolicitacao = s.status || 'Pendente';
         const dataFormatada = s.created_at ? new Date(s.created_at).toLocaleDateString('pt-BR') : '-';
+        const isAdminUser = localStorage.getItem('adminLogado') === 'true';
         
         return `
             <tr class="hover:bg-gray-50 transition">
@@ -339,7 +345,7 @@ function renderizarTabela(solicitacoes) {
                         <button onclick="abrirDetalhes('${idSolicitacao}')" class="text-teal-600 hover:text-teal-700 font-semibold">
                             <i class="fas fa-eye mr-1"></i> Ver
                         </button>
-                        ${statusSolicitacao === 'Rejeitado' ? `
+                        ${isAdminUser && statusSolicitacao === 'Rejeitado' ? `
                             <button onclick="deletarSolicitacao('${idSolicitacao}')" class="text-white bg-red-600 hover:bg-red-700 rounded-full p-2 transition" title="Excluir solicitação">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
@@ -356,7 +362,12 @@ async function abrirDetalhes(id) {
     try {
         const headers = getAdminHeaders();
         const idSeguro = String(id || '');
-        const response = await fetch(`http://localhost:3001/api/admin/solicitacoes/${idSeguro}`, {
+        const isAdminUser = localStorage.getItem('adminLogado') === 'true';
+        const endpoint = isAdminUser
+            ? `${API_BASE_URL}/api/admin/solicitacoes/${idSeguro}`
+            : `${API_BASE_URL}/api/public/solicitacoes/${idSeguro}`;
+
+        const response = await fetch(endpoint, {
             headers
         });
         if (!response.ok) throw new Error('Erro ao buscar detalhes');
@@ -372,6 +383,20 @@ async function abrirDetalhes(id) {
         document.getElementById('modalMensagem').textContent = solicitacaoAtual.mensagem || 'Sem mensagem';
         document.getElementById('modalStatus').textContent = solicitacaoAtual.status || 'Pendente';
         document.getElementById('modalData').textContent = solicitacaoAtual.created_at ? new Date(solicitacaoAtual.created_at).toLocaleDateString('pt-BR') : '-';
+
+        const btnAprovar = document.getElementById('btnAprovar');
+        const btnRejeitar = document.getElementById('btnRejeitar');
+        const secaoObservacoes = document.getElementById('secaoObservacoes');
+
+        if (!isAdminUser) {
+            if (btnAprovar) btnAprovar.classList.add('hidden');
+            if (btnRejeitar) btnRejeitar.classList.add('hidden');
+            if (secaoObservacoes) secaoObservacoes.classList.add('hidden');
+        } else {
+            if (btnAprovar) btnAprovar.classList.remove('hidden');
+            if (btnRejeitar) btnRejeitar.classList.remove('hidden');
+            if (secaoObservacoes) secaoObservacoes.classList.remove('hidden');
+        }
 
         document.getElementById('modalDetalhes').classList.remove('hidden');
 
